@@ -1,0 +1,8 @@
+{
+  "DEFAULT": {
+    "BOT_TOKEN": "Token goes here"
+  },
+  "DISCORD": {
+    "SERVER_ID": "Server id goes here"
+  }
+}
