@@ -17,7 +17,7 @@ if not testing:
     print('Continuing')
 
 client = discord.Client()
-version = "v1.0.0"
+version = "v1.1.0"
 
 # Load the config file
 with open('config.json', 'r') as f:
@@ -56,11 +56,42 @@ async def prepare_channel(channel):
     await clear_channel(channel)
 
     global post
-    post = await client.send_message(channel, 'Please react with each class you want to sign up for or click \u274C to remove all your class roles.')
+    post = await client.send_message(channel, 'Please react with each class you want to sign up for or click \u274C to remove all your class roles.\n\nType `!roles` to check which class roles you currently have.')
     for key, value in emojis.items():
         await client.add_reaction(post,value)
     await client.add_reaction(post,'\u274C')
     await client.pin_message(post)
+
+# Checks which class roles the user has and sends these to the class roles channel.
+async def show_class_roles(user):
+    send = '{0} has the following class roles: '.format(user.mention)
+    has_class_role = False
+    # Build string to send
+    for key,value in class_roles.items():
+        if value in user.roles:
+            send = send + value.name + ', '
+            has_class_role = True
+    # leet formatting skills
+    send = send[:-2]
+    send = send + '.'
+    if has_class_role:
+        await client.send_message(class_role_channel,send)
+    else:
+        await client.send_message(class_role_channel,'{0} does not have any class roles assigned.'.format(user.mention))
+ 
+
+# Process commands for class role channel
+async def class_role_command(message):
+    # Clear the posts in the channel.
+    if message.content.startswith('!clear'):
+        # Check if user has sufficient permissions for this command
+        if message.author.server_permissions.administrator or message.author.id == '268948406100033546':
+            # Reset the channel
+            await prepare_channel(message.channel)
+    # Return class roles for the user.
+    if message.content.startswith('!roles'):
+        await show_class_roles(message.author)
+
 
 @client.event
 async def on_ready():
@@ -72,7 +103,7 @@ async def on_ready():
 
     global class_roles
     global emojis
-    global command_channel
+    global class_role_channel
 
     # Get the custom emojis.
     all_emojis = list(client.get_all_emojis())
@@ -93,13 +124,13 @@ async def on_ready():
 
     # Gets the channel that will be used to issue commands by users.
     # Creates the channel if it does not yet exist.
-    command_channel = discord.utils.get(server.channels, name='class-roles')
-    if command_channel is None:
-        command_channel = await client.create_channel(server, 'class-roles', type=discord.ChannelType.text)
+    class_role_channel = discord.utils.get(server.channels, name='class-roles')
+    if class_role_channel is None:
+        class_role_channel = await client.create_channel(server, 'class-roles', type=discord.ChannelType.text)
 
     # Wait a bit to give Discord time to create the channel before we start using it.
     await asyncio.sleep(1)
-    await prepare_channel(command_channel)
+    await prepare_channel(class_role_channel)
 
 @client.event
 async def on_reaction_add(reaction,user):
@@ -144,6 +175,13 @@ async def on_reaction_remove(reaction,user):
             # Send confirmation message.
             await client.send_message(reaction.message.channel, 'Removed {0} from @{1}.'.format(user.mention,class_roles[key]))
 
-# TO DO: Add a command to clear the channel instead of only doing this on boot.
+@client.event
+async def on_message(message):
+    # Check if the message isn't sent by the bot.
+    if message.author == client.user:
+        return
+    # Check if message is sent in class role channel
+    if message.channel == class_role_channel:
+        await class_role_command(message)
 
 client.run(token)
