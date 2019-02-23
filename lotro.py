@@ -17,7 +17,7 @@ if not testing:
     print('Continuing')
 
 client = discord.Client()
-version = "v1.1.0"
+version = "v1.1.1"
 
 # Load the config file
 with open('config.json', 'r') as f:
@@ -56,7 +56,7 @@ async def prepare_channel(channel):
     await clear_channel(channel)
 
     global post
-    post = await client.send_message(channel, 'Please react with each class you want to sign up for or click \u274C to remove all your class roles.\n\nType `!roles` to check which class roles you currently have.')
+    post = await client.send_message(channel, 'Please mute this channel or lose your sanity like me.\n\nReact with each class you want to sign up for or click \u274C to remove all your class roles.\n(You can type `!roles` to check which class roles you currently have.)')
     for key, value in emojis.items():
         await client.add_reaction(post,value)
     await client.add_reaction(post,'\u274C')
@@ -78,7 +78,6 @@ async def show_class_roles(user):
         await client.send_message(class_role_channel,send)
     else:
         await client.send_message(class_role_channel,'{0} does not have any class roles assigned.'.format(user.mention))
- 
 
 # Process commands for class role channel
 async def class_role_command(message):
@@ -92,6 +91,11 @@ async def class_role_command(message):
     if message.content.startswith('!roles'):
         await show_class_roles(message.author)
 
+async def bid_five(message):
+    # I wonder what unexpected words this is going to trigger on
+    trigger = ['bid','offer']
+    if any(word in message.content.lower() for word in trigger):
+        await client.send_message(message.channel,'Isengard bids five!')
 
 @client.event
 async def on_ready():
@@ -183,5 +187,8 @@ async def on_message(message):
     # Check if message is sent in class role channel
     if message.channel == class_role_channel:
         await class_role_command(message)
+
+    # Saruman has the last word!
+    await bid_five(message)
 
 client.run(token)
