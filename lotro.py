@@ -25,6 +25,7 @@ with open('config.json', 'r') as f:
 
 token = config['DEFAULT']['BOT_TOKEN']
 serverid = config['DISCORD']['SERVER_ID']
+ownerid = config['DISCORD']['OWNER_ID']
 
 # These class roles will be automatically created if they don't exist on the server.
 role_names = {
@@ -84,7 +85,7 @@ async def class_role_command(message):
     # Clear the posts in the channel.
     if message.content.startswith('!clear'):
         # Check if user has sufficient permissions for this command
-        if message.author.server_permissions.administrator or message.author.id == '268948406100033546':
+        if message.author.server_permissions.administrator or message.author.id == ownerid:
             # Reset the channel
             await prepare_channel(message.channel)
     # Return class roles for the user.

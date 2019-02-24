@@ -4,5 +4,6 @@
   },
   "DISCORD": {
     "SERVER_ID": "Server id goes here"
+    "OWNER_ID": "Owner id goes here"
   }
 }
