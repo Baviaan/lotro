@@ -17,7 +17,7 @@ if not testing:
     print('Continuing')
 
 client = discord.Client()
-version = "v1.1.1"
+version = "v1.1.2"
 
 # Load the config file
 with open('config.json', 'r') as f:
@@ -46,22 +46,22 @@ role_names = {
 class_roles = OrderedDict()
 emojis = OrderedDict()
 
-# Delete the last 100 messages from the channel.
+# Delete the last n messages from the channel.
 # 100 is discord API limit.
-async def clear_channel(channel):
-    async for msg in client.logs_from(channel, limit = 100 ):
+async def clear_channel(channel,number):
+    async for msg in client.logs_from(channel, limit = number):
         await client.delete_message(msg)
 
 # Cleans up the channel, adds the initial post, adds reactions and pins the post.
 async def prepare_channel(channel):
-    await clear_channel(channel)
+    await clear_channel(channel,100)
 
-    global post
-    post = await client.send_message(channel, 'Please mute this channel or lose your sanity like me.\n\nReact with each class you want to sign up for or click \u274C to remove all your class roles.\n(You can type `!roles` to check which class roles you currently have.)')
+    global role_post
+    role_post = await client.send_message(channel, 'Please mute this channel or lose your sanity like me.\n\nReact with each class you want to sign up for or click \u274C to remove all your class roles.\n(You can type `!roles` to check which class roles you currently have.)')
     for key, value in emojis.items():
-        await client.add_reaction(post,value)
-    await client.add_reaction(post,'\u274C')
-    await client.pin_message(post)
+        await client.add_reaction(role_post,value)
+    await client.add_reaction(role_post,'\u274C')
+    await client.pin_message(role_post)
 
 # Checks which class roles the user has and sends these to the class roles channel.
 async def show_class_roles(user):
@@ -140,7 +140,7 @@ async def on_ready():
 @client.event
 async def on_reaction_add(reaction,user):
     # Check if the reaction is to the bot's post.
-    if reaction.message.id != post.id:
+    if reaction.message.id != role_post.id:
         return
     # Check if the reaction isn't made by the bot.
     if user == client.user:
@@ -167,7 +167,7 @@ async def on_reaction_add(reaction,user):
 @client.event
 async def on_reaction_remove(reaction,user):
     # Check if the reaction is to the bot's post.
-    if reaction.message.id != post.id:
+    if reaction.message.id != role_post.id:
         return
     # Check if the reaction isn't made by the bot.
     if user == client.user:
