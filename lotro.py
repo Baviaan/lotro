@@ -4,10 +4,11 @@ import asyncio
 import discord
 import time
 import json
+import dateparser
 
 from collections import OrderedDict
 
-testing = False
+testing = True
 
 if not testing:
     # On boot the pi launches the bot faster than it gets internet access.
@@ -92,6 +93,22 @@ async def class_role_command(message):
     if message.content.startswith('!roles'):
         await show_class_roles(message.author)
 
+# Process commands for the raid channel
+async def raid_command(message):
+    if message.content.startswith('!raid'):
+        arguments = message.content.split(" ",3)
+        if len(arguments) != 4:
+            await client.send_message(message.channel, 'Usage: !raid <name> <tier> <time>')
+            return
+        arguments[3] = arguments[3].replace('server','EST') # rip when DST arrives
+        time = dateparser.parse(arguments[3],settings={'PREFER_DATES_FROM': 'future'})
+        raid = {
+        'NAME': arguments[1].capitalize(), # Should make it default to Anvil
+        'TIER': arguments[2],
+        'TIME': time # Should make it default to server time
+        }
+        await client.send_message(message.channel, '{0} Tier {1} at {2}'.format(raid['NAME'],raid['TIER'],raid['TIME'])) # Should format output
+
 async def bid_five(message):
     # I wonder what unexpected words this is going to trigger on
     trigger = ['bid','offer']
@@ -109,6 +126,7 @@ async def on_ready():
     global class_roles
     global emojis
     global class_role_channel
+    global raid_channel
 
     # Get the custom emojis.
     all_emojis = list(client.get_all_emojis())
@@ -127,11 +145,14 @@ async def on_ready():
             if e.name == value:
                 emojis[key] = e
 
-    # Gets the channel that will be used to issue commands by users.
+    # Get the channels that will be used to issue commands by users.
     # Creates the channel if it does not yet exist.
     class_role_channel = discord.utils.get(server.channels, name='class-roles')
     if class_role_channel is None:
         class_role_channel = await client.create_channel(server, 'class-roles', type=discord.ChannelType.text)
+    raid_channel = discord.utils.get(server.channels, name='raids')
+    if raid_channel is None:
+        raid_channel = await client.create_channel(server, 'raids', type=discord.ChannelType.text)
 
     # Wait a bit to give Discord time to create the channel before we start using it.
     await asyncio.sleep(1)
@@ -188,6 +209,9 @@ async def on_message(message):
     # Check if message is sent in class role channel
     if message.channel == class_role_channel:
         await class_role_command(message)
+    # Check if message is sent in raid channel
+    elif message.channel == raid_channel:
+        await raid_command(message)
 
     # Saruman has the last word!
     await bid_five(message)
