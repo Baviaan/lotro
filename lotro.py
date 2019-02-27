@@ -8,7 +8,7 @@ import dateparser
 
 from collections import OrderedDict
 
-testing = True
+testing = False
 
 if not testing:
     # On boot the pi launches the bot faster than it gets internet access.
@@ -172,9 +172,9 @@ async def on_ready():
 
     # Get the channels that will be used to issue commands by users.
     # Creates the channel if it does not yet exist.
-    command_channel = discord.utils.get(server.channels, name='class-roles')
+    command_channel = discord.utils.get(server.channels, name='saruman')
     if command_channel is None:
-        command_channel = await client.create_channel(server, 'class-roles', type=discord.ChannelType.text)
+        command_channel = await client.create_channel(server, 'saruman', type=discord.ChannelType.text)
     raid_channel = discord.utils.get(server.channels, name='raids')
     if raid_channel is None:
         raid_channel = await client.create_channel(server, 'raids', type=discord.ChannelType.text)
