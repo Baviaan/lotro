@@ -56,6 +56,12 @@ async def clear_channel(channel,number):
     async for msg in client.logs_from(channel, limit = number):
         await client.delete_message(msg)
 
+async def add_emoji_pin(post):
+    # adds the class emojis to a post and pins the post
+    for key, value in emojis.items():
+        await client.add_reaction(post,value)
+    await client.pin_message(post)
+
 # Cleans up the channel, adds the initial post, adds reactions and pins the post.
 async def prepare_channel(channel):
     await clear_channel(channel,100)
@@ -63,10 +69,8 @@ async def prepare_channel(channel):
     global role_post
     message_content = 'Please mute this bot command channel or lose your sanity like me.\n\nReact to this post with each class you want to sign up for or click \u274C to remove all your class roles.\n\n*Further commands that can be used in this channel*:\n`!roles` Shows which class roles you currently have.\n`!dwarves` Shows a list of the 13 dwarves in the Anvil raid with their associated skills. (Work in progress.)'
     role_post = await client.send_message(channel, message_content)
-    for key, value in emojis.items():
-        await client.add_reaction(role_post,value)
+    await add_emoji_pin(role_post)
     await client.add_reaction(role_post,'\u274C')
-    await client.pin_message(role_post)
 
 async def add_role(reaction,user):
     # Check if the reaction emoji matches any of our class emojis.
@@ -156,7 +160,6 @@ def usr_str2time(time_string):
 
 # Process commands for the raid channel
 async def raid_command(message):
-    global raid_post
     if message.content.startswith('!raid'):
         arguments = message.content.split(" ",4)
         if len(arguments) != 5:
@@ -177,6 +180,7 @@ async def raid_command(message):
         embed = discord.Embed(title='{0} T{1} at {2}'.format(raid['NAME'],raid['TIER'],raid['TIME']), colour = discord.Colour(0x3498db), description='Bosses: {0}'.format(raid['BOSS']))
 
         post = await client.send_message(message.channel, embed=embed) # Should format output
+        await add_emoji_pin(post)
         raid_post.append(post)
 
 async def bid_five(message):
