@@ -2,13 +2,13 @@
 
 import asyncio
 import discord
-import time
 import json
+import datetime
 import dateparser
 
 from collections import OrderedDict
 
-testing = False
+testing = True
 
 if not testing:
     # On boot the pi launches the bot faster than it gets internet access.
@@ -82,18 +82,7 @@ async def show_class_roles(user):
     else:
         await client.send_message(command_channel,'{0} does not have any class roles assigned.'.format(user.mention))
 
-# Process commands for class role channel
-async def command(message):
-    # Clear the posts in the channel.
-    if message.content.startswith('!clear'):
-        # Check if user has sufficient permissions for this command
-        if message.author.server_permissions.administrator or message.author.id == ownerid:
-            # Reset the channel
-            await prepare_channel(message.channel)
-    # Return class roles for the user.
-    elif message.content.startswith('!roles'):
-        await show_class_roles(message.author)
-    elif message.content.startswith('!dwarves'):
+async def dwarves(channel):
         ingor = '**Ingór I the Cruel**: "How much more can your mortal form take?" - Applies 1 stack of incoming healing debuff.\n'
         oiko2 = '**Óiko II Rill-Seeker**: "I seek the mithril stream." - Ice line\n'
         dobruz = '**Dóbruz IV the Unheeding**: "You look like a weakling."/"I challenge you." - Picks random target; requires force taunt.\n'
@@ -106,9 +95,32 @@ async def command(message):
         brantokh2 = '**Brántokh II the Sunderer**: "Cower before the might of the Zhelruka."/"I will bring this mountain down." - 20m AoE.\n'
         brunek = '**Brúnek I Clovenbow**: "Taste my axes!" - DoT on random person until interrupted.\n'
         rurek = '**Rúrek VI the Shamed**: "What have I done?"/"I have failed my people." - Bubble on dwarf.\n'
-        brantokh = '**Brántokh I Cracktooth**: "Want to know why they call me cracktooth?" - AoE swipe (low damage)'
+        brantokh = '**Brántokh I Cracktooth**: "Want to know why they call me cracktooth?" - AoE swipe (low damage).'
         text = ingor+oiko2+dobruz+mozun+kuzek+luvek+oiko+kamluz+dobruz2+brantokh2+brunek+rurek+brantokh
-        await client.send_message(message.channel,text)
+        await client.send_message(channel,text)
+
+# Process commands for class role channel
+async def command(message):
+    # Clear the posts in the channel.
+    if message.content.startswith('!clear'):
+        # Check if user has sufficient permissions for this command
+        if message.author.server_permissions.administrator or message.author.id == ownerid:
+            # Reset the channel
+            await prepare_channel(message.channel)
+    # Return class roles for the user.
+    elif message.content.startswith('!roles'):
+        await show_class_roles(message.author)
+    elif message.content.startswith('!dwarves'):
+        await dwarves(message.channel)
+
+def usr_str2time(time_string):
+    if 'server' in time_string:
+        #strip off server and return as US Eastern time
+        time_string = time_string.replace('server','')
+        time = dateparser.parse(time_string, settings={'PREFER_DATES_FROM': 'future','TIMEZONE': 'US/Eastern', 'RETURN_AS_TIMEZONE_AWARE': True})
+    else:
+        time = dateparser.parse(time_string, settings={'PREFER_DATES_FROM': 'future'})
+    return time
 
 # Process commands for the raid channel
 async def raid_command(message):
@@ -117,8 +129,7 @@ async def raid_command(message):
         if len(arguments) != 5:
             await client.send_message(message.channel, 'Usage: !raid <name> <tier> <bosses> <time>\nExample: `!raid Anvil 2 all 4pm server`')
             return
-        arguments[4] = arguments[4].replace('server','EST') # rip when DST arrives
-        time = dateparser.parse(arguments[4],settings={'PREFER_DATES_FROM':'future'})
+        time = usr_str2time(arguments[4])
         if time is None:
             msg = await client.send_message(message.channel, 'I did not understand the specified time. Please try again.')
             await asyncio.sleep(20)
