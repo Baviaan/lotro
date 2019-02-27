@@ -47,6 +47,9 @@ role_names = {
 class_roles = OrderedDict()
 emojis = OrderedDict()
 
+# List that will contain the raid posts
+raid_post = list()
+
 # Delete the last n messages from the channel.
 # 100 is discord API limit.
 async def clear_channel(channel,number):
@@ -64,6 +67,35 @@ async def prepare_channel(channel):
         await client.add_reaction(role_post,value)
     await client.add_reaction(role_post,'\u274C')
     await client.pin_message(role_post)
+
+async def add_role(reaction,user):
+    # Check if the reaction emoji matches any of our class emojis.
+    for key,value in emojis.items():
+        if reaction.emoji == value:
+            # Add user to the class role.
+            await client.add_roles(user, class_roles[key])
+            # Send confirmation message.
+            await client.send_message(reaction.message.channel, 'Added {0} to @{1}.'.format(user.mention,class_roles[key]))
+    # Check if the reaction emoji is the cancel emoji
+    if reaction.emoji == '\u274C':
+        # Send a message because this will take 5s.
+        await client.send_message(reaction.message.channel, 'Removing...')
+        # Remove the user from all class roles.
+        for key,value in class_roles.items():
+            await client.remove_roles(user, value)
+            # Discord rate limits requests; drops requests if too fast.
+            await asyncio.sleep(0.5)
+        # Send confirmation message.
+        await client.send_message(reaction.message.channel, 'Removed {0} from all class roles.'.format(user.mention))
+
+async def remove_role(reaction,user):
+    # Check if the reaction emoji matches any of our class emojis.
+    for key,value in emojis.items():
+        if reaction.emoji == value:
+            # Remove user from the class role.
+            await client.remove_roles(user, class_roles[key])
+            # Send confirmation message.
+            await client.send_message(reaction.message.channel, 'Removed {0} from @{1}.'.format(user.mention,class_roles[key]))
 
 # Checks which class roles the user has and sends these to the class roles channel.
 async def show_class_roles(user):
@@ -124,6 +156,7 @@ def usr_str2time(time_string):
 
 # Process commands for the raid channel
 async def raid_command(message):
+    global raid_post
     if message.content.startswith('!raid'):
         arguments = message.content.split(" ",4)
         if len(arguments) != 5:
@@ -143,7 +176,8 @@ async def raid_command(message):
         }
         embed = discord.Embed(title='{0} T{1} at {2}'.format(raid['NAME'],raid['TIER'],raid['TIME']), colour = discord.Colour(0x3498db), description='Bosses: {0}'.format(raid['BOSS']))
 
-        await client.send_message(message.channel, embed=embed) # Should format output
+        post = await client.send_message(message.channel, embed=embed) # Should format output
+        raid_post.append(post)
 
 async def bid_five(message):
     # I wonder what unexpected words this is going to trigger on
@@ -196,46 +230,21 @@ async def on_ready():
 
 @client.event
 async def on_reaction_add(reaction,user):
-    # Check if the reaction is to the bot's post.
-    if reaction.message.id != role_post.id:
-        return
     # Check if the reaction isn't made by the bot.
     if user == client.user:
         return
-    # Check if the reaction emoji matches any of our class emojis.
-    for key,value in emojis.items():
-        if reaction.emoji == value:
-            # Add user to the class role. 
-            await client.add_roles(user, class_roles[key])
-            # Send confirmation message.
-            await client.send_message(reaction.message.channel, 'Added {0} to @{1}.'.format(user.mention,class_roles[key]))
-    # Check if the reaction emoji is the cancel emoji
-    if reaction.emoji == '\u274C':
-        # Send a message because this will take 5s.
-        await client.send_message(reaction.message.channel, 'Removing...')
-        # Remove the user from all class roles.
-        for key,value in class_roles.items():
-            await client.remove_roles(user, value)
-            # Discord rate limits requests; drops requests if too fast.
-            await asyncio.sleep(0.5)
-        # Send confirmation message.
-        await client.send_message(reaction.message.channel, 'Removed {0} from all class roles.'.format(user.mention))
+    # Check if the reaction is to the bot's post.
+    if reaction.message.id == role_post.id:
+        await add_role(reaction,user)
 
 @client.event
 async def on_reaction_remove(reaction,user):
-    # Check if the reaction is to the bot's post.
-    if reaction.message.id != role_post.id:
-        return
     # Check if the reaction isn't made by the bot.
     if user == client.user:
         return
-    # Check if the reaction emoji matches any of our class emojis.
-    for key,value in emojis.items():
-        if reaction.emoji == value:
-            # Remove user from the class role. 
-            await client.remove_roles(user, class_roles[key])
-            # Send confirmation message.
-            await client.send_message(reaction.message.channel, 'Removed {0} from @{1}.'.format(user.mention,class_roles[key]))
+    # Check if the reaction is to the bot's post.
+    if reaction.message.id == role_post.id:
+        await remove_role(reaction,user)
 
 @client.event
 async def on_message(message):
