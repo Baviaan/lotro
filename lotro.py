@@ -18,7 +18,7 @@ if not testing:
     print('Continuing')
 
 client = discord.Client()
-version = "v1.1.2"
+version = "v1.1.3"
 
 # Load the config file
 with open('config.json', 'r') as f:
@@ -96,14 +96,14 @@ async def command(message):
     elif message.content.startswith('!dwarves'):
         ingor = '**Ingór I the Cruel**: "How much more can your mortal form take?" - Applies 1 stack of incoming healing debuff.\n'
         oiko2 = '**Óiko II Rill-Seeker**: "I seek the mithril stream." - Ice line\n'
-        dobruz = '**Dóbruz IV the Unheeding**: "You look like a weakling."/"I challenge you." - Picks random target; requires force taunt.\n'
+        dobruz = '**Dóbruz IV the Unheeding**: "You look like a weakling."/"I challenge YOU!" - Picks random target; requires force taunt.\n'
         mozun = '**Mozun III Wyrmbane**: "I will not abide a worm to live." - Summons worm.\n'
         kuzek = '**Kúzek Squint-Eye**: TBD - Stand behind him in close range to avoid stun.\n'
-        luvek = '**Lúvek I the Rueful**: TBD - +100% melee damage and crit chance.\n'
-        oiko = '**Óiko I the Bellower**: TBD - TBD \n'
-        kamluz = '**Kamluz II Stoneface**: TBD - TBD \n'
+        luvek = '**Lúvek I the Rueful**: "I am watching you..." - +100% melee damage and crit chance on himself.\n'
+        oiko = '**Óiko I the Bellower**: TBD - Induction that increases dwarfs\' damage.\n'
+        kamluz = '**Kamluz II Stoneface**: TBD - +100% incoming melee damage and crit chance on random player. \n'
         dobruz2 = '**Dóbruz II Stark-heart**: "The Zhelruka clan is mine to protect." - Allies take -50% incoming damage, must be interrupted.\n'
-        brantokh2 = '**Brántokh II the Sunderer**: "Cower before the might of the Zhelruka."/"I will bring this mountain down." - 20m AoE.\n'
+        brantokh2 = '**Brántokh II the Sunderer**: "I\'ll bring this mountain down on your heads!" - 20m AoE.\n'
         brunek = '**Brúnek I Clovenbow**: "Taste my axes!" - DoT on random person until interrupted.\n'
         rurek = '**Rúrek VI the Shamed**: "What have I done?"/"I have failed my people." - Bubble on dwarf.\n'
         brantokh = '**Brántokh I Cracktooth**: "Want to know why they call me cracktooth?" - AoE swipe (low damage)'
