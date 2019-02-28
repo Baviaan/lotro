@@ -51,6 +51,20 @@ emojis = OrderedDict()
 # List that will contain the raid posts
 raids = list()
 
+async def background_task():
+    await client.wait_until_ready()
+    await asyncio.sleep(10) # Wait while on_ready() initialises variables
+    while not client.is_closed:
+        current_time = datetime.datetime.now()
+        delta_time = datetime.timedelta(seconds=120) # Increase value before live
+        # Copy the list to iterate over.
+        for raid in raids[:]:
+            if raid['TIME'] + delta_time < current_time:
+                await client.delete_message(raid['POST'])
+                raids.remove(raid)
+        await asyncio.sleep(60) # Increase value before live
+
+
 # Delete the last n messages from the channel.
 # 100 is discord API limit.
 async def clear_channel(channel,number):
@@ -310,4 +324,5 @@ async def on_message(message):
     # Saruman has the last word!
     await bid_five(message)
 
+client.loop.create_task(background_task())
 client.run(token)
