@@ -5,6 +5,7 @@ import discord
 import json
 import datetime
 import dateparser
+import re
 
 from collections import OrderedDict
 
@@ -18,7 +19,7 @@ if not testing:
     print('Continuing')
 
 client = discord.Client()
-version = "v1.1.2"
+version = "v1.2.0"
 
 # Load the config file
 with open('config.json', 'r') as f:
@@ -48,7 +49,7 @@ class_roles = OrderedDict()
 emojis = OrderedDict()
 
 # List that will contain the raid posts
-raid_post = list()
+raids = list()
 
 # Delete the last n messages from the channel.
 # 100 is discord API limit.
@@ -151,19 +152,46 @@ async def command(message):
 
 def usr_str2time(time_string):
     if 'server' in time_string:
-        #strip off server and return as US Eastern time
-        time_string = time_string.replace('server','')
+        #strip off server (time) and return as US Eastern time
+        time_string = time_string.partition('server')[0]
         time = dateparser.parse(time_string, settings={'PREFER_DATES_FROM': 'future','TIMEZONE': 'US/Eastern', 'RETURN_AS_TIMEZONE_AWARE': True})
     else:
         time = dateparser.parse(time_string, settings={'PREFER_DATES_FROM': 'future'})
     return time
+
+def build_raid_message(raid,text):
+    embed = discord.Embed(title='{0} T{1} at {2}'.format(raid['NAME'],raid['TIER'],raid['TIME']), colour = discord.Colour(0x3498db), description='Bosses: {0}'.format(raid['BOSS']))
+    embed.add_field(name='The following {0} players are available:'.format(len(raid['AVAILABLE'])),value=text)
+    return embed
+
+def build_raid_message_players(available):
+    msg = ''
+    for user,value in available.items():
+        msg = msg + value['DISPLAY_NAME'] + ' '
+        for emoji in value['CLASSES']:
+            msg = msg + str(emoji)
+        msg = msg + '\n'
+    return msg
+
+async def update_raid_post(raid,reaction,user):
+    if not user.name in raid['AVAILABLE']:
+        raid['AVAILABLE'][user.name] = {}
+        raid['AVAILABLE'][user.name]['CLASSES'] = {reaction.emoji}
+        raid['AVAILABLE'][user.name]['DISPLAY_NAME'] = user.display_name
+    else:
+        raid['AVAILABLE'][user.name]['CLASSES'] = raid['AVAILABLE'][user.name]['CLASSES'].union({reaction.emoji})
+    msg = build_raid_message_players(raid['AVAILABLE'])
+    embed = build_raid_message(raid,msg)
+    post = await client.edit_message(raid['POST'], embed=embed)
+    raid['POST'] = post
+    return raid
 
 # Process commands for the raid channel
 async def raid_command(message):
     if message.content.startswith('!raid'):
         arguments = message.content.split(" ",4)
         if len(arguments) != 5:
-            await client.send_message(message.channel, 'Usage: !raid <name> <tier> <bosses> <time>\nExample: `!raid Anvil 2 all 4pm server`')
+            await client.send_message(message.channel, 'Usage: !raid <name> <tier> <bosses> <time>\nExamples:\n`!raid Anvil 2 all Friday 4pm server`\n`!raid anvil t3 2-4 21:00`\nDay/timezone will default to today/UTC if not specified.')
             return
         time = usr_str2time(arguments[4])
         if time is None:
@@ -171,21 +199,23 @@ async def raid_command(message):
             await asyncio.sleep(20)
             await client.delete_message(msg)
             return
+        tier = re.search(r'\d+',arguments[2]) # Filter out non-numbers
         raid = {
         'NAME': arguments[1].capitalize(),
-        'TIER': arguments[2],
+        'TIER': tier.group(), # Get the string from the match object
         'BOSS': arguments[3],
-        'TIME': time
+        'TIME': time,
+        'AVAILABLE': {}
         }
-        embed = discord.Embed(title='{0} T{1} at {2}'.format(raid['NAME'],raid['TIER'],raid['TIME']), colour = discord.Colour(0x3498db), description='Bosses: {0}'.format(raid['BOSS']))
-
+        embed = build_raid_message(raid,'\u200b')
         post = await client.send_message(message.channel, embed=embed) # Should format output
         await add_emoji_pin(post)
-        raid_post.append(post)
+        raid['POST'] = post
+        raids.append(raid)
 
 async def bid_five(message):
     # I wonder what unexpected words this is going to trigger on
-    trigger = ['bid','offer']
+    trigger = ['bid','offer','COD','selling','buying']
     if any(word in message.content.lower() for word in trigger):
         await client.send_message(message.channel,'Isengard bids five!')
 
@@ -234,21 +264,27 @@ async def on_ready():
 
 @client.event
 async def on_reaction_add(reaction,user):
+    global raids
     # Check if the reaction isn't made by the bot.
     if user == client.user:
         return
-    # Check if the reaction is to the bot's post.
+    # Check if the reaction is to the bot's role post.
     if reaction.message.id == role_post.id:
         await add_role(reaction,user)
+    # Check if the reaction is to the bot's raid posts.
+    for raid in raids:
+        if reaction.message.id == raid['POST'].id:
+            raid = await update_raid_post(raid,reaction,user)
 
 @client.event
 async def on_reaction_remove(reaction,user):
     # Check if the reaction isn't made by the bot.
     if user == client.user:
         return
-    # Check if the reaction is to the bot's post.
+    # Check if the reaction is to the bot's role post.
     if reaction.message.id == role_post.id:
         await remove_role(reaction,user)
+    # Check if the reaction is to the bot's raid posts.
 
 @client.event
 async def on_message(message):
