@@ -120,6 +120,7 @@ async def show_class_roles(user):
         await client.send_message(command_channel,'{0} does not have any class roles assigned.'.format(user.mention))
 
 async def dwarves(channel):
+        # sends info about the 13 dwarves to channel
         ingor = '**Ingór I the Cruel**: "How much more can your mortal form take?" - Applies 1 stack of incoming healing debuff.\n'
         oiko2 = '**Óiko II Rill-Seeker**: "I seek the mithril stream." - Ice line\n'
         dobruz = '**Dóbruz IV the Unheeding**: "You look like a weakling."/"I challenge you." - Picks random target; requires force taunt.\n'
@@ -136,7 +137,7 @@ async def dwarves(channel):
         text = ingor+oiko2+dobruz+mozun+kuzek+luvek+oiko+kamluz+dobruz2+brantokh2+brunek+rurek+brantokh
         await client.send_message(channel,text)
 
-# Process commands for class role channel
+# Process commands for command channel
 async def command(message):
     # Clear the posts in the channel.
     if message.content.startswith('!clear'):
@@ -151,6 +152,8 @@ async def command(message):
         await dwarves(message.channel)
 
 def usr_str2time(time_string):
+    # Takes a user provided string as input and attempts to parse it to a time object.
+    # Returns None if parse fails.
     if 'server' in time_string:
         #strip off server (time) and return as US Eastern time
         time_string = time_string.partition('server')[0]
@@ -160,11 +163,13 @@ def usr_str2time(time_string):
     return time
 
 def build_raid_message(raid,text):
+    # takes raid dictionary as input and prepares the embed using text for the text field.
     embed = discord.Embed(title='{0} T{1} at {2}'.format(raid['NAME'],raid['TIER'],raid['TIME']), colour = discord.Colour(0x3498db), description='Bosses: {0}'.format(raid['BOSS']))
     embed.add_field(name='The following {0} players are available:'.format(len(raid['AVAILABLE'])),value=text)
     return embed
 
 def build_raid_message_players(available):
+    # Takes the available players dictionary as input and puts them in a string with their classes.
     msg = ''
     for user,value in available.items():
         msg = msg + value['DISPLAY_NAME'] + ' '
@@ -174,6 +179,8 @@ def build_raid_message_players(available):
     return msg
 
 async def update_raid_post(raid,reaction,user):
+    # Takes the raid dictionary, a reaction and user as input.
+    # Stores the new data and edits the raid message.
     if not user.name in raid['AVAILABLE']:
         raid['AVAILABLE'][user.name] = {}
         raid['AVAILABLE'][user.name]['CLASSES'] = {reaction.emoji}
@@ -188,14 +195,15 @@ async def update_raid_post(raid,reaction,user):
 
 # Process commands for the raid channel
 async def raid_command(message):
+    # Takes a message as input and if successfully parsed sends a raid message and stores the raid dictionary.
     if message.content.startswith('!raid'):
         arguments = message.content.split(" ",4)
-        if len(arguments) != 5:
+        if len(arguments) < 5:
             await client.send_message(message.channel, 'Usage: !raid <name> <tier> <bosses> <time>\nExamples:\n`!raid Anvil 2 all Friday 4pm server`\n`!raid anvil t3 2-4 21:00`\nDay/timezone will default to today/UTC if not specified.')
             return
         time = usr_str2time(arguments[4])
         if time is None:
-            msg = await client.send_message(message.channel, 'I did not understand the specified time. Please try again.')
+            msg = await client.send_message(message.channel, 'I did not understand the specified time: "{0}". Please try again.'.format(arguments[4]))
             await asyncio.sleep(20)
             await client.delete_message(msg)
             return
@@ -207,8 +215,9 @@ async def raid_command(message):
         'TIME': time,
         'AVAILABLE': {}
         }
-        embed = build_raid_message(raid,'\u200b')
-        post = await client.send_message(message.channel, embed=embed) # Should format output
+        embed = build_raid_message(raid,'\u200b') # discord doesn't allow empty embeds
+        post = await client.send_message(message.channel, embed=embed)
+        # Add the class emojis and pin the post
         await add_emoji_pin(post)
         raid['POST'] = post
         raids.append(raid)
