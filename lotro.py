@@ -236,8 +236,9 @@ def convert_local_time(time,convert_utc):
         time = time + offset
     return time
 
-async def time_parse_error(time,channel):
-        msg = await client.send_message(channel, 'I did not understand the specified time: "{0}". Please try again.'.format(time))
+async def parse_error(argument,value,channel):
+        text = 'I did not understand the specified ' + argument + ': "{0}". Please try again.'.format(value)
+        msg = await client.send_message(channel, text)
         await asyncio.sleep(20)
         await client.delete_message(msg)
 
@@ -286,9 +287,12 @@ async def raid_command(message):
             return
         time = usr_str2time(arguments[4])
         if time is None:
-            await time_parse_error(arguments[4],message.channel)
+            await parse_error('time',arguments[4],message.channel)
             return
         tier = re.search(r'\d+',arguments[2]) # Filter out non-numbers
+        if tier is None:
+            await parse_error('tier',arguments[2],message.channel)
+            return
         await create_raid(arguments[1].capitalize(),tier.group(),arguments[3].capitalize(),time,message.channel)
     if message.content.startswith('!anvil'):
         arguments = message.content.split(" ",2)
@@ -297,9 +301,12 @@ async def raid_command(message):
             return
         time = usr_str2time(arguments[2])
         if time is None:
-            await time_parse_error(arguments[2],message.channel)
+            await parse_error('time',arguments[2],message.channel)
             return
         tier = re.search(r'\d+',arguments[1]) # Filter out non-numbers
+        if tier is None:
+            await parse_error('tier',arguments[1],message.channel)
+            return
         await create_raid('Anvil',tier.group(),'All',time,message.channel)
 
 async def bid_five(message):
