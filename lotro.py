@@ -175,7 +175,8 @@ def usr_str2time(time_string):
     else:
         time = dateparser.parse(time_string, settings={'PREFER_DATES_FROM': 'future','RETURN_AS_TIMEZONE_AWARE': True})
     # return time in UTC
-    time = convert_local_time(time,True)
+    if time is not None:
+        time = convert_local_time(time,True)
     return time
 
 def build_raid_message(raid,text):
@@ -224,6 +225,12 @@ def convert_local_time(time,convert_utc):
         time = time + offset
     return time
 
+async def time_parse_error(time,channel):
+        msg = await client.send_message(channel, 'I did not understand the specified time: "{0}". Please try again.'.format(time))
+        await asyncio.sleep(20)
+        await client.delete_message(msg)
+
+
 async def update_raid_post(raid,reaction,user):
     # Takes the raid dictionary, a reaction and user as input.
     # Stores the new data and edits the raid message.
@@ -241,35 +248,48 @@ async def update_raid_post(raid,reaction,user):
     raid['POST'] = post
     return raid
 
+async def create_raid(name,tier,boss,time,channel):
+    raid = {
+    'NAME': name,
+    'TIER': tier,
+    'BOSS': boss,
+    'TIME': time,
+    'AVAILABLE': {}
+    }
+    embed = build_raid_message(raid,'\u200b') # discord doesn't allow empty embeds
+    post = await client.send_message(channel, embed=embed)
+    # Add the class emojis and pin the post
+    await add_emoji_pin(post)
+    await client.add_reaction(post,'\u274C')
+    raid['POST'] = post
+    raids.append(raid)
+
+
 # Process commands for the raid channel
 async def raid_command(message):
     # Takes a message as input and if successfully parsed sends a raid message and stores the raid dictionary.
     if message.content.startswith('!raid'):
         arguments = message.content.split(" ",4)
         if len(arguments) < 5:
-            await client.send_message(message.channel, 'Usage: !raid <name> <tier> <bosses> <time>\nExamples:\n`!raid Anvil 2 all Friday 4pm server`\n`!raid anvil t3 2-4 21:00`\nDay/timezone will default to today/UTC if not specified.')
+            await client.send_message(message.channel, 'Usage: !raid <name> <tier> <bosses> <time>\nExamples:\n`!raid Anvil 2 all Friday 4pm server`\n`!raid anvil t3 2-4 21:00`\nDay/timezone will default to today/UTC if not specified.\nUse `!anvil` to quickly set up an Anvil raid.')
             return
         time = usr_str2time(arguments[4])
         if time is None:
-            msg = await client.send_message(message.channel, 'I did not understand the specified time: "{0}". Please try again.'.format(arguments[4]))
-            await asyncio.sleep(20)
-            await client.delete_message(msg)
+            await time_parse_error(arguments[4],message.channel)
             return
         tier = re.search(r'\d+',arguments[2]) # Filter out non-numbers
-        raid = {
-        'NAME': arguments[1].capitalize(),
-        'TIER': tier.group(), # Get the string from the match object
-        'BOSS': arguments[3],
-        'TIME': time,
-        'AVAILABLE': {}
-        }
-        embed = build_raid_message(raid,'\u200b') # discord doesn't allow empty embeds
-        post = await client.send_message(message.channel, embed=embed)
-        # Add the class emojis and pin the post
-        await add_emoji_pin(post)
-        await client.add_reaction(post,'\u274C')
-        raid['POST'] = post
-        raids.append(raid)
+        await create_raid(arguments[1].capitalize(),tier.group(),arguments[3].capitalize(),time,message.channel)
+    if message.content.startswith('!anvil'):
+        arguments = message.content.split(" ",2)
+        if len(arguments) < 3:
+            await client.send_message(message.channel, 'Usage: !anvil <tier> <time>\nExample:\n`!anvil 2 Friday 4pm server`\nDay/timezone will default to today/UTC if not specified.\nUse `!raid` to specify a custom raid.')
+            return
+        time = usr_str2time(arguments[2])
+        if time is None:
+            await time_parse_error(arguments[2],message.channel)
+            return
+        tier = re.search(r'\d+',arguments[1]) # Filter out non-numbers
+        await create_raid('Anvil',tier.group(),'All',time,message.channel)
 
 async def bid_five(message):
     # I wonder what unexpected words this is going to trigger on
