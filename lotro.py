@@ -173,13 +173,22 @@ def usr_str2time(time_string):
         time_string = time_string.partition('server')[0]
         time = dateparser.parse(time_string, settings={'PREFER_DATES_FROM': 'future','TIMEZONE': 'US/Eastern', 'RETURN_AS_TIMEZONE_AWARE': True})
     else:
-        time = dateparser.parse(time_string, settings={'PREFER_DATES_FROM': 'future'})
+        time = dateparser.parse(time_string, settings={'PREFER_DATES_FROM': 'future','RETURN_AS_TIMEZONE_AWARE': True})
+    # return time in UTC
+    time = convert_local_time(time,True)
     return time
 
 def build_raid_message(raid,text):
     # takes raid dictionary as input and prepares the embed using text for the text field.
-    embed = discord.Embed(title='{0} T{1} at {2}'.format(raid['NAME'],raid['TIER'],raid['TIME']), colour = discord.Colour(0x3498db), description='Bosses: {0}'.format(raid['BOSS']))
+    time_string = build_time_string(raid['TIME'])
+    server_time = dateparser.parse(str(raid['TIME']), settings={'TIMEZONE': 'US/Eastern', 'RETURN_AS_TIMEZONE_AWARE': True})
+    server_time = convert_local_time(server_time,False)
+    header_time = server_time.strftime('%A %-I:%M %p server time')
+    embed = discord.Embed(title='{0} T{1} at {2}'.format(raid['NAME'],raid['TIER'],header_time), colour = discord.Colour(0x3498db), description='Bosses: {0}'.format(raid['BOSS']))
+    embed.add_field(name='Time zones:',value=time_string)
+    embed.add_field(name='\u200b',value='\u200b')
     embed.add_field(name='The following {0} players are available:'.format(len(raid['AVAILABLE'])),value=text)
+    embed.set_footer(text='{0}'.format(raid['TIME']))
     return embed
 
 def build_raid_message_players(available):
@@ -190,12 +199,37 @@ def build_raid_message_players(available):
         for emoji in value['CLASSES']:
             msg = msg + str(emoji)
         msg = msg + '\n'
+    if msg == '':
+        msg = '\u200b'
     return msg
+
+def build_time_string(time):
+    new_york_time = dateparser.parse(str(time), settings={'TIMEZONE': 'US/Eastern', 'RETURN_AS_TIMEZONE_AWARE': True})
+    new_york_time = convert_local_time(new_york_time,False)
+    london_time = dateparser.parse(str(time), settings={'TIMEZONE': 'Europe/London', 'RETURN_AS_TIMEZONE_AWARE': True})
+    london_time = convert_local_time(london_time,False)
+    sydney_time = dateparser.parse(str(time), settings={'TIMEZONE': 'Australia/Sydney', 'RETURN_AS_TIMEZONE_AWARE': True})
+    sydney_time = convert_local_time(sydney_time,False)
+    time_string = 'New York: ' + new_york_time.strftime('%A %-I:%M %p') + '\n' + 'London: ' + london_time.strftime('%A %-I:%M %p') + '\n' + 'Sydney: ' + sydney_time.strftime('%A %-I:%M %p')
+    return time_string
+
+def convert_local_time(time,convert_utc):
+    # Compute offset
+    offset = time.utcoffset()
+    # Strip time zone
+    time = time.replace(tzinfo=None)
+    if convert_utc:
+        time = time - offset
+    else:
+        time = time + offset
+    return time
 
 async def update_raid_post(raid,reaction,user):
     # Takes the raid dictionary, a reaction and user as input.
     # Stores the new data and edits the raid message.
-    if not user.name in raid['AVAILABLE']:
+    if reaction.emoji == '\u274C':
+        raid['AVAILABLE'].pop(user.name, None)
+    elif not user.name in raid['AVAILABLE']:
         raid['AVAILABLE'][user.name] = {}
         raid['AVAILABLE'][user.name]['CLASSES'] = {reaction.emoji}
         raid['AVAILABLE'][user.name]['DISPLAY_NAME'] = user.display_name
@@ -233,6 +267,7 @@ async def raid_command(message):
         post = await client.send_message(message.channel, embed=embed)
         # Add the class emojis and pin the post
         await add_emoji_pin(post)
+        await client.add_reaction(post,'\u274C')
         raid['POST'] = post
         raids.append(raid)
 
