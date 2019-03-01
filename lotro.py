@@ -361,7 +361,7 @@ async def on_ready():
 
     await asyncio.sleep(1)
     # Add old raid messages to cache.
-    for raid in raids:
+    for raid in raids[:]:
         try:
             message = await client.get_message(raid_channel,(raid['POST'].id))
             client.messages.append(message)
