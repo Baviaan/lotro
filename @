@@ -56,9 +56,6 @@ try:
 except (OSError,IOError) as e:
     raids = list()
 
-print('We have the following raid data in memory:')
-print(raids)
-
 async def background_task():
     await client.wait_until_ready()
     await asyncio.sleep(10) # Wait while on_ready() initialises variables
@@ -351,18 +348,10 @@ async def on_ready():
     await asyncio.sleep(1)
     await prepare_channel(command_channel)
 
-    await asyncio.sleep(1)
-    # Add old raid messages to cache.
-    for raid in raids:
-        try:
-            message = await client.get_message(raid_channel,(raid['POST'].id))
-            client.messages.append(message)
-        except (discord.errors.NotFound) as e:
-            raids.remove(raid)
-            print('Removed raid from raids as the raid post no longer exists.')
-
 @client.event
-async def on_reaction_add(reaction,user):
+async def on_raw_reaction_add(payload):
+    print('A reaction!')
+    message = discord.TextChannel(id=payload.channel_id).get_message(payload.message_id)
     global raids
     # Check if the reaction isn't made by the bot.
     if user == client.user:
