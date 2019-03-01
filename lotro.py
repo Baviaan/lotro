@@ -293,7 +293,7 @@ async def raid_command(message):
 
 async def bid_five(message):
     # I wonder what unexpected words this is going to trigger on
-    trigger = ['bid','offer','COD','selling','buying']
+    trigger = ['bid','offer','COD','selling','buying','wts','wtb']
     if any(word in message.content.lower() for word in trigger):
         await client.send_message(message.channel,'Isengard bids five!')
 
