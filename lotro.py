@@ -206,9 +206,9 @@ def build_raid_message(raid,text):
 def build_raid_message_players(available):
     # Takes the available players dictionary as input and puts them in a string with their classes.
     msg = ''
-    for user,value in available.items():
-        msg = msg + value['DISPLAY_NAME'] + ' '
-        for emoji in value['CLASSES']:
+    for user in available.values():
+        msg = msg + user['DISPLAY_NAME'] + ' '
+        for emoji in user['CLASSES']:
             msg = msg + str(emoji)
         msg = msg + '\n'
     if msg == '':
