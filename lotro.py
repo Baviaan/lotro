@@ -65,7 +65,7 @@ async def background_task():
     await asyncio.sleep(10) # Wait while on_ready() initialises variables
     while not client.is_closed:
         current_time = datetime.datetime.now()
-        delta_time = datetime.timedelta(seconds=120) # Increase value before live
+        delta_time = datetime.timedelta(seconds=7200)
         # Copy the list to iterate over.
         for raid in raids[:]:
             if raid['TIME'] + delta_time < current_time:
@@ -74,7 +74,7 @@ async def background_task():
         # Save raids to file
         with open('raids.pkl', 'wb') as f:
             pickle.dump(raids, f)
-        await asyncio.sleep(60) # Increase value before live
+        await asyncio.sleep(3600)
 
 
 # Delete the last n messages from the channel.
