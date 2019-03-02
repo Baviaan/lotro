@@ -335,6 +335,12 @@ async def bid_five(message):
     if any(word in message.content.lower() for word in trigger):
         await client.send_message(message.channel,'Isengard bids five!')
 
+async def get_channel(server,name):
+    channel = discord.utils.get(server.channels, name=name)
+    if channel is None:
+        channel = await client.create_channel(server, name, type=discord.ChannelType.text)
+    return channel
+
 @client.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
@@ -347,6 +353,7 @@ async def on_ready():
     global emojis
     global command_channel
     global raid_channel
+    global lobby_channel
 
     # Get the custom emojis.
     all_emojis = list(client.get_all_emojis())
@@ -367,12 +374,9 @@ async def on_ready():
 
     # Get the channels that will be used to issue commands by users.
     # Creates the channel if it does not yet exist.
-    command_channel = discord.utils.get(server.channels, name='saruman')
-    if command_channel is None:
-        command_channel = await client.create_channel(server, 'saruman', type=discord.ChannelType.text)
-    raid_channel = discord.utils.get(server.channels, name='raids')
-    if raid_channel is None:
-        raid_channel = await client.create_channel(server, 'raids', type=discord.ChannelType.text)
+    command_channel = get_channel(server,'saruman')
+    raid_channel = get_channel(server,'raids')
+    lobby_channel = get_channel(server,'lobby')
 
     # Wait a bit to give Discord time to create the channel before we start using it.
     await asyncio.sleep(1)
@@ -421,7 +425,7 @@ async def on_message(message):
     if message.channel == command_channel:
         await command(message)
     # Check if message is sent in raid channel
-    elif message.channel == raid_channel:
+    elif message.channel == raid_channel or message.channel == lobby_channel:
         await raid_command(message)
 
     # Saruman has the last word!
