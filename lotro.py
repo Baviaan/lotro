@@ -269,9 +269,13 @@ async def update_raid_post(raid,reaction,user):
         raid['AVAILABLE'][user.name] = {}
         raid['AVAILABLE'][user.name]['CLASSES'] = {reaction.emoji}
         raid['AVAILABLE'][user.name]['DISPLAY_NAME'] = user.display_name
+        print('Added ' + str(reaction.emoji) + ' to ' + user.name)
     elif reaction.emoji in emojis.values():
         raid['AVAILABLE'][user.name]['CLASSES'] = raid['AVAILABLE'][user.name]['CLASSES'].union({reaction.emoji})
+        print('Added ' + str(reaction.emoji) + ' to ' + user.name)
     msg = build_raid_message_players(raid['AVAILABLE'])
+    for partial_msg in msg:
+        print(partial_msg)
     embed = build_raid_message(raid,msg)
     try:
         post = await client.edit_message(raid['POST'], embed=embed)
