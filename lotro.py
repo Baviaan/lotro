@@ -11,7 +11,7 @@ import pickle
 
 from collections import OrderedDict
 
-testing = False
+testing = True
 
 if not testing:
     # On boot the pi launches the bot faster than it gets internet access.
@@ -21,7 +21,8 @@ if not testing:
     print('Continuing')
 
 client = discord.Client()
-version = "v1.2.0"
+version = "v1.2.1"
+print("Running " + version)
 
 # Load the config file
 with open('config.json', 'r') as f:
@@ -200,20 +201,35 @@ def build_raid_message(raid,text):
     embed = discord.Embed(title='{0} T{1} at {2}'.format(raid['NAME'],raid['TIER'],header_time), colour = discord.Colour(0x3498db), description='Bosses: {0}'.format(raid['BOSS']))
     embed.add_field(name='Time zones:',value=time_string)
     embed.add_field(name='\u200b',value='\u200b')
-    embed.add_field(name='The following {0} players are available:'.format(len(raid['AVAILABLE'])),value=text)
+    for i in range(len(text)):
+        if i == 0:
+            embed.add_field(name='The following {0} players are available:'.format(len(raid['AVAILABLE'])),value=text[i])
+        else:
+            embed.add_field(name='\u200b',value=text[i])
     embed.set_footer(text='{0}'.format(raid['TIME']))
     return embed
 
 def build_raid_message_players(available):
     # Takes the available players dictionary as input and puts them in a string with their classes.
-    msg = ''
+    # Initialise.
+    if len(available) == 0:
+        number_of_fields = 1
+    else:
+        number_of_fields = ((len(available)-1) // 6) + 1
+    msg = []
+    for i in range(number_of_fields):
+        msg.append('')
+    number_of_players = 0
+    # Fill the fields.
     for user in available.values():
-        msg = msg + user['DISPLAY_NAME'] + ' '
+        index = number_of_players // 6
+        number_of_players = number_of_players + 1
+        msg[index] = msg[index] + user['DISPLAY_NAME'] + ' '
         for emoji in user['CLASSES']:
-            msg = msg + str(emoji)
-        msg = msg + '\n'
-    if msg == '':
-        msg = '\u200b'
+            msg[index] = msg[index] + str(emoji)
+        msg[index] = msg[index] + '\n'
+    if msg[0] == '':
+        msg[0] = '\u200b'
     return msg
 
 def build_time_string(time):
@@ -257,7 +273,10 @@ async def update_raid_post(raid,reaction,user):
         raid['AVAILABLE'][user.name]['CLASSES'] = raid['AVAILABLE'][user.name]['CLASSES'].union({reaction.emoji})
     msg = build_raid_message_players(raid['AVAILABLE'])
     embed = build_raid_message(raid,msg)
-    post = await client.edit_message(raid['POST'], embed=embed)
+    try:
+        post = await client.edit_message(raid['POST'], embed=embed)
+    except (discord.errors.HTTPException) as e:
+        await client.send_message(reaction.message.channel,'I failed to process your request.')
     raid['POST'] = post
     return raid
 
