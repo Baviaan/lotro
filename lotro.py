@@ -374,9 +374,9 @@ async def on_ready():
 
     # Get the channels that will be used to issue commands by users.
     # Creates the channel if it does not yet exist.
-    command_channel = get_channel(server,'saruman')
-    raid_channel = get_channel(server,'raids')
-    lobby_channel = get_channel(server,'lobby')
+    command_channel = await get_channel(server,'saruman')
+    raid_channel = await get_channel(server,'raids')
+    lobby_channel = await get_channel(server,'lobby')
 
     # Wait a bit to give Discord time to create the channel before we start using it.
     await asyncio.sleep(1)
