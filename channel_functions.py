@@ -1,3 +1,5 @@
+import discord
+
 # Delete the last n messages from the channel.
 # 100 is discord API limit.
 async def clear_channel(client,channel,number):
