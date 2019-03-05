@@ -357,6 +357,7 @@ async def on_ready():
     global emojis
     global command_channel
     global raid_channel
+    global raid3_channel
     global lobby_channel
 
     # Get the custom emojis.
