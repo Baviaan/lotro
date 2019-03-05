@@ -11,6 +11,7 @@ import pickle
 
 from collections import OrderedDict
 from text_functions import dwarves, bid_five
+from channel_functions import clear_channel, get_channel
 
 testing = True
 
@@ -78,22 +79,15 @@ async def background_task():
             pickle.dump(raids, f)
         await asyncio.sleep(3600)
 
-
-# Delete the last n messages from the channel.
-# 100 is discord API limit.
-async def clear_channel(channel,number):
-    async for msg in client.logs_from(channel, limit = number):
-        await client.delete_message(msg)
-
 async def add_emoji_pin(post):
     # adds the class emojis to a post and pins the post
-    for key, value in emojis.items():
+    for value in emojis.values():
         await client.add_reaction(post,value)
     await client.pin_message(post)
 
 # Cleans up the channel, adds the initial post, adds reactions and pins the post.
 async def prepare_channel(channel):
-    await clear_channel(channel,100)
+    await clear_channel(client,channel,100)
 
     global role_post
     message_content = 'Please mute this bot command channel or lose your sanity like me.\n\nReact to this post with each class you want to sign up for or click \u274C to remove all your class roles.\n\n*Further commands that can be used in this channel*:\n`!roles` Shows which class roles you currently have.\n`!dwarves` Shows a list of the 13 dwarves in the Anvil raid with their associated skills. (Work in progress.)'
@@ -316,12 +310,6 @@ async def raid_command(message):
             return
         await create_raid('Anvil',tier.group(),'All',time,message.channel)
 
-async def get_channel(server,name):
-    channel = discord.utils.get(server.channels, name=name)
-    if channel is None:
-        channel = await client.create_channel(server, name, type=discord.ChannelType.text)
-    return channel
-
 @client.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
@@ -356,10 +344,10 @@ async def on_ready():
 
     # Get the channels that will be used to issue commands by users.
     # Creates the channel if it does not yet exist.
-    command_channel = await get_channel(server,'saruman')
-    raid_channel = await get_channel(server,'raids')
-    raid3_channel = await get_channel(server,'t3raid')
-    lobby_channel = await get_channel(server,'lobby')
+    command_channel = await get_channel(client,server,'saruman')
+    raid_channel = await get_channel(client,server,'raids')
+    raid3_channel = await get_channel(client,server,'t3raid')
+    lobby_channel = await get_channel(client,server,'lobby')
 
     # Wait a bit to give Discord time to create the channel before we start using it.
     await asyncio.sleep(1)
