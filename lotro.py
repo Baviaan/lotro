@@ -380,6 +380,7 @@ async def on_ready():
     # Creates the channel if it does not yet exist.
     command_channel = await get_channel(server,'saruman')
     raid_channel = await get_channel(server,'raids')
+    raid3_channel = await get_channel(server,'t3raid')
     lobby_channel = await get_channel(server,'lobby')
 
     # Wait a bit to give Discord time to create the channel before we start using it.
@@ -429,7 +430,7 @@ async def on_message(message):
     if message.channel == command_channel:
         await command(message)
     # Check if message is sent in raid channel
-    elif message.channel == raid_channel or message.channel == lobby_channel:
+    elif message.channel == raid_channel or message.channel == lobby_channel or message.channel == raid3_channel:
         await raid_command(message)
 
     # Saruman has the last word!
