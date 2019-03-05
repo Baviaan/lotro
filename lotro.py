@@ -10,6 +10,7 @@ import re
 import pickle
 
 from collections import OrderedDict
+from text_functions import dwarves, bid_five
 
 testing = True
 
@@ -21,7 +22,7 @@ if not testing:
     print('Continuing')
 
 client = discord.Client()
-version = "v1.2.1"
+version = "v1.2.2"
 print("Running " + version)
 
 # Load the config file
@@ -146,24 +147,6 @@ async def show_class_roles(user):
     else:
         await client.send_message(command_channel,'{0} does not have any class roles assigned.'.format(user.mention))
 
-async def dwarves(channel):
-        # sends info about the 13 dwarves to channel
-        ingor = '**Ingór I the Cruel**: "How much more can your mortal form take?" - Applies 1 stack of incoming healing debuff.\n'
-        oiko2 = '**Óiko II Rill-Seeker**: "I seek the mithril stream." - Ice line\n'
-        dobruz = '**Dóbruz IV the Unheeding**: "You look like a weakling."/"I challenge YOU!" - Picks random target; requires force taunt.\n'
-        mozun = '**Mozun III Wyrmbane**: "I will not abide a worm to live." - Summons worm.\n'
-        kuzek = '**Kúzek Squint-Eye**: TBD - Stand behind him in close range to avoid stun.\n'
-        luvek = '**Lúvek I the Rueful**: "I am watching you..." - +100% melee damage and crit chance on himself.\n'
-        oiko = '**Óiko I the Bellower**: TBD - Induction that increases dwarfs\' damage.\n'
-        kamluz = '**Kamluz II Stoneface**: TBD - +100% incoming melee damage and crit chance on random player. \n'
-        dobruz2 = '**Dóbruz II Stark-heart**: "The Zhelruka clan is mine to protect." - Allies take -50% incoming damage, must be interrupted.\n'
-        brantokh2 = '**Brántokh II the Sunderer**: "I\'ll bring this mountain down on your heads!" - 20m AoE.\n'
-        brunek = '**Brúnek I Clovenbow**: "Taste my axes!" - DoT on random person until interrupted.\n'
-        rurek = '**Rúrek VI the Shamed**: "What have I done?"/"I have failed my people." - Bubble on dwarf.\n'
-        brantokh = '**Brántokh I Cracktooth**: "Want to know why they call me cracktooth?" - AoE swipe (low damage).'
-        text = ingor+oiko2+dobruz+mozun+kuzek+luvek+oiko+kamluz+dobruz2+brantokh2+brunek+rurek+brantokh
-        await client.send_message(channel,text)
-
 # Process commands for command channel
 async def command(message):
     # Clear the posts in the channel.
@@ -176,7 +159,7 @@ async def command(message):
     elif message.content.startswith('!roles'):
         await show_class_roles(message.author)
     elif message.content.startswith('!dwarves'):
-        await dwarves(message.channel)
+        await dwarves(client,message.channel)
 
 def usr_str2time(time_string):
     # Takes a user provided string as input and attempts to parse it to a time object.
@@ -333,12 +316,6 @@ async def raid_command(message):
             return
         await create_raid('Anvil',tier.group(),'All',time,message.channel)
 
-async def bid_five(message):
-    # I wonder what unexpected words this is going to trigger on
-    trigger = ['bid','offer','COD','selling','buying','wts','wtb']
-    if any(word in message.content.lower() for word in trigger):
-        await client.send_message(message.channel,'Isengard bids five!')
-
 async def get_channel(server,name):
     channel = discord.utils.get(server.channels, name=name)
     if channel is None:
@@ -435,7 +412,7 @@ async def on_message(message):
         await raid_command(message)
 
     # Saruman has the last word!
-    await bid_five(message)
+    await bid_five(client,message)
 
 client.loop.create_task(background_task())
 client.run(token)
