@@ -5,7 +5,6 @@ import discord
 import json
 import time
 import datetime
-import dateparser
 import re
 import pickle
 
@@ -14,6 +13,7 @@ from text_functions import dwarves, bid_five
 from channel_functions import get_channel, add_emoji_pin
 from role_functions import prepare_channel, add_role, remove_role, show_class_roles
 from raid_string_functions import usr_str2time, build_raid_message, build_raid_message_players, convert_local_time, build_time_string
+from raid_async_functions import parse_error, create_raid, update_raid_post
 
 testing = True
 
@@ -96,54 +96,9 @@ async def command(message):
     elif message.content.startswith('!dwarves'):
         await dwarves(client,message.channel)
 
-async def parse_error(argument,value,channel):
-        text = 'I did not understand the specified ' + argument + ': "{0}". Please try again.'.format(value)
-        msg = await client.send_message(channel, text)
-        await asyncio.sleep(20)
-        await client.delete_message(msg)
-
-async def update_raid_post(raid,reaction,user):
-    # Takes the raid dictionary, a reaction and user as input.
-    # Stores the new data and edits the raid message.
-    if reaction.emoji == '\u274C':
-        raid['AVAILABLE'].pop(user.name, None)
-    elif not user.name in raid['AVAILABLE'] and reaction.emoji in emojis.values():
-        raid['AVAILABLE'][user.name] = {}
-        raid['AVAILABLE'][user.name]['CLASSES'] = {reaction.emoji}
-        raid['AVAILABLE'][user.name]['DISPLAY_NAME'] = user.display_name
-        print('Added ' + reaction.emoji.name + ' to ' + user.name)
-    elif reaction.emoji in emojis.values():
-        raid['AVAILABLE'][user.name]['CLASSES'] = raid['AVAILABLE'][user.name]['CLASSES'].union({reaction.emoji})
-        print('Added ' + reaction.emoji.name + ' to ' + user.name)
-    msg = build_raid_message_players(raid['AVAILABLE'])
-    for partial_msg in msg:
-        print(partial_msg)
-    embed = build_raid_message(raid,msg)
-    try:
-        post = await client.edit_message(raid['POST'], embed=embed)
-    except (discord.errors.HTTPException) as e:
-        await client.send_message(reaction.message.channel,'I failed to process your request.')
-    raid['POST'] = post
-    return raid
-
-async def create_raid(name,tier,boss,time,channel):
-    raid = {
-    'NAME': name,
-    'TIER': tier,
-    'BOSS': boss,
-    'TIME': time,
-    'AVAILABLE': {}
-    }
-    embed = build_raid_message(raid,'\u200b') # discord doesn't allow empty embeds
-    post = await client.send_message(channel, embed=embed)
-    # Add the class emojis and pin the post
-    await add_emoji_pin(client,emojis,post)
-    await client.add_reaction(post,'\u274C')
-    raid['POST'] = post
-    raids.append(raid)
-
 # Process commands for the raid channel
 async def raid_command(message):
+    global raids
     # Takes a message as input and if successfully parsed sends a raid message and stores the raid dictionary.
     if message.content.startswith('!raid'):
         arguments = message.content.split(" ",4)
@@ -152,13 +107,14 @@ async def raid_command(message):
             return
         time = usr_str2time(arguments[4])
         if time is None:
-            await parse_error('time',arguments[4],message.channel)
+            await parse_error(client,'time',arguments[4],message.channel)
             return
         tier = re.search(r'\d+',arguments[2]) # Filter out non-numbers
         if tier is None:
-            await parse_error('tier',arguments[2],message.channel)
+            await parse_error(client,'tier',arguments[2],message.channel)
             return
-        await create_raid(arguments[1].capitalize(),tier.group(),arguments[3].capitalize(),time,message.channel)
+        raid = await create_raid(client,arguments[1].capitalize(),tier.group(),arguments[3].capitalize(),time,message.channel)
+        raids.append(raid)
     if message.content.startswith('!anvil'):
         arguments = message.content.split(" ",2)
         if len(arguments) < 3:
@@ -166,13 +122,14 @@ async def raid_command(message):
             return
         time = usr_str2time(arguments[2])
         if time is None:
-            await parse_error('time',arguments[2],message.channel)
+            await parse_error(client,'time',arguments[2],message.channel)
             return
         tier = re.search(r'\d+',arguments[1]) # Filter out non-numbers
         if tier is None:
-            await parse_error('tier',arguments[1],message.channel)
+            await parse_error(client,'tier',arguments[1],message.channel)
             return
-        await create_raid('Anvil',tier.group(),'All',time,message.channel)
+        raid = await create_raid(client,'Anvil',tier.group(),'All',time,message.channel)
+        raids.append(raid)
 
 @client.event
 async def on_ready():
@@ -240,7 +197,7 @@ async def on_reaction_add(reaction,user):
     # Check if the reaction is to the bot's raid posts.
     for raid in raids:
         if reaction.message.id == raid['POST'].id:
-            raid = await update_raid_post(raid,reaction,user)
+            raid = await update_raid_post(client,raid,reaction,user)
 
 @client.event
 async def on_reaction_remove(reaction,user):
