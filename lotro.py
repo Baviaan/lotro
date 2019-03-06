@@ -15,7 +15,7 @@ from role_functions import prepare_channel, add_role, remove_role, show_class_ro
 from raid_string_functions import usr_str2time
 from raid_async_functions import parse_error, create_raid, update_raid_post
 
-testing = True
+testing = False
 
 if not testing:
     # On boot the pi launches the bot faster than it gets internet access.
@@ -113,7 +113,7 @@ async def raid_command(message):
         if tier is None:
             await parse_error(client,'tier',arguments[2],message.channel)
             return
-        raid = await create_raid(client,arguments[1].capitalize(),tier.group(),arguments[3].capitalize(),time,message.channel)
+        raid = await create_raid(client,emojis,arguments[1].capitalize(),tier.group(),arguments[3].capitalize(),time,message.channel)
         raids.append(raid)
     if message.content.startswith('!anvil'):
         arguments = message.content.split(" ",2)
@@ -128,7 +128,7 @@ async def raid_command(message):
         if tier is None:
             await parse_error(client,'tier',arguments[1],message.channel)
             return
-        raid = await create_raid(client,'Anvil',tier.group(),'All',time,message.channel)
+        raid = await create_raid(client,emojis,'Anvil',tier.group(),'All',time,message.channel)
         raids.append(raid)
 
 @client.event
@@ -197,7 +197,7 @@ async def on_reaction_add(reaction,user):
     # Check if the reaction is to the bot's raid posts.
     for raid in raids:
         if reaction.message.id == raid['POST'].id:
-            raid = await update_raid_post(client,raid,reaction,user)
+            raid = await update_raid_post(client,emojis,raid,reaction,user)
 
 @client.event
 async def on_reaction_remove(reaction,user):

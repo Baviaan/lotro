@@ -9,7 +9,7 @@ async def parse_error(client,argument,value,channel):
         await asyncio.sleep(20)
         await client.delete_message(msg)
 
-async def create_raid(client,name,tier,boss,time,channel):
+async def create_raid(client,emojis,name,tier,boss,time,channel):
     raid = {
     'NAME': name,
     'TIER': tier,
@@ -25,7 +25,7 @@ async def create_raid(client,name,tier,boss,time,channel):
     raid['POST'] = post
     return raid
 
-async def update_raid_post(client,raid,reaction,user):
+async def update_raid_post(client,emojis,raid,reaction,user):
     # Takes the raid dictionary, a reaction and user as input.
     # Stores the new data and edits the raid message.
     if reaction.emoji == '\u274C':
