@@ -11,7 +11,8 @@ import pickle
 
 from collections import OrderedDict
 from text_functions import dwarves, bid_five
-from channel_functions import clear_channel, get_channel
+from channel_functions import get_channel, add_emoji_pin
+from role_functions import prepare_channel, add_role, remove_role, show_class_roles
 
 testing = True
 
@@ -79,79 +80,18 @@ async def background_task():
             pickle.dump(raids, f)
         await asyncio.sleep(3600)
 
-async def add_emoji_pin(post):
-    # adds the class emojis to a post and pins the post
-    for value in emojis.values():
-        await client.add_reaction(post,value)
-    await client.pin_message(post)
-
-# Cleans up the channel, adds the initial post, adds reactions and pins the post.
-async def prepare_channel(channel):
-    await clear_channel(client,channel,100)
-
-    global role_post
-    message_content = 'Please mute this bot command channel or lose your sanity like me.\n\nReact to this post with each class you want to sign up for or click \u274C to remove all your class roles.\n\n*Further commands that can be used in this channel*:\n`!roles` Shows which class roles you currently have.\n`!dwarves` Shows a list of the 13 dwarves in the Anvil raid with their associated skills. (Work in progress.)'
-    role_post = await client.send_message(channel, message_content)
-    await add_emoji_pin(role_post)
-    await client.add_reaction(role_post,'\u274C')
-
-async def add_role(reaction,user):
-    # Check if the reaction emoji matches any of our class emojis.
-    for key,value in emojis.items():
-        if reaction.emoji == value:
-            # Add user to the class role.
-            await client.add_roles(user, class_roles[key])
-            # Send confirmation message.
-            await client.send_message(reaction.message.channel, 'Added {0} to @{1}.'.format(user.mention,class_roles[key]))
-    # Check if the reaction emoji is the cancel emoji
-    if reaction.emoji == '\u274C':
-        # Send a message because this will take 5s.
-        await client.send_message(reaction.message.channel, 'Removing...')
-        # Remove the user from all class roles.
-        for key,value in class_roles.items():
-            await client.remove_roles(user, value)
-            # Discord rate limits requests; drops requests if too fast.
-            await asyncio.sleep(0.5)
-        # Send confirmation message.
-        await client.send_message(reaction.message.channel, 'Removed {0} from all class roles.'.format(user.mention))
-
-async def remove_role(reaction,user):
-    # Check if the reaction emoji matches any of our class emojis.
-    for key,value in emojis.items():
-        if reaction.emoji == value:
-            # Remove user from the class role.
-            await client.remove_roles(user, class_roles[key])
-            # Send confirmation message.
-            await client.send_message(reaction.message.channel, 'Removed {0} from @{1}.'.format(user.mention,class_roles[key]))
-
-# Checks which class roles the user has and sends these to the class roles channel.
-async def show_class_roles(user):
-    send = '{0} has the following class roles: '.format(user.mention)
-    has_class_role = False
-    # Build string to send
-    for key,value in class_roles.items():
-        if value in user.roles:
-            send = send + value.name + ', '
-            has_class_role = True
-    # leet formatting skills
-    send = send[:-2]
-    send = send + '.'
-    if has_class_role:
-        await client.send_message(command_channel,send)
-    else:
-        await client.send_message(command_channel,'{0} does not have any class roles assigned.'.format(user.mention))
-
 # Process commands for command channel
 async def command(message):
+    global role_post
     # Clear the posts in the channel.
     if message.content.startswith('!clear'):
         # Check if user has sufficient permissions for this command
         if message.author.server_permissions.administrator or message.author.id == ownerid:
             # Reset the channel
-            await prepare_channel(message.channel)
+            role_post = await prepare_channel(client,emojis,message.channel)
     # Return class roles for the user.
     elif message.content.startswith('!roles'):
-        await show_class_roles(message.author)
+        await show_class_roles(client,class_roles,message)
     elif message.content.startswith('!dwarves'):
         await dwarves(client,message.channel)
 
@@ -272,7 +212,7 @@ async def create_raid(name,tier,boss,time,channel):
     embed = build_raid_message(raid,'\u200b') # discord doesn't allow empty embeds
     post = await client.send_message(channel, embed=embed)
     # Add the class emojis and pin the post
-    await add_emoji_pin(post)
+    await add_emoji_pin(client,emojis,post)
     await client.add_reaction(post,'\u274C')
     raid['POST'] = post
     raids.append(raid)
@@ -320,6 +260,7 @@ async def on_ready():
 
     global class_roles
     global emojis
+    global role_post
     global command_channel
     global raid_channel
     global raid3_channel
@@ -351,7 +292,7 @@ async def on_ready():
 
     # Wait a bit to give Discord time to create the channel before we start using it.
     await asyncio.sleep(1)
-    await prepare_channel(command_channel)
+    role_post = await prepare_channel(client,emojis,command_channel)
 
     await asyncio.sleep(1)
     # Add old raid messages to cache.
@@ -371,7 +312,7 @@ async def on_reaction_add(reaction,user):
         return
     # Check if the reaction is to the bot's role post.
     if reaction.message.id == role_post.id:
-        await add_role(reaction,user)
+        await add_role(client,emojis,class_roles,reaction,user)
     # Check if the reaction is to the bot's raid posts.
     for raid in raids:
         if reaction.message.id == raid['POST'].id:
@@ -384,7 +325,7 @@ async def on_reaction_remove(reaction,user):
         return
     # Check if the reaction is to the bot's role post.
     if reaction.message.id == role_post.id:
-        await remove_role(reaction,user)
+        await remove_role(client,emojis,class_roles,reaction,user)
     # Check if the reaction is to the bot's raid posts.
 
 @client.event

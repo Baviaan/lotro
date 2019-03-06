@@ -6,6 +6,12 @@ async def clear_channel(client,channel,number):
     async for msg in client.logs_from(channel, limit = number):
         await client.delete_message(msg)
 
+async def add_emoji_pin(client,emojis,post):
+    # adds the class emojis to a post and pins the post
+    for value in emojis.values():
+        await client.add_reaction(post,value)
+    await client.pin_message(post)
+
 # Gets the channel from server and creates it if it does not exist.
 async def get_channel(client,server,name):
     channel = discord.utils.get(server.channels, name=name)
