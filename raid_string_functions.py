@@ -56,18 +56,6 @@ def build_raid_message_players(available):
         msg[0] = '\u200b'
     return msg
 
-def convert_local_time(time,convert_utc):
-    # Compute offset
-    offset = time.utcoffset()
-    # Strip time zone
-    time = time.replace(tzinfo=None)
-    if convert_utc:
-        time = time - offset
-    else:
-        time = time + offset
-    return time
-
-
 def build_time_string(time):
     new_york_time = dateparser.parse(str(time), settings={'TIMEZONE': 'US/Eastern', 'RETURN_AS_TIMEZONE_AWARE': True})
     new_york_time = convert_local_time(new_york_time,False)
@@ -78,3 +66,13 @@ def build_time_string(time):
     time_string = 'New York: ' + new_york_time.strftime('%A %-I:%M %p') + '\n' + 'London: ' + london_time.strftime('%A %-I:%M %p') + '\n' + 'Sydney: ' + sydney_time.strftime('%A %-I:%M %p')
     return time_string
 
+def convert_local_time(time,convert_utc):
+    # Compute offset
+    offset = time.utcoffset()
+    # Strip time zone
+    time = time.replace(tzinfo=None)
+    if convert_utc:
+        time = time - offset
+    else:
+        time = time + offset
+    return time

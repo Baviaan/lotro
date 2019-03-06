@@ -12,7 +12,7 @@ from collections import OrderedDict
 from text_functions import dwarves, bid_five
 from channel_functions import get_channel, add_emoji_pin
 from role_functions import prepare_channel, add_role, remove_role, show_class_roles
-from raid_string_functions import usr_str2time, build_raid_message, build_raid_message_players, convert_local_time, build_time_string
+from raid_string_functions import usr_str2time
 from raid_async_functions import parse_error, create_raid, update_raid_post
 
 testing = True
