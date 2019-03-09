@@ -26,7 +26,7 @@ if not testing:
     print('Continuing')
 
 client = discord.Client()
-version = "v1.2.2"
+version = "v1.3.0"
 print("Running " + version)
 
 # Load the config file
