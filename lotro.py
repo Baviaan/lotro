@@ -14,6 +14,7 @@ from channel_functions import get_channel, add_emoji_pin
 from role_functions import prepare_channel, add_role, remove_role, show_class_roles
 from raid_string_functions import usr_str2time
 from raid_async_functions import parse_error, create_raid, update_raid_post
+from apply_functions import kin_app
 
 testing = False
 
@@ -95,6 +96,8 @@ async def command(message):
         await show_class_roles(client,class_roles,message)
     elif message.content.startswith('!dwarves'):
         await dwarves(client,message.channel)
+    elif message.content.startswith('!apply'):
+        await kin_app(client,message,apply_channel)
 
 # Process commands for the raid channel
 async def raid_command(message):
@@ -146,6 +149,7 @@ async def on_ready():
     global raid_channel
     global raid3_channel
     global lobby_channel
+    global apply_channel
 
     # Get the custom emojis.
     all_emojis = list(client.get_all_emojis())
@@ -170,6 +174,7 @@ async def on_ready():
     raid_channel = await get_channel(client,server,'raids')
     raid3_channel = await get_channel(client,server,'t3raid')
     lobby_channel = await get_channel(client,server,'lobby')
+    apply_channel = await get_channel(client,server,'applications')
 
     # Wait a bit to give Discord time to create the channel before we start using it.
     await asyncio.sleep(1)

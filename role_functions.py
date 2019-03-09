@@ -7,7 +7,7 @@ from channel_functions import clear_channel, add_emoji_pin
 async def prepare_channel(client,emojis,channel):
     await clear_channel(client,channel,100)
 
-    message_content = 'Please mute this bot command channel or lose your sanity like me.\n\nReact to this post with each class you want to sign up for or click \u274C to remove all your class roles.\n\n*Further commands that can be used in this channel*:\n`!roles` Shows which class roles you currently have.\n`!dwarves` Shows a list of the 13 dwarves in the Anvil raid with their associated skills. (Work in progress.)'
+    message_content = 'Please mute this bot command channel or lose your sanity like me.\n\nReact to this post with each class you want to sign up for or click \u274C to remove all your class roles.\n\n*Further commands that can be used in this channel*:\n`!roles` Shows which class roles you currently have.\n`!dwarves` Shows a list of the 13 dwarves in the Anvil raid with their associated skills. (Work in progress.)\n`!apply` to apply to Reckoning.'
     role_post = await client.send_message(channel, message_content)
     await add_emoji_pin(client,emojis,role_post)
     await client.add_reaction(role_post,'\u274C')
