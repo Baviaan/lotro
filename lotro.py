@@ -143,6 +143,7 @@ async def on_ready():
     print('Welcome to {0}'.format(server))
 
     global class_roles
+    global raid_leader_role
     global emojis
     global role_post
     global command_channel
@@ -157,6 +158,11 @@ async def on_ready():
         if class_role is None:
             class_role = await client.create_role(server, name=value, mentionable=True)
         class_roles[key] = class_role
+
+    # Initialise raid leader role.
+    raid_leader_role = discord.utils.get(server.roles, name="Raid Leader")
+    if raid_leader_role is None:
+        raid_leader_role = await client.create_role(server, name="Raid Leader")
 
     # Initialise the class emojis in the emoji dictionary.
     # Assumes class emoji name is equal to class role name.
@@ -201,7 +207,12 @@ async def on_reaction_add(reaction,user):
     # Check if the reaction is to the bot's raid posts.
     for raid in raids:
         if reaction.message.id == raid['POST'].id:
-            raid = await update_raid_post(client,emojis,raid,reaction,user)
+            if raid_leader_role in user.roles:
+                is_raid_leader = True
+            else:
+                is_raid_leader = False
+            print(is_raid_leader)
+            raid = await update_raid_post(client,emojis,raid,reaction,user,is_raid_leader)
 
 @client.event
 async def on_reaction_remove(reaction,user):

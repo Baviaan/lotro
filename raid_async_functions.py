@@ -1,6 +1,6 @@
 import discord
 import asyncio
-from raid_string_functions import build_raid_message, build_raid_message_players
+from raid_string_functions import build_raid_message, build_raid_message_players, usr_str2time
 from channel_functions import add_emoji_pin
 
 async def parse_error(client,argument,value,channel):
@@ -22,15 +22,27 @@ async def create_raid(client,emojis,name,tier,boss,time,channel):
     post = await client.send_message(channel, embed=embed)
     # Add the class emojis and pin the post
     await add_emoji_pin(client,emojis,post)
-    await client.add_reaction(post,'\u274C')
+    await client.add_reaction(post,'\u274C') # cancel emoji
+    await client.add_reaction(post,'\u23F2') # timer emoji
     raid['POST'] = post
     return raid
 
-async def update_raid_post(client,emojis,raid,reaction,user):
+async def update_raid_post(client,emojis,raid,reaction,user,is_raid_leader):
     # Takes the raid dictionary, a reaction and user as input.
     # Stores the new data and edits the raid message.
+    channel = reaction.message.channel
     if reaction.emoji == '\u274C':
         raid['AVAILABLE'].pop(user.name, None)
+    elif reaction.emoji == '\u23F2' and is_raid_leader:
+        await client.send_message(channel,"Please specify the new raid time.")
+        response = await client.wait_for_message(author=user,timeout=300)
+        if response is None:
+            return
+        time = usr_str2time(response.content)
+        if time is None:
+            await parse_error(client,'time',response.content,channel)
+            return
+        raid['TIME'] = time
     elif not user.name in raid['AVAILABLE'] and reaction.emoji in emojis.values():
         raid['AVAILABLE'][user.name] = {}
         raid['AVAILABLE'][user.name]['CLASSES'] = {reaction.emoji}
@@ -46,7 +58,7 @@ async def update_raid_post(client,emojis,raid,reaction,user):
     try:
         post = await client.edit_message(raid['POST'], embed=embed)
     except (discord.errors.HTTPException) as e:
-        await client.send_message(reaction.message.channel,'I failed to process your request.')
+        await client.send_message(channel,'I failed to process your request.')
     raid['POST'] = post
     return raid
 
