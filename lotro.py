@@ -13,7 +13,7 @@ from text_functions import dwarves, bid_five
 from channel_functions import get_channel, add_emoji_pin
 from role_functions import prepare_channel, add_role, remove_role, show_class_roles
 from raid_string_functions import usr_str2time
-from raid_async_functions import parse_error, create_raid, update_raid_post
+from raid_async_functions import parse_error, create_raid, update_raid_post, add_message
 from apply_functions import kin_app
 
 testing = False
@@ -26,7 +26,7 @@ if not testing:
     print('Continuing')
 
 client = discord.Client()
-version = "v1.3.0"
+version = "v1.3.1"
 print("Running " + version)
 
 # Load the config file
@@ -183,12 +183,14 @@ async def on_ready():
     await asyncio.sleep(1)
     # Add old raid messages to cache.
     for raid in raids[:]:
-        try:
-            message = await client.get_message(raid_channel,(raid['POST'].id))
-            client.messages.append(message)
-        except (discord.errors.NotFound) as e:
+        found = await add_message(client,raid_channel,raid['POST'].id)
+        if not found:
+            found = await add_message(client,raid3_channel,raid['POST'].id)
+        if not found:
+            found = await add_message(client,lobby_channel,raid['POST'].id)
+        if not found:
             raids.remove(raid)
-            print('Removed raid from raids as the raid post no longer exists.')
+            print('Removed raid from raids as the raid post {0} no longer exists.'.format(raid['POST'].id))
 
 @client.event
 async def on_reaction_add(reaction,user):

@@ -48,3 +48,15 @@ async def update_raid_post(client,emojis,raid,reaction,user):
         await client.send_message(reaction.message.channel,'I failed to process your request.')
     raid['POST'] = post
     return raid
+
+async def add_message(client,channel,msg_id):
+    found = False
+    try:
+        message = await client.get_message(channel,msg_id)
+    except discord.errors.NotFound:
+        pass
+    else:
+        client.messages.append(message)
+        found = True
+        print("Added raid post back to cache!")
+    return found
