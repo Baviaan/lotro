@@ -26,7 +26,7 @@ if not testing:
     print('Continuing')
 
 client = discord.Client()
-version = "v1.3.1"
+version = "v1.3.2"
 print("Running " + version)
 
 # Load the config file
@@ -151,22 +151,20 @@ async def on_ready():
     global lobby_channel
     global apply_channel
 
-    # Get the custom emojis.
-    all_emojis = list(client.get_all_emojis())
-
     # Initialise class roles and create roles if they do not exist yet.
     for key, value in role_names.items():
         class_role = discord.utils.get(server.roles, name=value)
         if class_role is None:
             class_role = await client.create_role(server, name=value, mentionable=True)
         class_roles[key] = class_role
+
     # Initialise the class emojis in the emoji dictionary.
     # Assumes class emoji name is equal to class role name.
     # Quadratic runtime is poor performance for this. // Should rewrite
-    for e in all_emojis:
+    for emoji in server.emojis:
         for key, value in role_names.items():
-            if e.name == value:
-                emojis[key] = e
+            if emoji.name == value:
+                emojis[key] = emoji
 
     # Get the channels that will be used to issue commands by users.
     # Creates the channel if it does not yet exist.
@@ -180,7 +178,6 @@ async def on_ready():
     await asyncio.sleep(1)
     role_post = await prepare_channel(client,emojis,command_channel)
 
-    await asyncio.sleep(1)
     # Add old raid messages to cache.
     for raid in raids[:]:
         found = await add_message(client,raid_channel,raid['POST'].id)

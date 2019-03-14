@@ -4,10 +4,11 @@ from raid_string_functions import build_raid_message, build_raid_message_players
 from channel_functions import add_emoji_pin
 
 async def parse_error(client,argument,value,channel):
-        text = 'I did not understand the specified ' + argument + ': "{0}". Please try again.'.format(value)
-        msg = await client.send_message(channel, text)
-        await asyncio.sleep(20)
-        await client.delete_message(msg)
+    text = 'I did not understand the specified ' + argument + ': "{0}". Please try again.'.format(value)
+    print(text)
+    msg = await client.send_message(channel, text)
+    await asyncio.sleep(20)
+    await client.delete_message(msg)
 
 async def create_raid(client,emojis,name,tier,boss,time,channel):
     raid = {
