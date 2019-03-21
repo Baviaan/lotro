@@ -247,6 +247,10 @@ async def on_message(message):
             msg = await client.get_message(message.channel,msg_id)
             await client.delete_message(msg)
 
+    if message.content.startswith("!save"):
+        with open('raids.pkl', 'wb') as f:
+        pickle.dump(raids, f)
+
     # Saruman has the last word!
     await bid_five(client,message)
 
