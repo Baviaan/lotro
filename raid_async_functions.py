@@ -56,10 +56,9 @@ async def update_raid_post(client,emojis,raid,reaction,user,is_raid_leader):
         print(partial_msg)
     embed = build_raid_message(raid,msg)
     try:
-        post = await client.edit_message(raid['POST'], embed=embed)
+        await client.edit_message(raid['POST'], embed=embed)
     except (discord.errors.HTTPException) as e:
         await client.send_message(channel,'I failed to process your request.')
-    raid['POST'] = post
     return raid
 
 async def add_message(client,channel,msg_id):

@@ -7,6 +7,7 @@ import time
 import datetime
 import re
 import pickle
+import logging
 
 from collections import OrderedDict
 from text_functions import dwarves, bid_five
@@ -16,8 +17,9 @@ from raid_string_functions import usr_str2time
 from raid_async_functions import parse_error, create_raid, update_raid_post, add_message
 from apply_functions import kin_app
 
-testing = False
+logging.basicConfig(level=logging.INFO)
 
+testing = False
 if not testing:
     # On boot the pi launches the bot faster than it gets internet access.
     # Avoid all resulting host not found errors
@@ -236,8 +238,19 @@ async def on_message(message):
     elif message.channel == raid_channel or message.channel == lobby_channel or message.channel == raid3_channel:
         await raid_command(message)
 
+    if message.content.startswith("!delete"):
+        if message.author.server_permissions.administrator or message.author.id == ownerid:
+            command = message.content.split(" ",2)
+            msg_id = command[1]
+            msg = await client.get_message(message.channel,msg_id)
+            await client.delete_message(msg)
+
     # Saruman has the last word!
     await bid_five(client,message)
 
 client.loop.create_task(background_task())
 client.run(token)
+
+# Save raids if client closes
+with open('raids.pkl', 'wb') as f:
+    pickle.dump(raids, f)
