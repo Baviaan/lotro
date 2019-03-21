@@ -250,6 +250,7 @@ async def on_message(message):
     if message.content.startswith("!save"):
         with open('raids.pkl', 'wb') as f:
             pickle.dump(raids, f)
+        await client.send_message(message.channel,"Saved the raids to file.")
 
     # Saruman has the last word!
     await bid_five(client,message)
