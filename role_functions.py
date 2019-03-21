@@ -29,7 +29,7 @@ async def add_role(client,emojis,class_roles,reaction,user):
         for key,value in class_roles.items():
             await client.remove_roles(user, value)
             # Discord rate limits requests; drops requests if too fast.
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(0.3)
         # Send confirmation message.
         await client.send_message(reaction.message.channel, 'Removed {0} from all class roles.'.format(user.mention))
 

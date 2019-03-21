@@ -183,7 +183,7 @@ async def on_ready():
     apply_channel = await get_channel(client,server,'applications')
 
     # Wait a bit to give Discord time to create the channel before we start using it.
-    await asyncio.sleep(1)
+    await asyncio.sleep(0.5)
     role_post = await prepare_channel(client,emojis,command_channel)
 
     # Add old raid messages to cache.
