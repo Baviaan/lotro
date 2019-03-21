@@ -143,6 +143,8 @@ async def on_ready():
 
     server = client.get_server(id=serverid)
     print('Welcome to {0}'.format(server))
+    print('The time is:')
+    print(datetime.datetime.now())
 
     global class_roles
     global raid_leader_role
