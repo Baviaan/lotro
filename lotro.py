@@ -82,6 +82,7 @@ async def background_task():
         # Save raids to file
         with open('raids.pkl', 'wb') as f:
             pickle.dump(raids, f)
+        print("Saved raids to file.")
         await asyncio.sleep(3600)
 
 # Process commands for command channel
@@ -261,3 +262,5 @@ client.run(token)
 # Save raids if client closes
 with open('raids.pkl', 'wb') as f:
     pickle.dump(raids, f)
+print("Saved raids to file.")
+print("Shutting down.")
