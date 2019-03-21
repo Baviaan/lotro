@@ -28,7 +28,7 @@ if not testing:
     print('Continuing')
 
 client = discord.Client()
-version = "v1.3.2"
+version = "v1.3.3"
 print("Running " + version)
 
 # Load the config file
@@ -249,7 +249,7 @@ async def on_message(message):
 
     if message.content.startswith("!save"):
         with open('raids.pkl', 'wb') as f:
-        pickle.dump(raids, f)
+            pickle.dump(raids, f)
 
     # Saruman has the last word!
     await bid_five(client,message)
