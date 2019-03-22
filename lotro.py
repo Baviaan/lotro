@@ -28,7 +28,7 @@ if not testing:
     print('Continuing')
 
 client = discord.Client()
-version = "v1.3.3"
+version = "v1.3.4"
 print("Running " + version)
 
 # Load the config file
@@ -243,8 +243,8 @@ async def on_message(message):
 
     if message.content.startswith("!delete"):
         if message.author.server_permissions.administrator or message.author.id == ownerid:
-            command = message.content.split(" ",2)
-            msg_id = command[1]
+            argument = message.content.split(" ",2)
+            msg_id = argument[1]
             msg = await client.get_message(message.channel,msg_id)
             await client.delete_message(msg)
 
