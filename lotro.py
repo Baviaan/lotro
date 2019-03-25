@@ -77,7 +77,7 @@ bot = commands.Bot(command_prefix='!',case_insensitive=True)
 async def background_task():
     await bot.wait_until_ready()
     while not bot.is_closed():
-        await asyncio.sleep(60)
+        await asyncio.sleep(3600)
         current_time = datetime.datetime.now()
         delta_time = datetime.timedelta(seconds=7200)
         # Copy the list to iterate over.
