@@ -102,7 +102,7 @@ async def background_task():
 async def on_ready():
     print("We have logged in as {0.user}".format(bot))
     await bot.change_presence(activity=discord.Game(name=version))
-    guild = bot.get_guild(id=serverid)
+    guild = bot.get_guild(serverid)
     print('Welcome to {0}'.format(guild))
     print("The time is:")
     print(datetime.datetime.now())

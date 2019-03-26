@@ -3,7 +3,7 @@
     "BOT_TOKEN": "Token goes here"
   },
   "DISCORD": {
-    "SERVER_ID": "Server id goes here",
-    "OWNER_ID": "Owner id goes here"
+    "SERVER_ID": ############,
+    "OWNER_ID": ############
   }
 }
