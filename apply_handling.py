@@ -20,7 +20,7 @@ async def new_app(bot,message,apply_channel_name):
         response = "{0} you have not allowed me to send you a pm.".format(author.mention)
         await channel.send(response,delete_after=60)
         return
- 
+
     def check(msg):
         return msg.author == author
 
