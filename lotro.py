@@ -8,6 +8,7 @@ import json
 import logging
 import pickle
 
+from apply_handling import new_app
 from channel_handling import get_channel
 from dwarves import show_dwarves
 from initialise import initialise
@@ -22,7 +23,7 @@ logging.basicConfig(level=logging.INFO)
 launch_on_boot = False
 
 # print version number.
-version = "v2.0.0"
+version = "v2.0.1"
 print("Running " + version)
 
 # Load config file.
@@ -152,7 +153,7 @@ async def dwarves(ctx):
 
 @bot.command()
 async def apply(ctx):
-    await ctx.send("Apply is currently not working. Please speak to an officer directly.")
+    await new_app(bot,ctx.message,channel_names['APPLY'])
 
 @bot.command()
 async def raid(ctx,name,tier: Tier,boss,*,time: Time):
