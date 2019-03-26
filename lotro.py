@@ -141,7 +141,17 @@ async def on_reaction_remove(reaction,user):
 async def on_command_error(ctx,error):
     print("Command given: " + ctx.message.content)
     print(error)
-    await ctx.send(error,delete_after=10)
+    if isinstance(error, commands.NoPrivateMessage):
+        await ctx.send("Please use this command in a server.")
+    else:
+        await ctx.send(error,delete_after=10)
+
+@bot.check
+async def globally_block_dms(ctx):
+    if ctx.guild is None:
+        raise commands.NoPrivateMessage("No dm allowed!")
+    else:
+        return True
 
 @bot.command()
 async def roles(ctx):
@@ -166,6 +176,19 @@ async def anvil(ctx,tier: Tier,*,time: Time):
     raid = await raid_command(ctx,"Anvil",tier,"All",time,role_names)
     raids.append(raid)
     save(raids)
+
+@bot.command()
+@commands.is_owner()
+async def delete(ctx,msg_id: int):
+    msg = await ctx.channel.fetch_message(msg_id)
+    await ctx.message.delete()
+    await asyncio.sleep(0.25)
+    await msg.delete()
+
+@delete.error
+async def delete_error(ctx,error):
+    if isinstance(error, commands.NotOwner):
+        ctx.send("You do not have permission to use this command.")
 
 bot.loop.create_task(background_task())
 bot.run(token)
