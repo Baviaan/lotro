@@ -1,3 +1,4 @@
+import asyncio
 import discord
 
 async def show_roles(channel,author,role_names):
@@ -32,6 +33,6 @@ async def get_role(guild,role_name):
     # Gets the role. Creates the role if it does not exist.
     role = discord.utils.get(guild.roles, name=role_name)
     if role is None:
-        role = await guild.create_role(mentionable=True)
+        role = await guild.create_role(mentionable=True, name=role_name)
         await asyncio.sleep(0.5)
     return role
