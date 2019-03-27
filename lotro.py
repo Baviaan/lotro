@@ -23,7 +23,7 @@ logging.basicConfig(level=logging.INFO)
 launch_on_boot = False
 
 # print version number.
-version = "v2.0.1"
+version = "v2.1.0"
 print("Running " + version)
 
 # Load config file.
@@ -33,7 +33,6 @@ with open('config.json','r') as f:
 # Assign specified config values.
 token = config['DEFAULT']['BOT_TOKEN']
 serverid = config['DISCORD']['SERVER_ID']
-ownerid = config['DISCORD']['OWNER_ID']
 
 # Specify names for channels the bot will respond in.
 # These will be automatically created on the server if they do not exist.
@@ -48,6 +47,7 @@ channel_names = {
 # Specify names for class roles.
 # These will be automatically created on the server if they do not exist.
 role_names = ("Beorning","Burglar","Captain","Champion","Guardian","Hunter","Loremaster","Minstrel","Runekeeper","Warden")
+raid_leader_name = "Raid Leader"
 
 raids = []
 # Load the saved raid posts from file.
@@ -128,7 +128,7 @@ async def on_raw_reaction_add(payload):
     update = False
     for raid in raids:
         if payload.message_id == raid.post_id:
-            update = await raid_update(payload,guild,raid,role_names)
+            update = await raid_update(bot,payload,guild,raid,role_names,raid_leader_name)
             break
     if update:
         save(raids)

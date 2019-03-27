@@ -7,6 +7,7 @@ import re
 
 from initialise import add_emojis, get_role_emojis
 from raid import Raid
+from role_handling import get_role
 
 class Tier(commands.Converter):
     async def convert(self, ctx, argument):
@@ -18,6 +19,9 @@ class Tier(commands.Converter):
 
 class Time(commands.Converter):
     async def convert(self, ctx, argument):
+       return await self.converter(argument)
+
+    async def converter(self, argument):
        if "server" in argument:
            # Strip off server (time) and return as US Eastern
            argument = argument.partition("server")[0]
@@ -34,7 +38,7 @@ class Time(commands.Converter):
        if current_time + delta_time < time:
            error_message = "You are not allowed to post raids more than a month in advance."
            raise commands.BadArgument(error_message)
-       return(time)
+       return time
 
 async def raid_command(ctx,name,tier,boss,time,role_names):
     name = name.capitalize()
@@ -44,20 +48,45 @@ async def raid_command(ctx,name,tier,boss,time,role_names):
     post = await ctx.send(embed=embed)
     raid.set_post_id(post.id)
     emojis = await get_role_emojis(ctx.guild,role_names) 
-    # Add cancel emoji.
-    emojis.append("\u274C")
+    emojis.append("\u274C") # Cancel emoji
+    emojis.append("\u23F2") # Timer emoji
     await add_emojis(emojis,post)
     await asyncio.sleep(0.25)
     await post.pin()
     return raid
 
-async def raid_update(payload,guild,raid,role_names):
+async def raid_update(bot,payload,guild,raid,role_names,raid_leader_name):
     channel = guild.get_channel(payload.channel_id)
     user = guild.get_member(payload.user_id)
     emoji = payload.emoji
     emojis = await get_role_emojis(guild,role_names)
     update = False
-    if str(emoji) == "\u274C":
+
+    def check(msg):
+        return msg.author == user
+
+    if str(emoji) == "\u23F2":
+        raid_leader = await get_role(guild,raid_leader_name)
+        if raid_leader not in user.roles:
+            error_msg = "You do not have permission to change the raid time."
+            await channel.send(error_msg,delete_after=20)
+            return False
+        await channel.send("Please specify the new raid time.",delete_after=20)
+        try:
+            response = await bot.wait_for('message',check=check,timeout=300)
+        except asyncio.TimeoutError:
+            return False
+        try:
+            time = await Time().converter(response.content)
+        except commands.BadArgument:
+            error_msg = "Failed to parse time argument: " + response.content
+            channel.send(error_msg,delete_after=20)
+            return False
+        finally:
+            await response.delete()
+        raid.set_time(time)
+        update = True
+    elif str(emoji) == "\u274C":
         update = raid.remove_player(user)
     elif emoji in emojis:
         update = raid.add_player(user,emoji)
