@@ -23,7 +23,7 @@ logging.basicConfig(level=logging.INFO)
 launch_on_boot = False
 
 # print version number.
-version = "v2.1.0"
+version = "v2.1.1"
 print("Running " + version)
 
 # Load config file.
@@ -85,15 +85,16 @@ async def background_task():
         for raid in raids[:]:
             if raid.time + delta_time < current_time:
                 # Look for the channel in which the raid post is.
-                for channel in bot.get_all_channels():
-                    try:
-                        post = await channel.fetch_message(raid.post_id)
-                    except NotFound:
-                        continue
-                    else:
-                        await post.delete()
-                        print("Deleted old raid post.")
-                        break
+                for guild in bot.guilds:
+                    for channel in guild.text_channels:
+                        try:
+                            post = await channel.fetch_message(raid.post_id)
+                        except discord.NotFound:
+                            continue
+                        else:
+                            await post.delete()
+                            print("Deleted old raid post.")
+                            break
                 raids.remove(raid)
                 print("Deleted old raid.")
         # Save raids to file
