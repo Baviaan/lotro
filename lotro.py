@@ -89,7 +89,7 @@ async def background_task():
                     for channel in guild.text_channels:
                         try:
                             post = await channel.fetch_message(raid.post_id)
-                        except discord.NotFound:
+                        except (discord.NotFound, discord.Forbidden):
                             continue
                         else:
                             await post.delete()
