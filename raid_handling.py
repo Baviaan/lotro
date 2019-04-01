@@ -80,7 +80,7 @@ async def raid_update(bot,payload,guild,raid,role_names,raid_leader_name):
             time = await Time().converter(response.content)
         except commands.BadArgument:
             error_msg = "Failed to parse time argument: " + response.content
-            channel.send(error_msg,delete_after=20)
+            await channel.send(error_msg,delete_after=20)
             return False
         finally:
             await response.delete()
