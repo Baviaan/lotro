@@ -73,7 +73,8 @@ if launch_on_boot:
     asyncio.sleep(10)
 print("Continuing...")
 
-bot = commands.Bot(command_prefix='!',case_insensitive=True)
+prefix = "!"
+bot = commands.Bot(command_prefix=prefix,case_insensitive=True)
 
 async def background_task():
     await bot.wait_until_ready()
@@ -156,35 +157,53 @@ async def globally_block_dms(ctx):
 
 @bot.command()
 async def roles(ctx):
+    """Shows the class roles you have"""
     await show_roles(ctx.channel,ctx.author,role_names)
 
 @bot.command()
 async def dwarves(ctx):
+    """Shows abilities of dwarves in Anvil"""
     await show_dwarves(ctx.channel)
 
 @bot.command()
 async def apply(ctx):
+    """Apply to the kin"""
     await new_app(bot,ctx.message,channel_names['APPLY'])
 
 @bot.command()
 async def raid(ctx,name,tier: Tier,boss,*,time: Time):
+    """Schedules a raid"""
     raid = await raid_command(ctx,name,tier,boss,time,role_names)
     raids.append(raid)
     save(raids)
 
+raid_brief = "Schedules a raid"
+raid_description = "Schedules a raid. Day/timezone will default to today/UTC if not specified. You can use 'server' as timezone. Usage:"
+raid_example = "Examples:\n!raid Anvil 2 all Friday 4pm server\n!raid throne t3 2-4 21:00"
+raid.update(help=raid_example,brief=raid_brief,description=raid_description)
+
 @bot.command()
 async def anvil(ctx,tier: Tier,*,time: Time):
+    """Shortcut to schedule Anvil raid"""
     raid = await raid_command(ctx,"Anvil",tier,"All",time,role_names)
     raids.append(raid)
     save(raids)
 
+anvil_brief = "Shortcut to schedule an Anvil raid"
+anvil_description = "Schedules a raid with name 'Anvil' and bosses 'All'. Day/timezone will default to today/UTC if not specified. You can use 'server' as timezone. Usage:"
+anvil_example = "Examples:\n!anvil 2 Friday 4pm server\n!anvil t3 21:00 BST"
+anvil.update(help=anvil_example,brief=anvil_brief,description=anvil_description)
+
 @bot.command()
 @commands.is_owner()
 async def delete(ctx,msg_id: int):
+    """Deletes a message"""
     msg = await ctx.channel.fetch_message(msg_id)
     await ctx.message.delete()
     await asyncio.sleep(0.25)
     await msg.delete()
+
+delete.update(hidden=True)
 
 @delete.error
 async def delete_error(ctx,error):
