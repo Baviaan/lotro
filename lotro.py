@@ -23,7 +23,7 @@ logging.basicConfig(level=logging.INFO)
 launch_on_boot = False
 
 # print version number.
-version = "v2.1.2"
+version = "v2.1.3"
 print("Running " + version)
 
 # Load config file.
@@ -47,6 +47,7 @@ channel_names = {
 # Specify names for class roles.
 # These will be automatically created on the server if they do not exist.
 role_names = ("Beorning","Burglar","Captain","Champion","Guardian","Hunter","Loremaster","Minstrel","Runekeeper","Warden")
+boss_name = "witch_king"
 raid_leader_name = "Raid Leader"
 
 raids = []
@@ -130,7 +131,7 @@ async def on_raw_reaction_add(payload):
     update = False
     for raid in raids:
         if payload.message_id == raid.post_id:
-            update = await raid_update(bot,payload,guild,raid,role_names,raid_leader_name)
+            update = await raid_update(bot,payload,guild,raid,role_names,boss_name,raid_leader_name)
             break
     if update:
         save(raids)
@@ -173,7 +174,7 @@ async def apply(ctx):
 @bot.command()
 async def raid(ctx,name,tier: Tier,boss,*,time: Time):
     """Schedules a raid"""
-    raid = await raid_command(ctx,name,tier,boss,time,role_names)
+    raid = await raid_command(ctx,name,tier,boss,time,role_names,boss_name)
     raids.append(raid)
     save(raids)
 
@@ -185,7 +186,7 @@ raid.update(help=raid_example,brief=raid_brief,description=raid_description)
 @bot.command()
 async def anvil(ctx,tier: Tier,*,time: Time):
     """Shortcut to schedule Anvil raid"""
-    raid = await raid_command(ctx,"Anvil",tier,"All",time,role_names)
+    raid = await raid_command(ctx,"Anvil",tier,"All",time,role_names,boss_name)
     raids.append(raid)
     save(raids)
 

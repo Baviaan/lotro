@@ -40,7 +40,7 @@ class Time(commands.Converter):
            raise commands.BadArgument(error_message)
        return time
 
-async def raid_command(ctx,name,tier,boss,time,role_names):
+async def raid_command(ctx,name,tier,boss,time,role_names,boss_name):
     name = name.capitalize()
     boss = boss.capitalize()
     raid = Raid(name,tier,boss,time)
@@ -50,28 +50,47 @@ async def raid_command(ctx,name,tier,boss,time,role_names):
     emojis = await get_role_emojis(ctx.guild,role_names) 
     emojis.append("\u274C") # Cancel emoji
     emojis.append("\u23F2") # Timer emoji
+    boss_emoji = discord.utils.get(ctx.guild.emojis, name=boss_name)
+    emojis.append(boss_emoji)
     await add_emojis(emojis,post)
     await asyncio.sleep(0.25)
     await post.pin()
     return raid
 
-async def raid_update(bot,payload,guild,raid,role_names,raid_leader_name):
+async def raid_update(bot,payload,guild,raid,role_names,boss_name,raid_leader_name):
     channel = guild.get_channel(payload.channel_id)
     user = guild.get_member(payload.user_id)
     emoji = payload.emoji
     emojis = await get_role_emojis(guild,role_names)
+    boss_emoji = discord.utils.get(guild.emojis, name=boss_name)
     update = False
 
     def check(msg):
         return msg.author == user
 
+    if emoji == boss_emoji:
+        print("We want to update the raid boss.")
+        raid_leader = await get_role(guild,raid_leader_name)
+        if raid_leader not in user.roles:
+            error_msg = "You do not have permission to change the raid boss."
+            await channel.send(error_msg,delete_after=15)
+            return False
+        await channel.send("Please specify the new raid boss.",delete_after=15)
+        try:
+            response = await bot.wait_for('message',check=check,timeout=300)
+        except asyncio.TimeoutError:
+            return False
+        boss = response.content.capitalize()
+        await response.delete()
+        raid.set_boss(boss)
+        update = True
     if str(emoji) == "\u23F2":
         raid_leader = await get_role(guild,raid_leader_name)
         if raid_leader not in user.roles:
             error_msg = "You do not have permission to change the raid time."
-            await channel.send(error_msg,delete_after=20)
+            await channel.send(error_msg,delete_after=15)
             return False
-        await channel.send("Please specify the new raid time.",delete_after=20)
+        await channel.send("Please specify the new raid time.",delete_after=15)
         try:
             response = await bot.wait_for('message',check=check,timeout=300)
         except asyncio.TimeoutError:

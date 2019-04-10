@@ -25,6 +25,9 @@ class Raid(object):
     def set_time(self,time):
         self.time = time
 
+    def set_boss(self,boss):
+        self.boss = boss
+
     def players(self):
         return self.players
 
