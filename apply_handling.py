@@ -21,21 +21,11 @@ async def new_app(bot,message,apply_channel_name):
         await channel.send(response,delete_after=60)
         return
 
-    def check(msg):
-        return msg.author == author
-
     class_dm = "Please respond with your characters' names and classes."
-    await author.send(class_dm)
-    try:
-        class_reply = await bot.wait_for('message',check=check,timeout=300)
-    except asyncio.TimeoutError:
-        await author.send("Sorry, you took too long to respond.")
-        return
-
     raid_dm = "Please respond what times you are generally available for raiding (server time)."
-    await author.send(raid_dm)
     try:
-        raid_reply = await bot.wait_for('message',check=check,timeout=300)
+        class_reply = await interactive_dm(bot,class_dm,author)
+        raid_reply = await interactive_dm(bot,raid_dm,author)
     except asyncio.TimeoutError:
         await author.send("Sorry, you took too long to respond.")
         return
@@ -52,3 +42,13 @@ async def new_app(bot,message,apply_channel_name):
     else:
         dm = "Your application has been successfully submitted. An officer will be in touch soon!"
     await author.send(dm)
+
+async def interactive_dm(bot,dm,author):
+    # This returns the author's first message the bot can see...
+    # Should check if this message is a dm.
+    def check(msg):
+        return msg.author == author
+
+    await author.send(dm)
+    reply = await bot.wait_for('message',check=check,timeout=300)
+    return reply
