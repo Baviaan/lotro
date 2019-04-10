@@ -69,7 +69,6 @@ async def raid_update(bot,payload,guild,raid,role_names,boss_name,raid_leader_na
         return msg.author == user
 
     if emoji == boss_emoji:
-        print("We want to update the raid boss.")
         raid_leader = await get_role(guild,raid_leader_name)
         if raid_leader not in user.roles:
             error_msg = "You do not have permission to change the raid boss."
@@ -80,8 +79,9 @@ async def raid_update(bot,payload,guild,raid,role_names,boss_name,raid_leader_na
             response = await bot.wait_for('message',check=check,timeout=300)
         except asyncio.TimeoutError:
             return False
+        finally:
+            await response.delete()
         boss = response.content.capitalize()
-        await response.delete()
         raid.set_boss(boss)
         update = True
     if str(emoji) == "\u23F2":
