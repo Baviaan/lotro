@@ -71,7 +71,8 @@ async def raid_update(bot,payload,guild,raid,role_names,boss_name,raid_leader_na
     if emoji == boss_emoji:
         raid_leader = await get_role(guild,raid_leader_name)
         if raid_leader not in user.roles:
-            error_msg = "You do not have permission to change the raid boss."
+            error_msg = "You do not have permission to change the raid boss. This incident will be reported to Santa Claus."
+            print("Putting {0} on the naughty list.".format(user.name))
             await channel.send(error_msg,delete_after=15)
             return False
         await channel.send("Please specify the new raid boss.",delete_after=15)
@@ -87,7 +88,8 @@ async def raid_update(bot,payload,guild,raid,role_names,boss_name,raid_leader_na
     if str(emoji) == "\u23F2":
         raid_leader = await get_role(guild,raid_leader_name)
         if raid_leader not in user.roles:
-            error_msg = "You do not have permission to change the raid time."
+            error_msg = "You do not have permission to change the raid time. This incident will be reported to Santa Claus."
+            print("Putting {0} on the naughty list.".format(user.name))
             await channel.send(error_msg,delete_after=15)
             return False
         await channel.send("Please specify the new raid time.",delete_after=15)
