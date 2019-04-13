@@ -38,9 +38,6 @@ serverid = config['DISCORD']['SERVER_ID']
 # These will be automatically created on the server if they do not exist.
 channel_names = {
     'BOT': 'saruman',
-    'PUBLIC': 'lobby',
-    'RAID': 'raids',
-    'RAIDS2': 't3raid',
     'APPLY': 'applications'
 }
 
@@ -105,16 +102,23 @@ async def background_task():
 @bot.event
 async def on_ready():
     print("We have logged in as {0.user}".format(bot))
-    await bot.change_presence(activity=discord.Game(name=version))
-    guild = bot.get_guild(serverid)
-    print('Welcome to {0}'.format(guild))
     print("The time is:")
     print(datetime.datetime.now())
+    await bot.change_presence(activity=discord.Game(name=version))
+    for guild in bot.guilds:
+        print('Welcome to {0}'.format(guild))
 
-    # Initialise the role post in the bot channel.
-    bot_channel = await get_channel(guild,channel_names['BOT'])
-    global role_post
-    role_post = await initialise(guild,bot_channel,role_names)
+    global role_post_ids
+    role_post_ids = []
+    for guild in bot.guilds:
+        # Initialise the role post in the bot channel.
+        try:
+            bot_channel = await get_channel(guild,channel_names['BOT'])
+            role_post = await initialise(guild,bot_channel,role_names)
+        except discord.Forbidden:
+            print("Missing permissions for {0}".format(guild.name))
+        else:
+        role_post_ids.append(role_post.id)
     
 @bot.event
 async def on_reaction_add(reaction,user):
@@ -122,7 +126,7 @@ async def on_reaction_add(reaction,user):
     if user == bot.user:
         return 
     # Check if the reaction is to the role post.
-    if reaction.message.id == role_post.id:
+    if reaction.message.id in role_post_ids:
         await role_update(reaction,user,role_names)
 
 @bot.event
@@ -134,7 +138,7 @@ async def on_raw_reaction_add(payload):
             update = await raid_update(bot,payload,guild,raid,role_names,boss_name,raid_leader_name)
             break
     if update:
-        save(raids)
+        # save(raids)
 
 @bot.event
 async def on_reaction_remove(reaction,user):
