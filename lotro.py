@@ -118,7 +118,7 @@ async def on_ready():
         except discord.Forbidden:
             print("Missing permissions for {0}".format(guild.name))
         else:
-        role_post_ids.append(role_post.id)
+            role_post_ids.append(role_post.id)
     
 @bot.event
 async def on_reaction_add(reaction,user):
