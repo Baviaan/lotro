@@ -11,6 +11,9 @@ from role_handling import get_role
 
 class Tier(commands.Converter):
     async def convert(self, ctx, argument):
+        return await self.converter(argument)
+
+    async def converter(self, argument):
         tier = re.search(r'\d+',argument) # Filter out non-numbers
         if tier is None:
             raise commands.BadArgument("Failed to parse tier argument: " + argument)

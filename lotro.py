@@ -23,7 +23,7 @@ logging.basicConfig(level=logging.INFO)
 launch_on_boot = False
 
 # print version number.
-version = "v2.1.3"
+version = "v2.1.4"
 print("Running " + version)
 
 # Load config file.
@@ -184,15 +184,20 @@ raid_example = "Examples:\n!raid Anvil 2 all Friday 4pm server\n!raid throne t3 
 raid.update(help=raid_example,brief=raid_brief,description=raid_description)
 
 @bot.command()
-async def anvil(ctx,tier: Tier,*,time: Time):
+async def anvil(ctx,*,time: Time):
     """Shortcut to schedule Anvil raid"""
-    raid = await raid_command(ctx,"Anvil",tier,"All",time,role_names,boss_name)
-    raids.append(raid)
-    save(raids)
+    try:
+        tier = await Tier().converter(ctx.channel.name)
+    except commands.BadArgument:
+        await ctx.send("Channel name does not specify tier.")
+    else:
+        raid = await raid_command(ctx,"Anvil",tier,"All",time,role_names,boss_name)
+        raids.append(raid)
+        save(raids)
 
 anvil_brief = "Shortcut to schedule an Anvil raid"
-anvil_description = "Schedules a raid with name 'Anvil' and bosses 'All'. Day/timezone will default to today/UTC if not specified. You can use 'server' as timezone. Usage:"
-anvil_example = "Examples:\n!anvil 2 Friday 4pm server\n!anvil t3 21:00 BST"
+anvil_description = "Schedules a raid with name 'Anvil', tier from channel name and bosses 'All'. Day/timezone will default to today/UTC if not specified. You can use 'server' as timezone. Usage:"
+anvil_example = "Examples:\n!anvil Friday 4pm server\n!anvil 21:00 BST"
 anvil.update(help=anvil_example,brief=anvil_brief,description=anvil_description)
 
 @bot.command()
