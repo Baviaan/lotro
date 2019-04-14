@@ -1,10 +1,10 @@
 This is a discord bot aimed at making it easy to schedule raids in a discord server. It is developed for LotRO but could work for any game if you edit the class names in the config file.
 
-When the `!raid` command is called the bot will create an embed specifying the raid time in server time, New York's, London's and Sydney's time. It will add class emojis to this embed for users to interact with. When a user clicks on a class emoji it will update the embed listing the user's name and available classes. Moreover it will add a boss emoji and a timer emoji that allows the raid leader to change these values.
+When the `!raid` command is called the bot will create an embed specifying the raid time in server time, New York's, London's and Sydney's time. Server time is configurable. The bot will add class emojis to this embed for users to interact with. When a user clicks on a class emoji it will update the embed listing the user's nickname and available classes. Moreover it will add a boss emoji and a timer emoji that allows the raid leader to change these values.
 
 ![Screenshot](screenshots/raid.png)
 
-In addition the bot will create a "role post" that allows users to sign up for class roles by interacting through class emojis. There is also an experimental apply feature that asks a user two standard questions.
+In addition the bot will create a "role post" that allows users to sign up for mentionable class roles by interacting through class emojis. There is also an experimental apply feature that asks a user two standard questions.
 
 ![Screenshot](screenshots/role.png)
 
