@@ -6,5 +6,6 @@
     "APPLY": "applications"
   },
   "BOSS": "witch_king",
-  "LEADER": "Raid Leader"
+  "LEADER": "Raid Leader",
+  "SERVER_TZ": "US/Eastern"
 }

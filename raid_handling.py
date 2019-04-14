@@ -9,8 +9,6 @@ from initialise import add_emojis, get_role_emojis
 from raid import Raid
 from role_handling import get_role
 
-server_tz = "US/Eastern"
-
 class Tier(commands.Converter):
     async def convert(self, ctx, argument):
         return await self.converter(argument)
@@ -23,6 +21,9 @@ class Tier(commands.Converter):
         return tier
 
 class Time(commands.Converter):
+    def __init__(self,tz):
+        self.tz = tz
+
     async def convert(self, ctx, argument):
        return await self.converter(argument)
 
@@ -30,7 +31,7 @@ class Time(commands.Converter):
        if "server" in argument:
            # Strip off server (time) and return as server time
            argument = argument.partition("server")[0]
-           my_settings={'PREFER_DATES_FROM': 'future','TIMEZONE': server_tz, 'RETURN_AS_TIMEZONE_AWARE': True}
+           my_settings={'PREFER_DATES_FROM': 'future','TIMEZONE': self.tz, 'RETURN_AS_TIMEZONE_AWARE': True}
        else:
            my_settings={'PREFER_DATES_FROM': 'future', 'RETURN_AS_TIMEZONE_AWARE': True}
        time = dateparser.parse(argument,settings=my_settings)
@@ -45,11 +46,11 @@ class Time(commands.Converter):
            raise commands.BadArgument(error_message)
        return time
 
-async def raid_command(ctx,name,tier,boss,time,role_names,boss_name):
+async def raid_command(ctx,name,tier,boss,time,role_names,boss_name,server_tz):
     name = name.capitalize()
     boss = boss.capitalize()
     raid = Raid(name,tier,boss,time)
-    embed = build_raid_message(raid,"\u200B")
+    embed = build_raid_message(raid,"\u200B",server_tz)
     post = await ctx.send(embed=embed)
     raid.set_post_id(post.id)
     emojis = await get_role_emojis(ctx.guild,role_names) 
@@ -62,7 +63,7 @@ async def raid_command(ctx,name,tier,boss,time,role_names,boss_name):
     await post.pin()
     return raid
 
-async def raid_update(bot,payload,guild,raid,role_names,boss_name,raid_leader_name):
+async def raid_update(bot,payload,guild,raid,role_names,boss_name,raid_leader_name,server_tz):
     channel = guild.get_channel(payload.channel_id)
     user = guild.get_member(payload.user_id)
     emoji = payload.emoji
@@ -103,7 +104,7 @@ async def raid_update(bot,payload,guild,raid,role_names,boss_name,raid_leader_na
         except asyncio.TimeoutError:
             return False
         try:
-            time = await Time().converter(response.content)
+            time = await Time(server_tz).converter(response.content)
         except commands.BadArgument:
             error_msg = "Failed to parse time argument: " + response.content
             await channel.send(error_msg,delete_after=20)
@@ -117,7 +118,7 @@ async def raid_update(bot,payload,guild,raid,role_names,boss_name,raid_leader_na
     elif emoji in emojis:
         update = raid.add_player(user,emoji)
     msg = build_raid_players(raid.players)
-    embed = build_raid_message(raid,msg)
+    embed = build_raid_message(raid,msg,server_tz)
     post = await channel.fetch_message(raid.post_id)
     try:
         await post.edit(embed=embed)
@@ -140,7 +141,7 @@ def convert2Local(time):
     time = time + offset
     return time
 
-def build_raid_message(raid,embed_texts):
+def build_raid_message(raid,embed_texts,server_tz):
     server_time = local_time(raid.time,server_tz)
     header_time = server_time.strftime("%A %-I:%M %p server time")
     embed_title = "{0} {1} at {2}".format(raid.name,raid.tier,header_time)

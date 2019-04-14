@@ -26,7 +26,7 @@ launch_on_boot = False
 version = "v2.2.0"
 print("Running " + version)
 
-# print local timezone using mad hacks.
+# Get local timezone using mad hacks.
 local_tz = str(datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo)
 print("Default timezone: " + local_tz)
 
@@ -46,6 +46,9 @@ channel_names = config['CHANNELS']
 role_names = config['CLASSES']
 boss_name = config['BOSS']
 raid_leader_name = config['LEADER']
+
+# Get server timezone
+server_tz = config['SERVER_TZ']
 
 raids = []
 # Load the saved raid posts from file.
@@ -135,7 +138,7 @@ async def on_raw_reaction_add(payload):
     update = False
     for raid in raids:
         if payload.message_id == raid.post_id:
-            update = await raid_update(bot,payload,guild,raid,role_names,boss_name,raid_leader_name)
+            update = await raid_update(bot,payload,guild,raid,role_names,boss_name,raid_leader_name,server_tz)
             break
     # if update:
         # save(raids)
@@ -176,9 +179,9 @@ async def apply(ctx):
     await new_app(bot,ctx.message,channel_names['APPLY'])
 
 @bot.command()
-async def raid(ctx,name,tier: Tier,boss,*,time: Time):
+async def raid(ctx,name,tier: Tier,boss,*,time: Time(server_tz)):
     """Schedules a raid"""
-    raid = await raid_command(ctx,name,tier,boss,time,role_names,boss_name)
+    raid = await raid_command(ctx,name,tier,boss,time,role_names,boss_name,server_tz)
     raids.append(raid)
     save(raids)
 
@@ -188,14 +191,14 @@ raid_example = "Examples:\n!raid Anvil 2 all Friday 4pm server\n!raid throne t3 
 raid.update(help=raid_example,brief=raid_brief,description=raid_description)
 
 @bot.command()
-async def anvil(ctx,*,time: Time):
+async def anvil(ctx,*,time: Time(server_tz)):
     """Shortcut to schedule Anvil raid"""
     try:
         tier = await Tier().converter(ctx.channel.name)
     except commands.BadArgument:
         await ctx.send("Channel name does not specify tier.")
     else:
-        raid = await raid_command(ctx,"Anvil",tier,"All",time,role_names,boss_name)
+        raid = await raid_command(ctx,"Anvil",tier,"All",time,role_names,boss_name,server_tz)
         raids.append(raid)
         save(raids)
 
