@@ -47,6 +47,9 @@ role_names = config['CLASSES']
 boss_name = config['BOSS']
 raid_leader_name = config['LEADER']
 
+# change to immutable tuple
+role_names = tuple(role_names)
+
 # Get server timezone
 server_tz = config['SERVER_TZ']
 
