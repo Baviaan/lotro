@@ -9,6 +9,8 @@ from initialise import add_emojis, get_role_emojis
 from raid import Raid
 from role_handling import get_role
 
+server_tz = "US/Eastern"
+
 class Tier(commands.Converter):
     async def convert(self, ctx, argument):
         return await self.converter(argument)
@@ -26,9 +28,9 @@ class Time(commands.Converter):
 
     async def converter(self, argument):
        if "server" in argument:
-           # Strip off server (time) and return as US Eastern
+           # Strip off server (time) and return as server time
            argument = argument.partition("server")[0]
-           my_settings={'PREFER_DATES_FROM': 'future','TIMEZONE': 'US/Eastern', 'RETURN_AS_TIMEZONE_AWARE': True}
+           my_settings={'PREFER_DATES_FROM': 'future','TIMEZONE': server_tz, 'RETURN_AS_TIMEZONE_AWARE': True}
        else:
            my_settings={'PREFER_DATES_FROM': 'future', 'RETURN_AS_TIMEZONE_AWARE': True}
        time = dateparser.parse(argument,settings=my_settings)
@@ -139,7 +141,7 @@ def convert2Local(time):
     return time
 
 def build_raid_message(raid,embed_texts):
-    server_time = local_time(raid.time,"US/Eastern")
+    server_time = local_time(raid.time,server_tz)
     header_time = server_time.strftime("%A %-I:%M %p server time")
     embed_title = "{0} {1} at {2}".format(raid.name,raid.tier,header_time)
     embed_description = "Bosses: {0}".format(raid.boss)

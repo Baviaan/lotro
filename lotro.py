@@ -23,7 +23,7 @@ logging.basicConfig(level=logging.INFO)
 launch_on_boot = False
 
 # print version number.
-version = "v2.1.4"
+version = "v2.2.0"
 print("Running " + version)
 
 # Load config file.
@@ -31,21 +31,17 @@ with open('config.json','r') as f:
     config = json.load(f)
 
 # Assign specified config values.
-token = config['DEFAULT']['BOT_TOKEN']
-serverid = config['DISCORD']['SERVER_ID']
+token = config['BOT_TOKEN']
 
 # Specify names for channels the bot will respond in.
 # These will be automatically created on the server if they do not exist.
-channel_names = {
-    'BOT': 'saruman',
-    'APPLY': 'applications'
-}
+channel_names = config['CHANNELS']
 
 # Specify names for class roles.
 # These will be automatically created on the server if they do not exist.
-role_names = ("Beorning","Burglar","Captain","Champion","Guardian","Hunter","Loremaster","Minstrel","Runekeeper","Warden")
-boss_name = "witch_king"
-raid_leader_name = "Raid Leader"
+role_names = config['CLASSES']
+boss_name = config['BOSS']
+raid_leader_name = config['LEADER']
 
 raids = []
 # Load the saved raid posts from file.

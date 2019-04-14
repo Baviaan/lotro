@@ -1,9 +1,10 @@
 {
-  "DEFAULT": {
-    "BOT_TOKEN": "Token goes here"
+  "BOT_TOKEN": "Token goes here",
+  "CLASSES": ["Beorning","Burglar","Captain","Champion","Guardian","Hunter","Loremaster","Minstrel","Runekeeper","Warden"],
+  "CHANNELS": {
+    "BOT": "saruman",
+    "APPLY": "applications"
   },
-  "DISCORD": {
-    "SERVER_ID": ############,
-    "OWNER_ID": ############
-  }
+  "BOSS": "witch_king",
+  "LEADER": "Raid Leader"
 }
