@@ -26,6 +26,10 @@ launch_on_boot = False
 version = "v2.2.0"
 print("Running " + version)
 
+# print local timezone using mad hacks.
+local_tz = str(datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo)
+print("Default timezone: " + local_tz)
+
 # Load config file.
 with open('config.json','r') as f:
     config = json.load(f)
@@ -179,7 +183,7 @@ async def raid(ctx,name,tier: Tier,boss,*,time: Time):
     save(raids)
 
 raid_brief = "Schedules a raid"
-raid_description = "Schedules a raid. Day/timezone will default to today/UTC if not specified. You can use 'server' as timezone. Usage:"
+raid_description = "Schedules a raid. Day/timezone will default to today/{0} if not specified. You can use 'server' as timezone. Usage:".format(local_tz)
 raid_example = "Examples:\n!raid Anvil 2 all Friday 4pm server\n!raid throne t3 2-4 21:00"
 raid.update(help=raid_example,brief=raid_brief,description=raid_description)
 
@@ -196,7 +200,7 @@ async def anvil(ctx,*,time: Time):
         save(raids)
 
 anvil_brief = "Shortcut to schedule an Anvil raid"
-anvil_description = "Schedules a raid with name 'Anvil', tier from channel name and bosses 'All'. Day/timezone will default to today/UTC if not specified. You can use 'server' as timezone. Usage:"
+anvil_description = "Schedules a raid with name 'Anvil', tier from channel name and bosses 'All'. Day/timezone will default to today/{0} if not specified. You can use 'server' as timezone. Usage:".format(local_tz)
 anvil_example = "Examples:\n!anvil Friday 4pm server\n!anvil 21:00 BST"
 anvil.update(help=anvil_example,brief=anvil_brief,description=anvil_description)
 
