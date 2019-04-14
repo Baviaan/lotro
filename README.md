@@ -23,3 +23,6 @@ An example config file has been included.
 Please ensure the bot has the correct permissions: 268512336.
 
 (Manage roles, manage channels, read messages, read message history, send messages, manage messages, add reactions.)
+
+Any questions please ask in our discord server:
+https://discord.gg/dGcBzPN
