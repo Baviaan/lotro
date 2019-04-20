@@ -12,7 +12,7 @@ async def show_dwarves(channel):
     kamluz = '**Kamluz II Stoneface**: "You face the Stoneface!" - +100% crit chance and +75% damage reflect effect. \n'
     dobruz2 = '**Dóbruz II Stark-heart**: "The Zhelruka clan is mine to protect." - Allies take -50% incoming damage, must be interrupted.\n'
     brantokh2 = '**Brántokh II the Sunderer**: "I\'ll bring this mountain down on your heads!" - 20m AoE.\n'
-    brunek = '**Brúnek I Clovenbow**: "Taste my axes!" - DoT on random person until interrupted.\n'
+    brunek = '**Brúnek I Clovenbrow**: "Taste my axes!" - DoT on random person until interrupted.\n'
     rurek = '**Rúrek VI the Shamed**: "What have I done?"/"I have failed my people." - Bubble on dwarf.\n'
     brantokh = '**Brántokh I Cracktooth**: "Want to know why they call me cracktooth?" - AoE swipe (low damage).'
     text = ingor+oiko2+dobruz+mozun+kuzek+luvek+oiko+kamluz+dobruz2+brantokh2+brunek+rurek+brantokh
