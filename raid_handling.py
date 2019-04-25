@@ -53,6 +53,8 @@ async def raid_command(ctx,name,tier,boss,time,role_names,boss_name,server_tz):
     embed = build_raid_message(raid,"\u200B",server_tz)
     post = await ctx.send(embed=embed)
     raid.set_post_id(post.id)
+    raid.set_channel_id(ctx.channel.id)
+    raid.set_guild_id(ctx.guild.id)
     emojis = await get_role_emojis(ctx.guild,role_names) 
     emojis.append("\u274C") # Cancel emoji
     emojis.append("\u2705") # Check mark emoji
