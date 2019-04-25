@@ -55,6 +55,7 @@ async def raid_command(ctx,name,tier,boss,time,role_names,boss_name,server_tz):
     raid.set_post_id(post.id)
     emojis = await get_role_emojis(ctx.guild,role_names) 
     emojis.append("\u274C") # Cancel emoji
+    emojis.append("\u2705") # Check mark emoji
     emojis.append("\u23F2") # Timer emoji
     boss_emoji = discord.utils.get(ctx.guild.emojis, name=boss_name)
     emojis.append(boss_emoji)
@@ -92,7 +93,7 @@ async def raid_update(bot,payload,raid,role_names,boss_name,raid_leader_name,ser
         boss = response.content.capitalize()
         raid.set_boss(boss)
         update = True
-    if str(emoji) == "\u23F2": # Timer emoji
+    elif str(emoji) == "\u23F2": # Timer emoji
         raid_leader = await get_role(guild,raid_leader_name)
         if raid_leader not in user.roles:
             error_msg = "You do not have permission to change the raid time. This incident will be reported to Santa Claus."
@@ -116,6 +117,15 @@ async def raid_update(bot,payload,raid,role_names,boss_name,raid_leader_name,ser
         update = True
     elif str(emoji) == "\u274C": # Cancel emoji
         update = raid.remove_player(user)
+    elif str(emoji) == "\u2705": # Check mark emoji
+        has_class_role = False
+        for emoji in emojis:
+            if emoji.name in [role.name for role in user.roles]:
+                update = raid.add_player(user,emoji)
+                has_class_role = True
+        if not has_class_role:
+            error_msg = "{0} you have not assigned yourself any class roles.".format(user.mention)
+            await channel.send(error_msg, delete_after=15)
     elif emoji in emojis:
         update = raid.add_player(user,emoji)
     msg = build_raid_players(raid.players)
