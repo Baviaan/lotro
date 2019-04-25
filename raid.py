@@ -9,6 +9,7 @@ class Raid(object):
         self.time = time
         self.players = set()
         self.post_id = None
+        self.channel_id = None
 
     def name(self):
         return self.name
@@ -53,6 +54,12 @@ class Raid(object):
 
     def set_post_id(self,post_id):
         self.post_id = post_id
+
+    def channel_id(self):
+        return self.channel_id
+
+    def set_channel_id(self,channel_id):
+        self.channel_id = channel_id
 
     def __str__(self):
         player_string = "the following players: "
