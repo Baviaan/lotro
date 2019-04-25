@@ -63,7 +63,8 @@ async def raid_command(ctx,name,tier,boss,time,role_names,boss_name,server_tz):
     await post.pin()
     return raid
 
-async def raid_update(bot,payload,guild,raid,role_names,boss_name,raid_leader_name,server_tz):
+async def raid_update(bot,payload,raid,role_names,boss_name,raid_leader_name,server_tz):
+    guild = bot.get_guild(payload.guild_id)
     channel = guild.get_channel(payload.channel_id)
     user = guild.get_member(payload.user_id)
     emoji = payload.emoji
@@ -91,7 +92,7 @@ async def raid_update(bot,payload,guild,raid,role_names,boss_name,raid_leader_na
         boss = response.content.capitalize()
         raid.set_boss(boss)
         update = True
-    if str(emoji) == "\u23F2":
+    if str(emoji) == "\u23F2": # Timer emoji
         raid_leader = await get_role(guild,raid_leader_name)
         if raid_leader not in user.roles:
             error_msg = "You do not have permission to change the raid time. This incident will be reported to Santa Claus."
@@ -113,7 +114,7 @@ async def raid_update(bot,payload,guild,raid,role_names,boss_name,raid_leader_na
             await response.delete()
         raid.set_time(time)
         update = True
-    elif str(emoji) == "\u274C":
+    elif str(emoji) == "\u274C": # Cancel emoji
         update = raid.remove_player(user)
     elif emoji in emojis:
         update = raid.add_player(user,emoji)

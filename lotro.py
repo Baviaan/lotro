@@ -23,7 +23,7 @@ logging.basicConfig(level=logging.INFO)
 launch_on_boot = False
 
 # print version number.
-version = "v2.2.0"
+version = "v2.3.0"
 print("Running " + version)
 
 # Get local timezone using mad hacks.
@@ -137,11 +137,10 @@ async def on_reaction_add(reaction,user):
 
 @bot.event
 async def on_raw_reaction_add(payload):
-    guild = bot.get_guild(payload.guild_id)
     update = False
     for raid in raids:
         if payload.message_id == raid.post_id:
-            update = await raid_update(bot,payload,guild,raid,role_names,boss_name,raid_leader_name,server_tz)
+            update = await raid_update(bot,payload,raid,role_names,boss_name,raid_leader_name,server_tz)
             break
     # if update:
         # save(raids)
