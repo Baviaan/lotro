@@ -82,28 +82,42 @@ bot = commands.Bot(command_prefix=prefix,case_insensitive=True)
 
 async def background_task():
     await bot.wait_until_ready()
+    sleep_time = 300 # Run background task every five minutes.
+    save_time = 24 # Save to file every two hours.
+    expiry_time = datetime.timedelta(seconds=7200) # Delete raids after 2 hours.
+    notify_time = datetime.timedelta(seconds=sleep_time)
+    counter = 0
     while not bot.is_closed():
-        await asyncio.sleep(3600)
-        current_time = datetime.datetime.now()
-        delta_time = datetime.timedelta(seconds=7200)
+        await asyncio.sleep(sleep_time)
+        counter = counter + 1
+        current_time = datetime.datetime.utcnow() # Raid time is stored in UTC.
         # Copy the list to iterate over.
         for raid in raids[:]:
-            if raid.time + delta_time < current_time:
-                # Look for the channel in which the raid post is.
-                for guild in bot.guilds:
-                    for channel in guild.text_channels:
-                        try:
-                            post = await channel.fetch_message(raid.post_id)
-                        except (discord.NotFound, discord.Forbidden):
-                            continue
-                        else:
-                            await post.delete()
-                            print("Deleted old raid post.")
-                            break
-                raids.remove(raid)
-                print("Deleted old raid.")
-        # Save raids to file
-        save(raids)
+            if current_time > raid.time + expiry_time:
+                # Find the raid post and delete it.
+                channel = bot.get_channel(raid.channel_id)
+                try:
+                    post = await channel.fetch_message(raid.post_id)
+                except discord.NotFound:
+                    print("Raid post already deleted.")
+                except discord.Forbidden:
+                    print("We are missing required permissions to delete raid post.")
+                else:
+                    await post.delete()
+                    print("Deleted old raid post.")
+                finally:
+                    raids.remove(raid)
+                    print("Deleted old raid.")
+            elif current_time < raid.time - notify_time  and current_time > raid.time - notify_time*2:
+                channel = bot.get_channel(raid.channel_id)
+                raid_start_msg = ""
+                for player in raid.players:
+                    raid_start_msg = raid_start_msg + "<@{0}> ".format(player.id)
+                raid_start_msg = raid_start_msg + "Gondor calls for aid! Also we are forming for the raid now."
+                await channel.send(raid_start_msg,delete_after=sleep_time*2)
+        if counter >= save_time:
+            save(raids) # Save raids to file.
+            counter = 0 # Reset counter to 0.
 
 @bot.event
 async def on_ready():
