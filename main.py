@@ -110,10 +110,10 @@ async def background_task():
                     print("Deleted old raid.")
             elif current_time < raid.time - notify_time  and current_time > raid.time - notify_time*2:
                 channel = bot.get_channel(raid.channel_id)
-                raid_start_msg = ""
+                raid_start_msg = "Gondor calls for aid! "
                 for player in raid.players:
                     raid_start_msg = raid_start_msg + "<@{0}> ".format(player.id)
-                raid_start_msg = raid_start_msg + "Gondor calls for aid! Also we are forming for the raid now."
+                raid_start_msg = raid_start_msg + "will you answer the call? (Also we are forming for the raid now.)"
                 await channel.send(raid_start_msg,delete_after=sleep_time*2)
         if counter >= save_time:
             save(raids) # Save raids to file.
