@@ -1,7 +1,7 @@
-Prerequisites:
-python >= 3.5.3
-python < 3.7
-discord.py >= 1.0.0 (You can get the library with `python3 -m pip install -U discord.py`)
+Prerequisites:\
+python >= 3.5.3\
+python < 3.7\
+discord.py >= 1.0.0 (You can get the library with `python3 -m pip install -U discord.py`)\
 dateparser >= 0.7.1 (`python3 -m pip install -U dateparser`)
 
 If you get a module not found error there is another module required that I forgot to list here :D
