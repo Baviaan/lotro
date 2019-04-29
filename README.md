@@ -1,3 +1,13 @@
+Prerequisites:
+python >= 3.5.3
+python < 3.7
+discord.py >= 1.0.0 (You can get the library with `python3 -m pip install -U discord.py`)
+dateparser >= 0.7.1 (`python3 -m pip install -U dateparser`)
+
+If you get a module not found error there is another module required that I forgot to list here :D
+
+------------------------------------
+
 This is a discord bot aimed at making it easy to schedule raids in a discord server. It is developed for LotRO but could work for any game if you edit the class names in the config file.
 
 When the `!raid` command is called the bot will create an embed specifying the raid time in server time, New York's, London's and Sydney's time. Server time is configurable. The bot will add class emojis to this embed for users to interact with. When a user clicks on a class emoji it will update the embed listing the user's nickname and available classes. Moreover it will add a boss emoji and a timer emoji that allows the raid leader to change these values.
@@ -16,9 +26,12 @@ CLASSES: The classes in your game. Note your discord server must have custom emo
 CHANNELS: The role post will be posted to the BOT channel. Any incoming applications will be posted to the APPLY channel, so this should be officer only.\
 BOSS: Custom boss emoji used to update raid boss info on a raid post.\
 LEADER: Name of the discord role that will be allowed to update bosses and times for raid post.\
-SERVER_TZ: The raid time in the header of the embed will be posted in this timezone. (Requires TZ database name)\
+SERVER_TZ: The raid time in the header of the embed will be posted in this timezone. (Requires TZ database name)
 
 An example config file has been included.
+
+See this link how to create a bot user on discord, obtain your bot token and invite the bot to your server:
+https://discordpy.readthedocs.io/en/latest/discord.html#
 
 Please ensure the bot has the correct permissions: 268512336.
 
