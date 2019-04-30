@@ -107,7 +107,7 @@ async def background_task():
                 finally:
                     raids.remove(raid)
                     print("Deleted old raid.")
-            elif current_time < raid.time - notify_time  and current_time > raid.time - notify_time*2:
+            elif current_time < raid.time - notify_time  and current_time >= raid.time - notify_time*2:
                 channel = bot.get_channel(raid.channel_id)
                 raid_start_msg = "Gondor calls for aid! "
                 for player in raid.players:
