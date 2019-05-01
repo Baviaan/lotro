@@ -67,7 +67,7 @@ for raid in raids:
 def save(raids):
     with open('raids.pkl', 'wb') as f:
         pickle.dump(raids, f)
-    print("Saved raids to file at: " + datetime.datetime.now())
+    print("Saved raids to file at: " + str(datetime.datetime.now()))
 
 if launch_on_boot:
     # On boot the system launches the bot fater than it gains internet access.
