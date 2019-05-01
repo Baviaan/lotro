@@ -69,8 +69,8 @@ class Raid(object):
         self.guild_id = guild_id
 
     def __str__(self):
-        player_string = "the following players: "
+        player_string = "the following players:\n"
         for player in self.players:
-            player_string = player_string + str(player) + ", "
-        player_string = player_string[:-2]
-        return "{0} at {1} with {2}".format(self.name,self.time,player_string)
+            player_string = player_string + str(player) + "\n"
+        player_string = player_string[:-1]
+        return "Guild {0}; {1} {2} at {3} with {4}".format(self.guild_id,self.name,self.tier,self.time,player_string)
