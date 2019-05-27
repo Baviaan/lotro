@@ -40,9 +40,9 @@ class Time(commands.Converter):
        time = convert2UTC(time)
        # Check if time is in near futre.
        current_time = datetime.datetime.now()
-       delta_time = datetime.timedelta(days=30)
+       delta_time = datetime.timedelta(days=7)
        if current_time + delta_time < time:
-           error_message = "You are not allowed to post raids more than a month in advance."
+           error_message = "You are not allowed to post raids more than a week in advance."
            raise commands.BadArgument(error_message)
        return time
 
@@ -170,7 +170,9 @@ def build_raid_message(raid,embed_texts,server_tz):
         else:
             embed_name = "\u200B"
         embed.add_field(name=embed_name,value=embed_texts[i])
-    embed.set_footer(text="{0}".format(raid.time))
+    #embed.set_footer(text="{0}".format(raid.time))
+    embed.set_footer(text="Raid time in your local time (beta)")
+    embed.timestamp = (raid.time)
     return embed
 
 def build_raid_players(players):
