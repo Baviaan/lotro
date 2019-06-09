@@ -161,8 +161,9 @@ def build_raid_message(raid,embed_texts,server_tz):
     embed_title = "{0} {1} at {2}".format(raid.name,raid.tier,header_time)
     embed_description = "Bosses: {0}".format(raid.boss)
     embed = discord.Embed(title=embed_title,colour=discord.Colour(0x3498db), description=embed_description)
-    time_string = "See the footer for the raid time in your local time. \n*Please note there is a known issue for discord's Android app which always displays the date as today.*"
-    embed.add_field(name="Time zones:",value=time_string)
+    time_name = "See the footer for the raid time in your local time."
+    time_value = "*Please note there is a known issue for discord's Android app which always displays the date as today.*"
+    embed.add_field(name=time_name,value=time_value)
     # Add a field for each embed text
     for i in range(len(embed_texts)):
         if i == 0:
