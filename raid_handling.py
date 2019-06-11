@@ -4,7 +4,6 @@ import dateparser
 import discord
 from discord.ext import commands
 import re
-import os
 
 from initialise import add_emojis, get_role_emojis
 from raid import Raid
@@ -157,13 +156,13 @@ def convert2Local(time):
 
 def build_raid_message(raid,embed_texts,server_tz):
     server_time = local_time(raid.time,server_tz)
-    header_time = build_time_string(server_time)
+    header_time = server_time.strftime("%A %-I:%M %p server time")
     embed_title = "{0} {1} at {2}".format(raid.name,raid.tier,header_time)
     embed_description = "Bosses: {0}".format(raid.boss)
     embed = discord.Embed(title=embed_title,colour=discord.Colour(0x3498db), description=embed_description)
-    time_name = "See the footer for the raid time in your local time."
-    time_value = "*Please note there is a known issue for discord's Android app which always displays the date as today.*"
-    embed.add_field(name=time_name,value=time_value)
+    time_string = build_time_string(raid.time)
+    embed.add_field(name="Time zones:",value=time_string)
+    embed.add_field(name="\u200B",value="\u200B")
     # Add a field for each embed text
     for i in range(len(embed_texts)):
         if i == 0:
@@ -171,7 +170,9 @@ def build_raid_message(raid,embed_texts,server_tz):
         else:
             embed_name = "\u200B"
         embed.add_field(name=embed_name,value=embed_texts[i])
-    embed.timestamp = raid.time
+    #embed.set_footer(text="{0}".format(raid.time))
+    embed.set_footer(text="Raid time in your local time (beta)")
+    embed.timestamp = (raid.time)
     return embed
 
 def build_raid_players(players):
@@ -192,11 +193,12 @@ def build_raid_players(players):
         msg[0] = "\u200B"
     return msg 
 
+
 def build_time_string(time):
-    if os.name == "nt": # Windows uses '#' instead of '-'.
-       time_string = time.strftime("%A %#I:%M %p server time")
-    else:
-       time_string = time.strftime("%A %-I:%M %p server time")
+    ny_time = local_time(time,"US/Eastern")
+    lon_time = local_time(time,"Europe/London")
+    syd_time = local_time(time,"Australia/Sydney")
+    time_string = 'New York: ' + ny_time.strftime('%A %-I:%M %p') + '\n' + 'London: ' + lon_time.strftime('%A %-I:%M %p') + '\n' + 'Sydney: ' + syd_time.strftime('%A %-I:%M %p')
     return time_string
 
 def local_time(time,timezone):
