@@ -23,7 +23,7 @@ logging.basicConfig(level=logging.INFO)
 launch_on_boot = False
 
 # print version number.
-version = "v2.4.3"
+version = "v2.5.0"
 print("Running " + version)
 
 # Get local timezone using mad hacks.
@@ -230,6 +230,19 @@ anvil_brief = "Shortcut to schedule an Anvil raid"
 anvil_description = "Schedules a raid with name 'Anvil', tier from channel name and bosses 'All'. Day/timezone will default to today/{0} if not specified. You can use 'server' as timezone. Usage:".format(local_tz)
 anvil_example = "Examples:\n!anvil Friday 4pm server\n!anvil 21:00 BST"
 anvil.update(help=anvil_example,brief=anvil_brief,description=anvil_description)
+
+@bot.command()
+async def thrang(ctx,*,time: Time(server_tz)):
+    """Shortcut to schedule Thrang run"""
+    tier = 'T2'
+    raid = await raid_command(ctx,"Boss from the Vaults",tier,"Thrang",time,role_names,boss_name,server_tz)
+    raids.append(raid)
+    save(raids)
+
+thrang_brief = "Shortcut to schedule a Thrang run"
+thrang_description = "Schedules a raid with name 'Boss from the Vaults', tier 2 and boss 'Thrang'. Day/timezone will default to today/{0} if not specified. You can use 'server' as timezone. Usage:".format(local_tz)
+thrang_example = "Examples:\n!thrang Friday 4pm server\n!thrang 21:00 BST"
+thrang.update(help=thrang_example,brief=thrang_brief,description=thrang_description)
 
 @bot.command()
 @commands.is_owner()
