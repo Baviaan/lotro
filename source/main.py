@@ -2,7 +2,7 @@
 
 import asyncio
 import datetime
-import discord # Requires rewrite branch
+import discord
 from discord.ext import commands
 import json
 import logging
@@ -63,10 +63,12 @@ print("We have the following raid data in memory.")
 for raid in raids:
     print(raid)
 
+
 def save(raids):
     with open('raids.pkl', 'wb') as f:
         pickle.dump(raids, f)
     print("Saved raids to file at: " + str(datetime.datetime.now()))
+
 
 if launch_on_boot:
     # On boot the system launches the bot fater than it gains internet access.
@@ -77,6 +79,7 @@ print("Continuing...")
 
 prefix = "!"
 bot = commands.Bot(command_prefix=prefix,case_insensitive=True)
+
 
 async def background_task():
     await bot.wait_until_ready()
@@ -126,6 +129,7 @@ async def background_task():
             save(raids) # Save raids to file.
             counter = 0 # Reset counter to 0.
 
+
 @bot.event
 async def on_ready():
     print("We have logged in as {0.user}".format(bot))
@@ -146,7 +150,8 @@ async def on_ready():
             print("Missing permissions for {0}".format(guild.name))
         else:
             role_post_ids.append(role_post.id)
-    
+
+
 @bot.event
 async def on_reaction_add(reaction,user):
     # Check if the reaction is by the bot itself.
@@ -155,6 +160,7 @@ async def on_reaction_add(reaction,user):
     # Check if the reaction is to the role post.
     if reaction.message.id in role_post_ids:
         await role_update(reaction,user,role_names)
+
 
 @bot.event
 async def on_raw_reaction_add(payload):
@@ -166,9 +172,11 @@ async def on_raw_reaction_add(payload):
     # if update:
         # save(raids)
 
+
 @bot.event
 async def on_reaction_remove(reaction,user):
     pass
+
 
 @bot.event
 async def on_command_error(ctx,error):
@@ -179,6 +187,7 @@ async def on_command_error(ctx,error):
     else:
         await ctx.send(error,delete_after=10)
 
+
 @bot.check
 async def globally_block_dms(ctx):
     if ctx.guild is None:
@@ -186,20 +195,24 @@ async def globally_block_dms(ctx):
     else:
         return True
 
+
 @bot.command()
 async def roles(ctx):
     """Shows the class roles you have"""
     await show_roles(ctx.channel,ctx.author,role_names)
+
 
 @bot.command()
 async def dwarves(ctx):
     """Shows abilities of dwarves in Anvil"""
     await show_dwarves(ctx.channel)
 
+
 @bot.command()
 async def apply(ctx):
     """Apply to the kin"""
     await new_app(bot,ctx.message,channel_names['APPLY'])
+
 
 @bot.command()
 async def raid(ctx,name,tier: Tier,boss,*,time: Time(server_tz)):
@@ -212,6 +225,7 @@ raid_brief = "Schedules a raid"
 raid_description = "Schedules a raid. Day/timezone will default to today/{0} if not specified. You can use 'server' as timezone. Usage:".format(local_tz)
 raid_example = "Examples:\n!raid Anvil 2 all Friday 4pm server\n!raid throne t3 2-4 21:00"
 raid.update(help=raid_example,brief=raid_brief,description=raid_description)
+
 
 @bot.command()
 async def anvil(ctx,*,time: Time(server_tz)):
@@ -230,6 +244,7 @@ anvil_description = "Schedules a raid with name 'Anvil', tier from channel name 
 anvil_example = "Examples:\n!anvil Friday 4pm server\n!anvil 21:00 BST"
 anvil.update(help=anvil_example,brief=anvil_brief,description=anvil_description)
 
+
 @bot.command()
 async def thrang(ctx,*,time: Time(server_tz)):
     """Shortcut to schedule Thrang run"""
@@ -243,6 +258,7 @@ thrang_description = "Schedules a raid with name 'Boss from the Vaults', tier 2 
 thrang_example = "Examples:\n!thrang Friday 4pm server\n!thrang 21:00 BST"
 thrang.update(help=thrang_example,brief=thrang_brief,description=thrang_description)
 
+
 @bot.command()
 @commands.is_owner()
 async def delete(ctx,msg_id: int):
@@ -253,6 +269,7 @@ async def delete(ctx,msg_id: int):
     await msg.delete()
 
 delete.update(hidden=True)
+
 
 @delete.error
 async def delete_error(ctx,error):

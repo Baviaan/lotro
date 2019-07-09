@@ -3,6 +3,7 @@ import discord
 
 from channel_handling import get_channel
 
+
 async def new_app(bot,message,apply_channel_name):
     # This assumes the function is called on a message in a guild channel.
     author = message.author
@@ -42,6 +43,7 @@ async def new_app(bot,message,apply_channel_name):
     else:
         dm = "Your application has been successfully submitted. An officer will be in touch soon!"
     await author.send(dm)
+
 
 async def interactive_dm(bot,dm,author):
     # This returns the author's first message the bot can see...

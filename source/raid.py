@@ -1,5 +1,6 @@
 from player import Player
 
+
 class Raid(object):
 
     def __init__(self, name, tier, boss, time):

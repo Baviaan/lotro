@@ -10,6 +10,7 @@ from initialise import add_emojis, get_role_emojis
 from raid import Raid
 from role_handling import get_role
 
+
 class Tier(commands.Converter):
     async def convert(self, ctx, argument):
         return await self.converter(argument)
@@ -20,6 +21,7 @@ class Tier(commands.Converter):
             raise commands.BadArgument("Failed to parse tier argument: " + argument)
         tier = "T{0}".format(tier.group())
         return tier
+
 
 class Time(commands.Converter):
     def __init__(self,tz):
@@ -47,6 +49,7 @@ class Time(commands.Converter):
            raise commands.BadArgument(error_message)
        return time
 
+
 async def raid_command(ctx,name,tier,boss,time,role_names,boss_name,server_tz):
     name = name.capitalize()
     boss = boss.capitalize()
@@ -66,6 +69,7 @@ async def raid_command(ctx,name,tier,boss,time,role_names,boss_name,server_tz):
     await asyncio.sleep(0.25)
     await post.pin()
     return raid
+
 
 async def raid_update(bot,payload,raid,role_names,boss_name,raid_leader_name,server_tz):
     guild = bot.get_guild(payload.guild_id)
@@ -143,17 +147,20 @@ async def raid_update(bot,payload,raid,role_names,boss_name,raid_leader_name,ser
             print(part)
     return update
 
+
 def convert2UTC(time):
     offset = time.utcoffset()
     time = time.replace(tzinfo=None)
     time = time - offset
     return time
 
+
 def convert2Local(time):
     offset = time.utcoffset()
     time = time.replace(tzinfo=None)
     time = time + offset
     return time
+
 
 def build_raid_message(raid,embed_texts,server_tz):
     server_time = local_time(raid.time,server_tz)
@@ -175,6 +182,7 @@ def build_raid_message(raid,embed_texts,server_tz):
     embed.set_footer(text="Raid time in your local time (beta)")
     embed.timestamp = raid.time
     return embed
+
 
 def build_raid_players(players):
     if len(players) == 0:
@@ -202,12 +210,14 @@ def build_time_string(time):
     time_string = 'New York: ' + format_time(ny_time) + '\n' + 'London: ' + format_time(lon_time) + '\n' + 'Sydney: ' + format_time(syd_time)
     return time_string
 
+
 def format_time(time):
     if os.name == "nt": # Windows uses '#' instead of '-'.
         time_string = time.strftime("%A %#I:%M %p")
     else:
         time_string = time.strftime("%A %-I:%M %p")
     return time_string
+
 
 def local_time(time,timezone):
     local_settings = {'TIMEZONE': timezone, 'RETURN_AS_TIMEZONE_AWARE': True}
