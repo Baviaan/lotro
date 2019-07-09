@@ -1,5 +1,3 @@
-import discord
-
 class Player(object):
     def __init__(self,user):
         self.id = user.id
@@ -38,6 +36,7 @@ class Player(object):
             classes_string = classes_string + emoji.name + ", "
         classes_string = classes_string[:-2] + "."
         return "{0} on {1}".format(self.display_name,classes_string)
+
 
 class Player_class(object):
     def __init__(self,discord_emoji):

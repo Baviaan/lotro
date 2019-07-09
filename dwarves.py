@@ -1,5 +1,3 @@
-import discord
-
 async def show_dwarves(channel):
     # sends info about the 13 dwarves to channel
     ingor = '**Ingór I the Cruel**: "How much more can your mortal form take?" - Applies 1 stack of incoming healing debuff.\n'

@@ -1,7 +1,7 @@
 import asyncio
-import discord
 
 from role_handling import add_role, remove_role
+
 
 async def role_update(reaction,author,role_names):
     channel = reaction.message.channel

@@ -13,7 +13,6 @@ from channel_handling import get_channel
 from dwarves import show_dwarves
 from initialise import initialise
 from raid_handling import raid_command, raid_update, Tier, Time
-from raid import Raid
 from reaction_handling import role_update
 from role_handling import show_roles
 

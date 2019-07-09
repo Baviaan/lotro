@@ -1,5 +1,5 @@
 import asyncio
-import discord
+
 
 async def initialise(guild,channel,role_names):
     await channel.purge(limit=60)
@@ -14,11 +14,13 @@ async def initialise(guild,channel,role_names):
     await role_post.pin()
     return role_post
 
+
 async def add_emojis(emojis,message):
     await asyncio.sleep(0.25)
     for emoji in emojis:
         await message.add_reaction(emoji)
         await asyncio.sleep(0.25)
+
 
 async def get_role_emojis(guild,role_names):
     emojis = []
