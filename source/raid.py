@@ -25,16 +25,16 @@ class Raid(object):
     def time(self):
         return self.time
 
-    def set_time(self,time):
+    def set_time(self, time):
         self.time = time
 
-    def set_boss(self,boss):
+    def set_boss(self, boss):
         self.boss = boss
 
     def players(self):
         return self.players
 
-    def add_player(self,user,emoji):
+    def add_player(self, user, emoji):
         for player in self.players:
             if player.id == user.id:
                 player.add_classes(emoji)
@@ -44,7 +44,7 @@ class Raid(object):
         player.add_classes(emoji)
         return True
 
-    def remove_player(self,user):
+    def remove_player(self, user):
         for player in self.players:
             if player.id == user.id:
                 self.players.remove(player)
@@ -54,19 +54,19 @@ class Raid(object):
     def post_id(self):
         return self.post_id
 
-    def set_post_id(self,post_id):
+    def set_post_id(self, post_id):
         self.post_id = post_id
 
     def channel_id(self):
         return self.channel_id
 
-    def set_channel_id(self,channel_id):
+    def set_channel_id(self, channel_id):
         self.channel_id = channel_id
 
     def guild_id(self):
         return self.guild_id
 
-    def set_guild_id(self,guild_id):
+    def set_guild_id(self, guild_id):
         self.guild_id = guild_id
 
     def __str__(self):
@@ -74,4 +74,5 @@ class Raid(object):
         for player in self.players:
             player_string = player_string + str(player) + "\n"
         player_string = player_string[:-1]
-        return "Guild {0}; {1} {2} at {3} with {4}".format(self.guild_id,self.name,self.tier,self.time,player_string)
+        return "Guild {0}; {1} {2} at {3} with {4}".format(self.guild_id, self.name, self.tier, self.time,
+                                                           player_string)

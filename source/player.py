@@ -1,5 +1,5 @@
 class Player(object):
-    def __init__(self,user):
+    def __init__(self, user):
         self.id = user.id
         self.name = user.name
         self.display_name = user.display_name
@@ -25,9 +25,9 @@ class Player(object):
 
     def classes(self):
         return self.classes
-    
-    def add_classes(self,emoji):
-        player_class = Player_class(emoji)
+
+    def add_classes(self, emoji):
+        player_class = PlayerClass(emoji)
         self.classes.add(player_class)
 
     def __str__(self):
@@ -35,17 +35,17 @@ class Player(object):
         for emoji in self.classes:
             classes_string = classes_string + emoji.name + ", "
         classes_string = classes_string[:-2] + "."
-        return "{0} on {1}".format(self.display_name,classes_string)
+        return "{0} on {1}".format(self.display_name, classes_string)
 
 
-class Player_class(object):
-    def __init__(self,discord_emoji):
+class PlayerClass(object):
+    def __init__(self, discord_emoji):
         self.name = discord_emoji.name
         self.emoji = str(discord_emoji)
 
     def __eq__(self, other):
         """Overrides the default implementation"""
-        if isinstance(other, Player_class):
+        if isinstance(other, PlayerClass):
             return self.emoji == other.emoji
         return False
 
