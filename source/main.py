@@ -168,6 +168,12 @@ async def on_raw_reaction_add(payload):
     for raid in raids:
         if payload.message_id == raid.post_id:
             update = await raid_update(bot, payload, raid, role_names, boss_name, raid_leader_name, server_tz)
+            emoji = payload.emoji
+            guild = bot.get_guild(payload.guild_id)
+            user = guild.get_member(payload.user_id)
+            channel = guild.get_channel(payload.channel_id)
+            message = await channel.fetch_message(payload.message_id)
+            await message.remove_reaction(emoji, user)
             break
     if update:
         save(raids)
