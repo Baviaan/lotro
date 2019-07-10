@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.INFO)
 launch_on_boot = False
 
 # print version number.
-version = "v2.5.1"
+version = "v2.5.2"
 print("Running " + version)
 
 # Get local timezone using mad hacks.
