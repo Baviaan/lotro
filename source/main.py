@@ -170,7 +170,7 @@ async def on_raw_reaction_add(payload):
             update = await raid_update(bot, payload, raid, role_names, boss_name, raid_leader_name, server_tz)
             break
     if update:
-    save(raids)
+        save(raids)
 
 
 @bot.event
