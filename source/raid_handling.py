@@ -187,11 +187,11 @@ def build_raid_players(players):
     if len(players) == 0:
         number_of_fields = 1
     else:
-        number_of_fields = ((len(players) - 1) // 6) + 1
+        number_of_fields = ((len(players) - 1) // 3) + 1
     msg = [""] * number_of_fields
     number_of_players = 0
     for player in players:
-        index = number_of_players // 6
+        index = number_of_players // 3
         number_of_players = number_of_players + 1
         msg[index] = msg[index] + player.display_name + " "
         for emoji in player.classes:
