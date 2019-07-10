@@ -169,8 +169,8 @@ async def on_raw_reaction_add(payload):
         if payload.message_id == raid.post_id:
             update = await raid_update(bot, payload, raid, role_names, boss_name, raid_leader_name, server_tz)
             break
-    # if update:
-    # save(raids)
+    if update:
+    save(raids)
 
 
 @bot.event
