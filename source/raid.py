@@ -75,4 +75,4 @@ class Raid(object):
             player_string = player_string + str(player) + "\n"
         player_string = player_string[:-1]
         return "Guild {0}, msg {5}; {1} {2} at {3} with {4}".format(self.guild_id, self.name, self.tier, self.time,
-                                                           player_string, self.post_id)
+                                                                    player_string, self.post_id)

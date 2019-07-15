@@ -27,7 +27,7 @@ class Player(object):
         return self.classes
 
     def add_classes(self, emoji):
-        player_class = Player_class(emoji)
+        player_class = PlayerClass(emoji)
         self.classes.add(player_class)
 
     def __str__(self):
@@ -38,14 +38,14 @@ class Player(object):
         return "{0} on {1}".format(self.display_name, classes_string)
 
 
-class Player_class(object):
+class PlayerClass(object):
     def __init__(self, discord_emoji):
         self.name = discord_emoji.name
         self.emoji = str(discord_emoji)
 
     def __eq__(self, other):
         """Overrides the default implementation"""
-        if isinstance(other, Player_class):
+        if isinstance(other, PlayerClass):
             return self.emoji == other.emoji
         return False
 
