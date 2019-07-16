@@ -195,15 +195,24 @@ def build_raid_players(players, block_size=6):
     # Sort the strings by length
     player_strings.sort(key=len)
     # Compute number of fields
-    if len(players) == 0:
+    number_of_players = len(players)
+    if number_of_players == 0:
         number_of_fields = 1
     else:
         number_of_fields = ((len(players) - 1) // block_size) + 1
     msg = [""] * number_of_fields
     # Add the players to the fields, spreading large strings.
     number_of_players_added = 0
+    remainder = number_of_players % block_size
+    if remainder:
+        cap_index_last_field = number_of_fields * remainder
+    else:
+        cap_index_last_field = number_of_fields * block_size
     for player_string in player_strings:
-        index = number_of_players_added % number_of_fields
+        if number_of_players_added < cap_index_last_field:
+            index = number_of_players_added % number_of_fields
+        else:
+            index = number_of_players_added % (number_of_fields - 1)
         number_of_players_added = number_of_players_added + 1
         msg[index] = msg[index] + player_string
     # Do not send an empty embed if there are no players.
