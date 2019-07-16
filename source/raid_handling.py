@@ -183,22 +183,35 @@ def build_raid_message(raid, embed_texts, server_tz):
     return embed
 
 
-def build_raid_players(players):
+def build_raid_players(players, block_size=6):
+    player_strings =[]
+    # Create the player strings
+    for player in players:
+        player_string = player.display_name + " "
+        for emoji in player.classes:
+            player_string = player_string + str(emoji)
+        player_string = player_string + "\n"
+        player_strings.append(player_string)
+    # Sort the strings by length
+    player_strings.sort(key=len)
+    # Compute number of fields
     if len(players) == 0:
         number_of_fields = 1
     else:
-        number_of_fields = ((len(players) - 1) // 3) + 1
+        number_of_fields = ((len(players) - 1) // block_size) + 1
     msg = [""] * number_of_fields
-    number_of_players = 0
-    for player in players:
-        index = number_of_players // 3
-        number_of_players = number_of_players + 1
-        msg[index] = msg[index] + player.display_name + " "
-        for emoji in player.classes:
-            msg[index] = msg[index] + str(emoji)
-        msg[index] = msg[index] + "\n"
+    # Add the players to the fields, spreading large strings.
+    number_of_players_added = 0
+    for player_string in player_strings:
+        index = number_of_players_added % number_of_fields
+        number_of_players_added = number_of_players_added + 1
+        msg[index] = msg[index] + player_string
+    # Do not send an empty embed if there are no players.
     if msg[0] == "":
         msg[0] = "\u200B"
+    # Check if the length does not exceed embed limit and split if we can.
+    if len(max(msg, key=len)) >= 1024 and block_size >= 2:
+        msg = build_raid_players(players, block_size=block_size // 2)
     return msg
 
 
