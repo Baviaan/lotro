@@ -193,7 +193,7 @@ def build_raid_players(players, block_size=6):
         player_string = player_string + "\n"
         player_strings.append(player_string)
     # Sort the strings by length
-    player_strings.sort(key=len)
+    player_strings.sort(key=len, reverse=True)
     # Compute number of fields
     number_of_players = len(players)
     if number_of_players == 0:
