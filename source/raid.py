@@ -70,13 +70,13 @@ class Raid(object):
             return True
         return False
 
-    def set_slot(self, slot, emojis_str):
+    def set_slot(self, slot, emojis_str, reset=True):
         classes = ""
         for s in emojis_str:
             classes = classes + s
         self.slots[slot] = classes
-        #  Reset player in this slot.
-        self.assigned_players[slot] = None
+        if reset:
+            self.assigned_players[slot] = None
 
     def slot(self, slot):
         return self.slots[slot]

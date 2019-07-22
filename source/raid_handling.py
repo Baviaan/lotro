@@ -377,7 +377,7 @@ async def select_players(bot, author, channel, raid, emojis):
             if emoji_str in slot:
                 updated = raid.assign_player(selected_player, i)
                 if updated:
-                    raid.set_slot(i, emoji_str)
+                    raid.set_slot(i, emoji_str, False)
                     msg_content = "Assigned {0} to {1}.".format(selected_player.display_name, emoji_str)
                     await channel.send(msg_content, delete_after=10)
                     break
