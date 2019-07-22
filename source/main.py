@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.INFO)
 launch_on_boot = False
 
 # print version number.
-version = "v2.6.0"
+version = "v2.7.0a"
 print("Running " + version)
 
 # Get local timezone using mad hacks.
@@ -244,6 +244,31 @@ async def anvil(ctx, *, time: Time(server_tz)):
         await ctx.send("Channel name does not specify tier.")
     else:
         raid = await raid_command(ctx, "Anvil", tier, "All", time, role_names, boss_name, server_tz)
+        raids.append(raid)
+        save(raids)
+
+
+anvil_brief = "Shortcut to schedule an Anvil raid"
+anvil_description = "Schedules a raid with name 'Anvil', tier from channel name and bosses 'All'. " \
+                    "Day/timezone will default to today/{0} if not specified. You can use 'server' as timezone. " \
+                    "Usage:".format(local_tz)
+anvil_example = "Examples:\n!anvil Friday 4pm server\n!anvil 21:00 BST"
+anvil.update(help=anvil_example, brief=anvil_brief, description=anvil_description)
+
+
+@bot.command()
+async def anvilbeta(ctx, *, time: Time(server_tz)):
+    """Shortcut to schedule Anvil raid"""
+    try:
+        tier = await Tier().converter(ctx.channel.name)
+    except commands.BadArgument:
+        await ctx.send("Channel name does not specify tier.")
+    else:
+        if '1' in tier or '2' in tier:
+            roster = False
+        else:
+            roster = True
+        raid = await raid_command(ctx, "Anvil", tier, "All", time, role_names, boss_name, server_tz, roster=roster)
         raids.append(raid)
         save(raids)
 

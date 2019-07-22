@@ -12,6 +12,9 @@ class Raid(object):
         self.post_id = None
         self.channel_id = None
         self.guild_id = None
+        self.roster = False
+        self.slots = [None] * 12
+        self.assigned_players = [None] * len(self.slots)
 
     def name(self):
         return self.name
@@ -51,6 +54,31 @@ class Raid(object):
                 return True
         return False
 
+    def assign_player(self, user, slot):
+        assigned_players = self.assigned_players
+        if not assigned_players[slot]:
+            assigned_players[slot] = Player(user)
+            return True
+        return False
+
+    def unassign_player(self, user, slot):
+        assigned_players = self.assigned_players
+        if not assigned_players[slot]:
+            return False
+        if assigned_players[slot].id == user.id:
+            self.assigned_players[slot] = None
+            return True
+        return False
+
+    def set_slot(self, slot, emojis_str):
+        classes = ""
+        for s in emojis_str:
+            classes = classes + s
+        self.slots[slot] = classes
+
+    def slot(self, slot):
+        return self.slots[slot]
+
     def post_id(self):
         return self.post_id
 
@@ -68,6 +96,12 @@ class Raid(object):
 
     def set_guild_id(self, guild_id):
         self.guild_id = guild_id
+
+    def roster(self):
+        return self.roster
+
+    def set_roster(self, value):
+        self.roster = value
 
     def __str__(self):
         player_string = "the following players:\n"

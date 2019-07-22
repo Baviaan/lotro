@@ -9,6 +9,8 @@ import re
 from initialise import add_emojis, get_role_emojis
 from raid import Raid
 from role_handling import get_role
+from player import Player, PlayerClass
+from utils import alphabet_emojis
 
 
 class Tier(commands.Converter):
@@ -50,21 +52,25 @@ class Time(commands.Converter):
         return time
 
 
-async def raid_command(ctx, name, tier, boss, time, role_names, boss_name, server_tz):
+async def raid_command(ctx, name, tier, boss, time, role_names, boss_name, server_tz, roster=False):
     name = name.capitalize()
     boss = boss.capitalize()
     raid = Raid(name, tier, boss, time)
+    emojis = await get_role_emojis(ctx.guild, role_names)
+    if roster:
+        raid.set_roster(roster)
+        set_default_roster(raid, emojis)
     embed = build_raid_message(raid, "\u200B", server_tz)
     post = await ctx.send(embed=embed)
     raid.set_post_id(post.id)
     raid.set_channel_id(ctx.channel.id)
     raid.set_guild_id(ctx.guild.id)
-    emojis = await get_role_emojis(ctx.guild, role_names)
-    emojis.append("\u274C")  # Cancel emoji
     emojis.append("\u2705")  # Check mark emoji
-    emojis.append("\u23F2")  # Timer emoji
+    emojis.append("\u274C")  # Cancel emoji
     boss_emoji = discord.utils.get(ctx.guild.emojis, name=boss_name)
     emojis.append(boss_emoji)
+    emojis.append("\u23F2")  # Timer emoji
+    emojis.append("\u26CF")  # Pick emoji
     await add_emojis(emojis, post)
     await asyncio.sleep(0.25)
     await post.pin()
@@ -122,6 +128,17 @@ async def raid_update(bot, payload, raid, role_names, boss_name, raid_leader_nam
             await response.delete()
         raid.set_time(time)
         update = True
+    elif str(emoji) == "\u26CF":  # Pick emoji
+        if not raid.roster:
+            await channel.send("Roster is not enabled for this raid.", delete_after=10)
+            return False
+        raid_leader = await get_role(guild, raid_leader_name)
+        if raid_leader not in user.roles:
+            error_msg = "You do not have permission to change the raid boss. This incident will be reported."
+            print("Putting {0} on the naughty list.".format(user.name))
+            await channel.send(error_msg, delete_after=15)
+            return False
+        await select_players(bot, user, channel, raid, emojis)
     elif str(emoji) == "\u274C":  # Cancel emoji
         update = raid.remove_player(user)
     elif str(emoji) == "\u2705":  # Check mark emoji
@@ -148,6 +165,135 @@ async def raid_update(bot, payload, raid, role_names, boss_name, raid_leader_nam
     return update
 
 
+def set_default_roster(raid, emojis):
+    main_tank = set()
+    off_tank = set()
+    heals = set()
+    lm = set()
+    burg = set()
+    dps_capt = set()
+    dps = set()
+    for emoji in emojis:
+        if 'Guardian' == emoji.name:
+            main_tank.add(str(emoji))
+    for emoji in emojis:
+        if 'Captain' == emoji.name:
+            off_tank.add(str(emoji))
+    for emoji in emojis:
+        if emoji.name in ['Beorning', 'Minstrel']:
+            heals.add(str(emoji))
+    for emoji in emojis:
+        if 'Loremaster' == emoji.name:
+            lm.add(str(emoji))
+    for emoji in emojis:
+        if 'Burglar' == emoji.name:
+            burg.add(str(emoji))
+    for emoji in emojis:
+        if 'Captain' == emoji.name:
+            dps_capt.add(str(emoji))
+    for emoji in emojis:
+        if emoji.name in ['Champion', 'Hunter', 'Runekeeper', 'Warden']:
+            dps.add(str(emoji))
+    raid.set_slot(0, main_tank)
+    raid.set_slot(1, off_tank)
+    raid.set_slot(2, heals)
+    raid.set_slot(3, heals)
+    raid.set_slot(4, lm)
+    raid.set_slot(5, burg)
+    raid.set_slot(6, dps_capt)
+    for i in range(7, 12):
+        raid.set_slot(i, dps)
+
+
+async def select_players(bot, author, channel, raid, emojis):
+
+    def check(reaction, user):
+        return user == author
+
+    class_emojis = emojis
+    reactions = alphabet_emojis()
+    reactions = reactions[:10]
+    available = [player for player in raid.players if player not in raid.assigned_players]
+    if not available:
+        await channel.send("There are no players to assign for this raid!", delete_after=10)
+        return
+    if len(available) > 10:
+        available = available[:10]
+        await channel.send("**Warning**: removing some noobs from available players!", delete_after=10)
+    msg_content = "Please select the player you want to assign a spot in the raid from the list below  using the " \
+                  "corresponding reaction and then select a class. Assignment will finish after 30s of no " \
+                  "interaction.\n"
+    counter = 0
+    for player in available:
+        msg_content = msg_content + str(reactions[counter]) + " " + player.display_name + "\n"
+        counter = counter + 1
+    msg = await channel.send(msg_content)
+    for reaction in reactions[:len(available)] + class_emojis:
+        await msg.add_reaction(reaction)
+
+    while True:
+        # Update msg
+        msg_content = "Please select the player you want to assign a spot in the raid from the list below  using the " \
+                      "corresponding reaction and then select a class. Assignment will finish after 30s of no " \
+                      "interaction.\n"
+        counter = 0
+        available = [player for player in raid.players if player not in raid.assigned_players]
+        for player in available:
+            msg_content = msg_content + str(reactions[counter]) + " " + player.display_name + "\n"
+            counter = counter + 1
+        await msg.edit(content=msg_content)
+        # Get player
+        try:
+            (reaction, user) = await bot.wait_for('reaction_add', timeout=30, check=check)
+        except asyncio.TimeoutError:
+            await channel.send("Player assignment finished!", delete_after=10)
+            break
+        else:
+            await msg.remove_reaction(reaction, user)
+            try:
+                index = reactions.index(reaction.emoji)
+            except ValueError:
+                await channel.send("That is not a player, please try again!", delete_after=10)
+                continue
+            else:
+                try:
+                    selected_player = available[index]
+                except IndexError:
+                    await channel.send("That is not a player, please try again!", delete_after=10)
+                    continue
+        # Get class
+        try:
+            (reaction, user) = await bot.wait_for('reaction_add', timeout=30, check=check)
+        except asyncio.TimeoutError:
+            await channel.send("Player assignment finished!", delete_after=10)
+            break
+        else:
+            await msg.remove_reaction(reaction, user)
+            if reaction.emoji in class_emojis:
+                emoji_str = str(reaction.emoji)
+                if PlayerClass(reaction.emoji) not in selected_player.classes:
+                    await channel.send("That player did not sign up with this class!", delete_after=10)
+                    continue
+
+            else:
+                await channel.send("That is not a class, please start over!", delete_after=10)
+                continue
+        # Check for free slot
+        updated = False
+        for i in range(len(raid.slots)):
+            slot = raid.slot(i)
+            if emoji_str in slot:
+                updated = raid.assign_player(selected_player, i)
+                if updated:
+                    raid.set_slot(i, emoji_str)
+                    msg_content = "Assigned {0} to {1}.".format(selected_player.display_name, emoji_str)
+                    await channel.send(msg_content, delete_after=10)
+                    break
+        if not updated:
+            await channel.send("There are no slots available for the selected class.", delete_after=10)
+    await msg.delete()
+
+
 def convert2UTC(time):
     offset = time.utcoffset()
     time = time.replace(tzinfo=None)
@@ -163,6 +309,13 @@ def convert2local(time):
 
 
 def build_raid_message(raid, embed_texts, server_tz):
+
+    def pstr(player):
+        if not isinstance(player, Player):
+            return "<Available>"
+        else:
+            return player.display_name
+
     server_time = local_time(raid.time, server_tz)
     header_time = format_time(server_time) + " server time"
     embed_title = "{0} {1} at {2}".format(raid.name, raid.tier, header_time)
@@ -171,6 +324,17 @@ def build_raid_message(raid, embed_texts, server_tz):
     time_string = build_time_string(raid.time)
     embed.add_field(name="Time zones:", value=time_string)
     embed.add_field(name="\u200B", value="\u200B")
+    if raid.roster:
+        embed_name = "The following line up has been selected:"
+        embed_text = ""
+        for i in range(6):
+            embed_text = embed_text + raid.slot(i) + ": " + pstr(raid.assigned_players[i]) + "\n"
+        embed.add_field(name=embed_name, value=embed_text)
+        embed_name = "\u200B"
+        embed_text = ""
+        for i in range(6, 12):
+            embed_text = embed_text + raid.slot(i) + ": " + pstr(raid.assigned_players[i]) + "\n"
+        embed.add_field(name=embed_name, value=embed_text)
     # Add a field for each embed text
     for i in range(len(embed_texts)):
         if i == 0:
@@ -184,7 +348,7 @@ def build_raid_message(raid, embed_texts, server_tz):
 
 
 def build_raid_players(players, block_size=6):
-    player_strings =[]
+    player_strings = []
     # Create the player strings
     for player in players:
         player_string = player.display_name + " "
