@@ -71,6 +71,7 @@ async def raid_command(ctx, name, tier, boss, time, role_names, boss_name, serve
     emojis.append(boss_emoji)
     emojis.append("\u23F2")  # Timer emoji
     emojis.append("\u26CF")  # Pick emoji
+    emojis.append("\U0001F6E0")  # Config emoji
     await add_emojis(emojis, post)
     await asyncio.sleep(0.25)
     await post.pin()
@@ -89,13 +90,14 @@ async def raid_update(bot, payload, raid, role_names, boss_name, raid_leader_nam
     def check(msg):
         return msg.author == user
 
-    if emoji == boss_emoji:
+    if str(emoji) in ["\u23F2", "\u26CF", "\U0001F6E0"] or emoji == boss_emoji:
         raid_leader = await get_role(guild, raid_leader_name)
         if raid_leader not in user.roles:
-            error_msg = "You do not have permission to change the raid boss. This incident will be reported."
+            error_msg = "You do not have permission to change the raid settings. This incident will be reported."
             print("Putting {0} on the naughty list.".format(user.name))
             await channel.send(error_msg, delete_after=15)
             return False
+    elif emoji == boss_emoji:
         await channel.send("Please specify the new raid boss.", delete_after=15)
         try:
             response = await bot.wait_for('message', check=check, timeout=300)
@@ -107,12 +109,6 @@ async def raid_update(bot, payload, raid, role_names, boss_name, raid_leader_nam
         raid.set_boss(boss)
         update = True
     elif str(emoji) == "\u23F2":  # Timer emoji
-        raid_leader = await get_role(guild, raid_leader_name)
-        if raid_leader not in user.roles:
-            error_msg = "You do not have permission to change the raid time. This incident will be reported."
-            print("Putting {0} on the naughty list.".format(user.name))
-            await channel.send(error_msg, delete_after=15)
-            return False
         await channel.send("Please specify the new raid time.", delete_after=15)
         try:
             response = await bot.wait_for('message', check=check, timeout=300)
@@ -131,12 +127,6 @@ async def raid_update(bot, payload, raid, role_names, boss_name, raid_leader_nam
     elif str(emoji) == "\u26CF":  # Pick emoji
         if not raid.roster:
             await channel.send("Roster is not enabled for this raid.", delete_after=10)
-            return False
-        raid_leader = await get_role(guild, raid_leader_name)
-        if raid_leader not in user.roles:
-            error_msg = "You do not have permission to change the raid boss. This incident will be reported."
-            print("Putting {0} on the naughty list.".format(user.name))
-            await channel.send(error_msg, delete_after=15)
             return False
         await select_players(bot, user, channel, raid, emojis)
     elif str(emoji) == "\u274C":  # Cancel emoji
