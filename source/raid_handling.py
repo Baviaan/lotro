@@ -159,8 +159,9 @@ async def raid_update(bot, payload, raid, role_names, boss_name, raid_leader_nam
         await post.edit(embed=embed)
     except discord.HTTPException:
         print("An error occurred sending the following messages as embed.")
-        for part in msg:
-            print(part)
+        print(embed.title)
+        print(embed.description)
+        print(embed.fields)
         await channel.send("That's an error. Check the logs.")
     return update
 
