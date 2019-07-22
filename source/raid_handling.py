@@ -132,12 +132,15 @@ async def raid_update(bot, payload, raid, role_names, boss_name, raid_leader_nam
     elif str(emoji) == "\U0001F6E0":  # Config emoji
         await roster_configure(bot, user, channel, raid, emojis)
     elif str(emoji) == "\u274C":  # Cancel emoji
-        player = Player(user)
-        if player in raid.assigned_players:
-            error_msg = "Dearest raid leader, {0} would like to cancel their availability but you have assigned them a spot in the raid. Please resolve this conflict.".format(user.mention)
-            await channel.send(error_msg)
-            update = False
-        else:
+        try:
+            player = Player(user)
+            if player in raid.assigned_players:
+                error_msg = "Dearest raid leader, {0} would like to cancel their availability but you have assigned them a spot in the raid. Please resolve this conflict.".format(user.mention)
+                await channel.send(error_msg)
+                update = False
+            else:
+                update = raid.remove_player(user)
+        except AttributeError:
             update = raid.remove_player(user)
     elif str(emoji) == "\u2705":  # Check mark emoji
         has_class_role = False
