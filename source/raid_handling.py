@@ -166,7 +166,7 @@ async def raid_update(bot, payload, raid, role_names, boss_name, raid_leader_nam
     return update
 
 
-def set_default_roster(raid, emojis):
+def set_default_roster(raid, emojis, slots=range(12)):
     main_tank = set()
     off_tank = set()
     heals = set()
@@ -195,15 +195,23 @@ def set_default_roster(raid, emojis):
     for emoji in emojis:
         if emoji.name in ['Champion', 'Hunter', 'Runekeeper', 'Warden']:
             dps.add(str(emoji))
-    raid.set_slot(0, main_tank)
-    raid.set_slot(1, off_tank)
-    raid.set_slot(2, heals)
-    raid.set_slot(3, heals)
-    raid.set_slot(4, lm)
-    raid.set_slot(5, burg)
-    raid.set_slot(6, dps_capt)
+    if 0 in slots:
+        raid.set_slot(0, main_tank)
+    if 1 in slots:
+        raid.set_slot(1, off_tank)
+    if 2 in slots:
+        raid.set_slot(2, heals)
+    if 3 in slots:
+        raid.set_slot(3, heals)
+    if 4 in slots:
+        raid.set_slot(4, lm)
+    if 5 in slots:
+        raid.set_slot(5, burg)
+    if 6 in slots:
+        raid.set_slot(6, dps_capt)
     for i in range(7, 12):
-        raid.set_slot(i, dps)
+        if i in slots:
+            raid.set_slot(i, dps)
 
 
 async def select_players(bot, author, channel, raid, emojis):
@@ -211,72 +219,90 @@ async def select_players(bot, author, channel, raid, emojis):
     def check(reaction, user):
         return user == author
 
+    reaction_limit = 20
     class_emojis = emojis
     reactions = alphabet_emojis()
-    reactions = reactions[:10]
-    available = [player for player in raid.players if player not in raid.assigned_players]
+    reactions = reactions[:reaction_limit]
+    available = [player for player in raid.players]
     if not available:
         await channel.send("There are no players to assign for this raid!", delete_after=10)
         return
-    if len(available) > 10:
-        available = available[:10]
+    if len(available) > reaction_limit:
+        available = available[:20]
         await channel.send("**Warning**: removing some noobs from available players!", delete_after=10)
     msg_content = "Please select the player you want to assign a spot in the raid from the list below  using the " \
-                  "corresponding reaction and then select a class. Assignment will finish after 30s of no " \
-                  "interaction.\n"
+                  "corresponding reaction. Assignment will finish after 20s of no " \
+                  "interaction.\nAvailable players:\n"
     counter = 0
     for player in available:
-        msg_content = msg_content + str(reactions[counter]) + " " + player.display_name + "\n"
+        if player in raid.assigned_players:
+            msg_content = msg_content + str(reactions[counter]) + " ~~" + player.display_name + "~~\n"
+        else:
+            msg_content = msg_content + str(reactions[counter]) + " " + player.display_name + "\n"
         counter = counter + 1
     msg = await channel.send(msg_content)
-    for reaction in reactions[:len(available)] + class_emojis:
+    for reaction in reactions[:len(available)]:
         await msg.add_reaction(reaction)
+    class_msg_content = "Select the class for this player."
+    class_msg = await channel.send(class_msg_content)
+    for reaction in class_emojis:
+        await class_msg.add_reaction(reaction)
 
     while True:
         # Update msg
         msg_content = "Please select the player you want to assign a spot in the raid from the list below  using the " \
-                      "corresponding reaction and then select a class. Assignment will finish after 30s of no " \
-                      "interaction.\n"
+                      "corresponding reaction. Assignment will finish after 20s of no " \
+                      "interaction.\nAvailable players:\n"
         counter = 0
-        available = [player for player in raid.players if player not in raid.assigned_players]
         for player in available:
-            msg_content = msg_content + str(reactions[counter]) + " " + player.display_name + "\n"
+            if player in raid.assigned_players:
+                msg_content = msg_content + str(reactions[counter]) + " ~~" + player.display_name + "~~\n"
+            else:
+                msg_content = msg_content + str(reactions[counter]) + " " + player.display_name + "\n"
             counter = counter + 1
         await msg.edit(content=msg_content)
         # Get player
         try:
-            (reaction, user) = await bot.wait_for('reaction_add', timeout=30, check=check)
+            (reaction, user) = await bot.wait_for('reaction_add', timeout=20, check=check)
         except asyncio.TimeoutError:
             await channel.send("Player assignment finished!", delete_after=10)
             break
         else:
-            await msg.remove_reaction(reaction, user)
             try:
                 index = reactions.index(reaction.emoji)
             except ValueError:
-                await channel.send("That is not a player, please try again!", delete_after=10)
+                await class_msg.remove_reaction(reaction, user)
+                await channel.send("Please select a player first!", delete_after=10)
                 continue
             else:
+                await msg.remove_reaction(reaction, user)
+                selected_player = available[index]
                 try:
-                    selected_player = available[index]
-                except IndexError:
-                    await channel.send("That is not a player, please try again!", delete_after=10)
+                    index = raid.assigned_players.index(selected_player)
+                    raid.unassign_player(selected_player, index)
+                    set_default_roster(raid, emojis, [index])
+                    text = "Removed {0} from the line up!".format(selected_player.display_name)
+                    await channel.send(text, delete_after=10)
                     continue
+                except ValueError:
+                    pass
         # Get class
         try:
-            (reaction, user) = await bot.wait_for('reaction_add', timeout=30, check=check)
+            (reaction, user) = await bot.wait_for('reaction_add', timeout=20, check=check)
         except asyncio.TimeoutError:
             await channel.send("Player assignment finished!", delete_after=10)
             break
         else:
-            await msg.remove_reaction(reaction, user)
             if reaction.emoji in class_emojis:
+                await class_msg.remove_reaction(reaction, user)
                 emoji_str = str(reaction.emoji)
                 if PlayerClass(reaction.emoji) not in selected_player.classes:
-                    await channel.send("That player did not sign up with this class!", delete_after=10)
+                    text = "{0} did not sign up with {1}!".format(selected_player.display_name, emoji_str)
+                    await channel.send(text, delete_after=10)
                     continue
 
             else:
+                await msg.remove_reaction(reaction, user)
                 await channel.send("That is not a class, please start over!", delete_after=10)
                 continue
         # Check for free slot
@@ -293,6 +319,7 @@ async def select_players(bot, author, channel, raid, emojis):
         if not updated:
             await channel.send("There are no slots available for the selected class.", delete_after=10)
     await msg.delete()
+    await class_msg.delete()
 
 
 def convert2UTC(time):
