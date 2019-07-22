@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.INFO)
 launch_on_boot = False
 
 # print version number.
-version = "v2.7.0a"
+version = "v2.7.0b"
 print("Running " + version)
 
 # Get local timezone using mad hacks.
@@ -121,7 +121,7 @@ async def background_task():
                     print("We are missing required permissions to see raid post.")
                 else:
                     raid_start_msg = "Gondor calls for aid! "
-                    for player in raid.players:
+                    for player in raid.assigned_players:
                         raid_start_msg = raid_start_msg + "<@{0}> ".format(player.id)
                     raid_start_msg = raid_start_msg + "will you answer the call? We are forming for the raid now."
                     await channel.send(raid_start_msg, delete_after=sleep_time * 2)
@@ -165,12 +165,14 @@ async def on_reaction_add(reaction, user):
 @bot.event
 async def on_raw_reaction_add(payload):
     update = False
+    guild = bot.get_guild(payload.guild_id)
+    user = guild.get_member(payload.user_id)
+    if user == bot.user:
+        return
     for raid in raids:
         if payload.message_id == raid.post_id:
             update = await raid_update(bot, payload, raid, role_names, boss_name, raid_leader_name, server_tz)
             emoji = payload.emoji
-            guild = bot.get_guild(payload.guild_id)
-            user = guild.get_member(payload.user_id)
             channel = guild.get_channel(payload.channel_id)
             message = await channel.fetch_message(payload.message_id)
             await message.remove_reaction(emoji, user)

@@ -75,6 +75,8 @@ class Raid(object):
         for s in emojis_str:
             classes = classes + s
         self.slots[slot] = classes
+        #  Reset player in this slot.
+        self.assigned_players[slot] = None
 
     def slot(self, slot):
         return self.slots[slot]

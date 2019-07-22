@@ -97,13 +97,13 @@ async def raid_update(bot, payload, raid, role_names, boss_name, raid_leader_nam
             print("Putting {0} on the naughty list.".format(user.name))
             await channel.send(error_msg, delete_after=15)
             return False
-    elif emoji == boss_emoji:
+    if emoji == boss_emoji:
         await channel.send("Please specify the new raid boss.", delete_after=15)
         try:
             response = await bot.wait_for('message', check=check, timeout=300)
         except asyncio.TimeoutError:
             return False
-        finally:
+        else:
             await response.delete()
         boss = response.content.capitalize()
         raid.set_boss(boss)
@@ -128,7 +128,9 @@ async def raid_update(bot, payload, raid, role_names, boss_name, raid_leader_nam
         if not raid.roster:
             await channel.send("Roster is not enabled for this raid.", delete_after=10)
             return False
-        await select_players(bot, user, channel, raid, emojis)
+        update = await select_players(bot, user, channel, raid, emojis)
+    elif str(emoji) == "\U0001F6E0":  # Config emoji
+        await roster_configure(bot, user, channel, raid, emojis)
     elif str(emoji) == "\u274C":  # Cancel emoji
         update = raid.remove_player(user)
     elif str(emoji) == "\u2705":  # Check mark emoji
@@ -204,6 +206,80 @@ def set_default_roster(raid, emojis, slots=range(12)):
             raid.set_slot(i, dps)
 
 
+def set_roster(raid, emoji, slot):
+    raid.set_slot(slot, str(emoji))
+
+
+async def roster_configure(bot, author, channel, raid, emojis):
+
+    def check(msg):
+        return author == msg.author
+
+    text = "Please respond with 'yes/no' to indicate whether you want to use the roster for this raid."
+    msg = await channel.send(text)
+    try:
+        reply = await bot.wait_for('message', timeout=20, check=check)
+    except asyncio.TimeoutError:
+        await channel.send("Roster configuration finished!", delete_after=10)
+        return False
+    else:
+        await reply.delete()
+        if 'n' in reply.content.lower():
+            if raid.roster:
+                raid.set_roster(False)
+                await channel.send("Roster disabled for this raid.\nRoster configuration finished!", delete_after=10)
+                return True
+        elif 'y' not in reply.content.lower():
+            await channel.send("Roster configuration finished!", delete_after=10)
+            return False
+    finally:
+        await msg.delete()
+    update = False
+    if not raid.roster:
+        raid.set_roster(True)
+        set_default_roster(raid, emojis)
+        update = True
+    await channel.send("Roster enabled for this raid.", delete_after=10)
+    text = "If you wish to overwrite a default raid slot please respond with the slot number followed by the class " \
+           "emojis you would like. Configuration will finish 20s after no interaction. "
+    msg = await channel.send(text)
+    while True:
+        try:
+            reply = await bot.wait_for('message', timeout=20, check=check)
+        except asyncio.TimeoutError:
+            await channel.send("Roster configuration finished!", delete_after=10)
+            break
+        else:
+            await reply.delete()
+            new_classes = ""
+            counter = 0
+            print(reply.content)
+            if reply.content[0].isdigit():
+                index = int(reply.content[0])
+                if index == 1:
+                    if reply.content[1].isdigit():
+                        index = int(reply.content[0:2])
+                if index <= 0 or index > len(raid.slots):
+                    await channel.send("No valid slot provided!", delete_after=10)
+                    return update
+            else:
+                await channel.send("No slot provided!", delete_after=10)
+                return update
+            for emoji in emojis:
+                emoji_str = str(emoji)
+                if emoji_str in reply.content:
+                    counter = counter + 1
+                    new_classes = new_classes + emoji_str
+                if counter > 3:
+                    break  # allow maximum of 4 classes
+            if new_classes != "":
+                set_roster(raid, new_classes, index-1)
+                await channel.send("Classes for slot {0} updated!".format(index), delete_after=10)
+                update = True
+    await msg.delete()
+    return update
+
+
 async def select_players(bot, author, channel, raid, emojis):
 
     def check(reaction, user):
@@ -216,7 +292,7 @@ async def select_players(bot, author, channel, raid, emojis):
     available = [player for player in raid.players]
     if not available:
         await channel.send("There are no players to assign for this raid!", delete_after=10)
-        return
+        return False
     if len(available) > reaction_limit:
         available = available[:20]
         await channel.send("**Warning**: removing some noobs from available players!", delete_after=10)
@@ -310,6 +386,7 @@ async def select_players(bot, author, channel, raid, emojis):
             await channel.send("There are no slots available for the selected class.", delete_after=10)
     await msg.delete()
     await class_msg.delete()
+    return True
 
 
 def convert2UTC(time):
