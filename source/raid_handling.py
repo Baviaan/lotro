@@ -253,7 +253,6 @@ async def roster_configure(bot, author, channel, raid, emojis):
             await reply.delete()
             new_classes = ""
             counter = 0
-            print(reply.content)
             if reply.content[0].isdigit():
                 index = int(reply.content[0])
                 if index == 1:
