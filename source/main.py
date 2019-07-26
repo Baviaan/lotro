@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.INFO)
 launch_on_boot = False
 
 # print version number.
-version = "v2.7.0"
+version = "v2.7.1"
 print("Running " + version)
 
 # Get local timezone using mad hacks.
@@ -103,6 +103,8 @@ async def background_task():
                     print("Raid post already deleted.")
                 except discord.Forbidden:
                     print("We are missing required permissions to delete raid post.")
+                except AttributeError:
+                    print("Raid channel has been deleted.")
                 else:
                     await post.delete()
                     print("Deleted old raid post.")
