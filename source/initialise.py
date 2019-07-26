@@ -21,10 +21,8 @@ async def initialise(guild, channel, role_names):
 
 
 async def add_emojis(emojis, message):
-    await asyncio.sleep(0.25)
     for emoji in emojis:
         await message.add_reaction(emoji)
-        await asyncio.sleep(0.25)
 
 
 async def get_role_emojis(guild, role_names):
