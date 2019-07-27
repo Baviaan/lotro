@@ -121,6 +121,10 @@ async def background_task():
                     print("Deleted old raid.")
                 except discord.Forbidden:
                     print("We are missing required permissions to see raid post.")
+                except AttributeError:
+                    print("Raid channel has been deleted.")
+                    raids.remove(raid)
+                    print("Deleted old raid.")
                 else:
                     raid_start_msg = "Gondor calls for aid! "
                     for player in raid.assigned_players:
