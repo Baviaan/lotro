@@ -56,22 +56,19 @@ async def raid_command(ctx, name, tier, boss, time, role_names, boss_name, serve
     name = name.capitalize()
     boss = boss.capitalize()
     raid = Raid(name, tier, boss, time)
-    emojis = await get_role_emojis(ctx.guild, role_names)
+    class_emojis = await get_role_emojis(ctx.guild, role_names)
     if roster:
         raid.set_roster(roster)
-        set_default_roster(raid, emojis)
+        set_default_roster(raid, class_emojis)
     embed = build_raid_message(raid, "\u200B", server_tz)
     post = await ctx.send(embed=embed)
     raid.set_post_id(post.id)
     raid.set_channel_id(ctx.channel.id)
     raid.set_guild_id(ctx.guild.id)
-    emojis.append("\u2705")  # Check mark emoji
-    emojis.append("\u274C")  # Cancel emoji
+    emojis = ["\U0001F6E0", "\u26CF", "\u23F2", "\u274C", "\u2705"]  # Config, pick, timer, cancel, check
     boss_emoji = discord.utils.get(ctx.guild.emojis, name=boss_name)
     emojis.append(boss_emoji)
-    emojis.append("\u23F2")  # Timer emoji
-    emojis.append("\u26CF")  # Pick emoji
-    emojis.append("\U0001F6E0")  # Config emoji
+    emojis.extend(class_emojis)
     await add_emojis(emojis, post)
     await asyncio.sleep(0.25)
     await post.pin()
