@@ -52,7 +52,7 @@ class Time(commands.Converter):
         return time
 
 
-async def raid_command(ctx, name, tier, boss, time, role_names, boss_name, server_tz, roster=False):
+async def raid_command(ctx, name, tier, boss, time, role_names, server_tz, roster=False):
     name = name.capitalize()
     boss = boss.capitalize()
     raid = Raid(name, tier, boss, time)
@@ -65,9 +65,7 @@ async def raid_command(ctx, name, tier, boss, time, role_names, boss_name, serve
     raid.set_post_id(post.id)
     raid.set_channel_id(ctx.channel.id)
     raid.set_guild_id(ctx.guild.id)
-    emojis = ["\U0001F6E0", "\u26CF", "\u23F2", "\u274C", "\u2705"]  # Config, pick, timer, cancel, check
-    boss_emoji = discord.utils.get(ctx.guild.emojis, name=boss_name)
-    emojis.append(boss_emoji)
+    emojis = ["\U0001F6E0", "\u26CF", "\u274C", "\u2705"]  # Config, pick, cancel, check
     emojis.extend(class_emojis)
     await add_emojis(emojis, post)
     await asyncio.sleep(0.25)
@@ -75,59 +73,31 @@ async def raid_command(ctx, name, tier, boss, time, role_names, boss_name, serve
     return raid
 
 
-async def raid_update(bot, payload, raid, role_names, boss_name, raid_leader_name, server_tz):
+async def raid_update(bot, payload, raid, role_names, raid_leader_name, server_tz):
     guild = bot.get_guild(payload.guild_id)
     channel = guild.get_channel(payload.channel_id)
     user = guild.get_member(payload.user_id)
     emoji = payload.emoji
     emojis = await get_role_emojis(guild, role_names)
-    boss_emoji = discord.utils.get(guild.emojis, name=boss_name)
     update = False
 
     def check(msg):
         return msg.author == user
 
-    if str(emoji) in ["\u23F2", "\u26CF", "\U0001F6E0"] or emoji == boss_emoji:
+    if str(emoji) in ["\U0001F6E0", "\u26CF"]:
         raid_leader = await get_role(guild, raid_leader_name)
         if raid_leader not in user.roles:
             error_msg = "You do not have permission to change the raid settings. This incident will be reported."
             print("Putting {0} on the naughty list.".format(user.name))
             await channel.send(error_msg, delete_after=15)
             return False
-    if emoji == boss_emoji:
-        await channel.send("Please specify the new raid boss.", delete_after=15)
-        try:
-            response = await bot.wait_for('message', check=check, timeout=300)
-        except asyncio.TimeoutError:
-            return False
-        else:
-            await response.delete()
-        boss = response.content.capitalize()
-        raid.set_boss(boss)
-        update = True
-    elif str(emoji) == "\u23F2":  # Timer emoji
-        await channel.send("Please specify the new raid time.", delete_after=15)
-        try:
-            response = await bot.wait_for('message', check=check, timeout=300)
-        except asyncio.TimeoutError:
-            return False
-        try:
-            time = await Time(server_tz).converter(response.content)
-        except commands.BadArgument:
-            error_msg = "Failed to parse time argument: " + response.content
-            await channel.send(error_msg, delete_after=20)
-            return False
-        finally:
-            await response.delete()
-        raid.set_time(time)
-        update = True
-    elif str(emoji) == "\u26CF":  # Pick emoji
+    if str(emoji) == "\u26CF":  # Pick emoji
         if not raid.roster:
             await channel.send("Roster is not enabled for this raid.", delete_after=10)
             return False
         update = await select_players(bot, user, channel, raid, emojis)
     elif str(emoji) == "\U0001F6E0":  # Config emoji
-        await roster_configure(bot, user, channel, raid, emojis)
+        update = await configure(bot, user, channel, raid, emojis, server_tz)
     elif str(emoji) == "\u274C":  # Cancel emoji
         try:
             player = Player(user)
@@ -161,6 +131,33 @@ async def raid_update(bot, payload, raid, role_names, boss_name, raid_leader_nam
         print(embed.description)
         print(embed.fields)
         await channel.send("That's an error. Check the logs.")
+    return update
+
+
+async def configure(bot, user, channel, raid, emojis, server_tz):
+
+    def check(msg):
+        return user == msg.author
+
+    text = "Please respond with 'roster', 'time' or 'boss' to indicate which setting you wish to update for this raid."
+    msg = await channel.send(text)
+    try:
+        reply = await bot.wait_for('message', timeout=20, check=check)
+    except asyncio.TimeoutError:
+        await msg.delete()
+        await channel.send("Configuration finished!", delete_after=10)
+        return False
+    else:
+        await msg.delete()
+        await reply.delete()
+        if reply.content.lower().startswith('r'):
+            update = await roster_configure(bot, user, channel, raid, emojis)
+        elif reply.content.lower().startswith('t'):
+            update = await time_configure(bot, user, channel, raid, server_tz)
+        elif reply.content.lower().startswith('b'):
+            update = await boss_configure(bot, user, channel, raid)
+        else:
+            update = False
     return update
 
 
@@ -214,6 +211,49 @@ def set_default_roster(raid, emojis, slots=range(12)):
 
 def set_roster(raid, emoji, slot):
     raid.set_slot(slot, str(emoji))
+
+
+async def boss_configure(bot, author, channel, raid):
+
+    def check(msg):
+        return author == msg.author
+
+    msg = await channel.send("Please specify the new raid boss.")
+    try:
+        response = await bot.wait_for('message', check=check, timeout=30)
+    except asyncio.TimeoutError:
+        return False
+    else:
+        await response.delete()
+    finally:
+        await msg.delete()
+    boss = response.content.capitalize()
+    raid.set_boss(boss)
+    return True
+
+
+async def time_configure(bot, author, channel, raid, server_tz):
+
+    def check(msg):
+        return author == msg.author
+
+    msg = await channel.send("Please specify the new raid time.")
+    try:
+        response = await bot.wait_for('message', check=check, timeout=30)
+    except asyncio.TimeoutError:
+        return False
+    finally:
+        await msg.delete()
+    try:
+        time = await Time(server_tz).converter(response.content)
+    except commands.BadArgument:
+        error_msg = "Failed to parse time argument: " + response.content
+        await channel.send(error_msg, delete_after=20)
+        return False
+    finally:
+        await response.delete()
+    raid.set_time(time)
+    return True
 
 
 async def roster_configure(bot, author, channel, raid, emojis):

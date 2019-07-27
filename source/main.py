@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.INFO)
 launch_on_boot = False
 
 # print version number.
-version = "v2.7.1"
+version = "v2.7.2"
 print("Running " + version)
 
 # Get local timezone using mad hacks.
@@ -43,7 +43,6 @@ channel_names = config['CHANNELS']
 # Specify names for class roles.
 # These will be automatically created on the server if they do not exist.
 role_names = config['CLASSES']
-boss_name = config['BOSS']
 raid_leader_name = config['LEADER']
 
 # change to immutable tuple
@@ -177,7 +176,7 @@ async def on_raw_reaction_add(payload):
         return
     for raid in raids:
         if payload.message_id == raid.post_id:
-            update = await raid_update(bot, payload, raid, role_names, boss_name, raid_leader_name, server_tz)
+            update = await raid_update(bot, payload, raid, role_names, raid_leader_name, server_tz)
             emoji = payload.emoji
             channel = guild.get_channel(payload.channel_id)
             message = await channel.fetch_message(payload.message_id)
@@ -231,7 +230,7 @@ async def apply(ctx):
 @bot.command()
 async def raid(ctx, name, tier: Tier, boss, *, time: Time(server_tz)):
     """Schedules a raid"""
-    raid = await raid_command(ctx, name, tier, boss, time, role_names, boss_name, server_tz)
+    raid = await raid_command(ctx, name, tier, boss, time, role_names, server_tz)
     raids.append(raid)
     save(raids)
 
@@ -255,7 +254,7 @@ async def anvil(ctx, *, time: Time(server_tz)):
             roster = False
         else:
             roster = True
-        raid = await raid_command(ctx, "Anvil", tier, "All", time, role_names, boss_name, server_tz, roster=roster)
+        raid = await raid_command(ctx, "Anvil", tier, "All", time, role_names, server_tz, roster=roster)
         raids.append(raid)
         save(raids)
 
@@ -272,7 +271,7 @@ anvil.update(help=anvil_example, brief=anvil_brief, description=anvil_descriptio
 async def thrang(ctx, *, time: Time(server_tz)):
     """Shortcut to schedule Thrang run"""
     tier = 'T2'
-    raid = await raid_command(ctx, "Boss from the Vaults", tier, "Thrang", time, role_names, boss_name, server_tz)
+    raid = await raid_command(ctx, "Boss from the Vaults", tier, "Thrang", time, role_names, server_tz)
     raids.append(raid)
     save(raids)
 
