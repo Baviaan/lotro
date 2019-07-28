@@ -287,7 +287,7 @@ async def roster_configure(bot, author, channel, raid, emojis):
         update = True
     await channel.send("Roster enabled for this raid.", delete_after=10)
     text = "If you wish to overwrite a default raid slot please respond with the slot number followed by the class " \
-           "emojis you would like. Configuration will finish 20s after no interaction. "
+           "emojis you would like. Configuration will finish after 20s of no interaction. "
     msg = await channel.send(text)
     while True:
         try:
