@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.INFO)
 launch_on_boot = False
 
 # print version number.
-version = "v2.7.2"
+version = "v2.7.3"
 print("Running " + version)
 
 # Get local timezone using mad hacks.
@@ -125,11 +125,12 @@ async def background_task():
                     raids.remove(raid)
                     print("Deleted old raid.")
                 else:
-                    raid_start_msg = "Gondor calls for aid! "
-                    for player in raid.assigned_players:
-                        raid_start_msg = raid_start_msg + "<@{0}> ".format(player.id)
-                    raid_start_msg = raid_start_msg + "will you answer the call? We are forming for the raid now."
-                    await channel.send(raid_start_msg, delete_after=sleep_time * 2)
+                    if raid.roster:
+                        raid_start_msg = "Gondor calls for aid! "
+                        for player in raid.assigned_players:
+                            raid_start_msg = raid_start_msg + "<@{0}> ".format(player.id)
+                        raid_start_msg = raid_start_msg + "will you answer the call? We are forming for the raid now."
+                        await channel.send(raid_start_msg, delete_after=sleep_time * 2)
         if counter >= save_time:
             save(raids)  # Save raids to file.
             counter = 0  # Reset counter to 0.
