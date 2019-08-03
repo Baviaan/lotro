@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.INFO)
 launch_on_boot = False
 
 # print version number.
-version = "v2.7.4"
+version = "v2.8.0"
 print("Running " + version)
 
 # Get local timezone using mad hacks.
@@ -228,7 +228,7 @@ async def apply(ctx):
     await new_app(bot, ctx.message, channel_names['APPLY'])
 
 
-@bot.command(aliases=['instance'])
+@bot.command(aliases=['instance', 'r'])
 async def raid(ctx, name, tier: Tier, *, time: Time(server_tz)):
     """Schedules a raid"""
     raid = await raid_command(ctx, name, tier, "All", time, role_names, server_tz)

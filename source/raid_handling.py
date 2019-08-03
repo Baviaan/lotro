@@ -1,4 +1,5 @@
 import asyncio
+import csv
 import datetime
 import dateparser
 import discord
@@ -10,7 +11,7 @@ from initialise import add_emojis, get_role_emojis
 from raid import Raid
 from role_handling import get_role
 from player import Player, PlayerClass
-from utils import alphabet_emojis
+from utils import alphabet_emojis, get_match
 
 
 class Tier(commands.Converter):
@@ -51,9 +52,23 @@ class Time(commands.Converter):
             raise commands.BadArgument(error_message)
         return time
 
+def get_raid_name(name):
+    with open('list-of-raids.csv', 'r') as f:
+        reader = csv.reader(f)
+        raid_list = list(reader)
+        names = [x[0] for x in raid_list]
+        match = get_match(name, names)
+        if match[0]:
+            return match[0]
+        nicknames = [x[1] for x in raid_list]
+        match = get_match(name, nicknames)
+        if match[0]:
+            result = [x[0] for x in raid_list if x[1]==match[0]]
+            return result[0]
+        return name
 
 async def raid_command(ctx, name, tier, boss, time, role_names, server_tz, roster=False):
-    name = name.title()
+    name = get_raid_name(name)
     boss = boss.capitalize()
     raid = Raid(name, tier, boss, time)
     class_emojis = await get_role_emojis(ctx.guild, role_names)
