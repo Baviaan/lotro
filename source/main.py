@@ -228,10 +228,10 @@ async def apply(ctx):
     await new_app(bot, ctx.message, channel_names['APPLY'])
 
 
-@bot.command()
-async def raid(ctx, name, tier: Tier, boss, *, time: Time(server_tz)):
+@bot.command(aliases=['instance'])
+async def raid(ctx, name, tier: Tier, *, time: Time(server_tz)):
     """Schedules a raid"""
-    raid = await raid_command(ctx, name, tier, boss, time, role_names, server_tz)
+    raid = await raid_command(ctx, name, tier, "All", time, role_names, server_tz)
     raids.append(raid)
     save(raids)
 
@@ -239,7 +239,7 @@ async def raid(ctx, name, tier: Tier, boss, *, time: Time(server_tz)):
 raid_brief = "Schedules a raid"
 raid_description = "Schedules a raid. Day/timezone will default to today/{0} if not specified. " \
                    "You can use 'server' as timezone. Usage:".format(local_tz)
-raid_example = "Examples:\n!raid Anvil 2 all Friday 4pm server\n!raid throne t3 2-4 21:00"
+raid_example = "Examples:\n!raid Anvil 2 Friday 4pm server\n!raid throne t3 21:00"
 raid.update(help=raid_example, brief=raid_brief, description=raid_description)
 
 

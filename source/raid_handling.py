@@ -53,7 +53,7 @@ class Time(commands.Converter):
 
 
 async def raid_command(ctx, name, tier, boss, time, role_names, server_tz, roster=False):
-    name = name.capitalize()
+    name = name.title()
     boss = boss.capitalize()
     raid = Raid(name, tier, boss, time)
     class_emojis = await get_role_emojis(ctx.guild, role_names)
