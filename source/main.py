@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.INFO)
 launch_on_boot = False
 
 # print version number.
-version = "v2.8.1"
+version = "v2.8.2"
 print("Running " + version)
 
 # Get local timezone using mad hacks.
@@ -76,9 +76,30 @@ if launch_on_boot:
     asyncio.sleep(10)
 print("Continuing...")
 
+launch_time = None
+
 prefix = "!"
 bot = commands.Bot(command_prefix=prefix, case_insensitive=True)
 
+def td_format(td_object):
+    seconds = int(td_object.total_seconds())
+    periods = [
+        ('year', 60*60*24*365),
+        ('month', 60*60*24*30),
+        ('day', 60*60*24),
+        ('hour', 60*60),
+        ('minute', 60),
+        ('second', 1)
+    ]
+
+    strings=[]
+    for period_name, period_seconds in periods:
+        if seconds > period_seconds:
+            period_value , seconds = divmod(seconds, period_seconds)
+            has_s = 's' if period_value > 1 else ''
+            strings.append("%s %s%s" % (period_value, period_name, has_s))
+
+    return ", ".join(strings)
 
 async def background_task():
     await bot.wait_until_ready()
@@ -146,6 +167,10 @@ async def on_ready():
     for guild in bot.guilds:
         print('Welcome to {0}'.format(guild))
 
+    global launch_time
+    if not launch_time:
+        launch_time = datetime.datetime.utcnow()
+
     global role_post_ids
     role_post_ids = []
     for guild in bot.guilds:
@@ -210,6 +235,13 @@ async def globally_block_dms(ctx):
     else:
         return True
 
+
+@bot.command()
+async def uptime(ctx):
+    """Shows the bot's uptime"""
+    uptime = datetime.datetime.utcnow() - launch_time
+    uptime_str = '**Uptime:** ' + td_format(uptime) + '.'
+    await ctx.send(uptime_str)
 
 @bot.command()
 async def roles(ctx):
