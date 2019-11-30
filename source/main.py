@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.INFO)
 launch_on_boot = False
 
 # print version number.
-version = "v2.8.2"
+version = "v3.0.0"
 print("Running " + version)
 
 # Get local timezone using mad hacks.
@@ -182,6 +182,7 @@ async def on_ready():
             print("Missing permissions for {0}".format(guild.name))
         else:
             role_post_ids.append(role_post.id)
+    bot.load_extension('dev_cog')
 
 
 @bot.event
@@ -242,6 +243,22 @@ async def uptime(ctx):
     uptime = datetime.datetime.utcnow() - launch_time
     uptime_str = '**Uptime:** ' + td_format(uptime) + '.'
     await ctx.send(uptime_str)
+
+
+@bot.command()
+@commands.is_owner()
+async def load(ctx, ext):
+    try:
+        bot.load_extension(ext)
+        await ctx.send('Extension loaded.')
+    except discord.ext.commands.ExtensionAlreadyLoaded:
+        bot.reload_extension(ext)
+        await ctx.send('Extension reloaded.')
+    except discord.ext.commands.ExtensionNotFound:
+        await ctx.send('Extension not found.')
+    except discord.ext.commands.ExtensionError:
+        await ctx.send('Extension failed to load.')
+
 
 @bot.command()
 async def roles(ctx):
