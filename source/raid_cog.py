@@ -565,9 +565,8 @@ class RaidCog(commands.Cog):
         embed = discord.Embed(title=embed_title, colour=discord.Colour(0x3498db), description=embed_description)
         time_string = self.build_time_string(raid.time)
         embed.add_field(name="Time zones:", value=time_string)
-        embed.add_field(name="\u200B", value="\u200B")
         if raid.roster:
-            embed_name = "The following line up has been selected:"
+            embed_name = "Selected line up:"
             embed_text = ""
             for i in range(6):
                 embed_text = embed_text + raid.slot(i) + ": " + pstr(raid.assigned_players[i]) + "\n"
