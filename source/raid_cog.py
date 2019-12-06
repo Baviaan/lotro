@@ -464,7 +464,7 @@ class RaidCog(commands.Cog):
 
         while True:
             # Update msg
-            msg_content = "Please select the player you want to assign a spot in the raid from the list below  using " \
+            msg_content = "Please select the player you want to assign a spot in the raid from the list below using " \
                           "the corresponding reaction. Assignment will finish after 20s of no interaction.\nAvailable" \
                           " players:\n "
             counter = 0
