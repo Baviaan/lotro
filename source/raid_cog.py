@@ -114,9 +114,12 @@ class RaidCog(commands.Cog):
     raid_example = "Examples:\n!raid Anvil 2 Friday 4pm server\n!raid throne t3 21:00"
     raid.update(help=raid_example, brief=raid_brief, description=raid_description)
 
-    @commands.command()
-    async def anvil(self, ctx, *, time: Time(server_tz)):
-        """Shortcut to schedule Anvil raid"""
+    @commands.command(aliases=['anvil', 'nod'])
+    async def fastraid(self, ctx, *, time: Time(server_tz)):
+        """Shortcut to schedule a raid"""
+        name = ctx.invoked_with
+        if name == "fastraid":
+            name = "unknown raid"
         try:
             tier = await Tier().converter(ctx.channel.name)
         except commands.BadArgument:
@@ -126,16 +129,16 @@ class RaidCog(commands.Cog):
                 roster = False
             else:
                 roster = True
-            raid = await self.raid_command(ctx, "Anvil", tier, "All", time, roster=roster)
+            raid = await self.raid_command(ctx, name, tier, "All", time, roster=roster)
             self.raids.append(raid)
             self.save()
 
-    anvil_brief = "Shortcut to schedule an Anvil raid"
-    anvil_description = "Schedules a raid with name 'Anvil', tier from channel name and bosses 'All'. " \
+    fastraid_brief = "Shortcut to schedule a raid"
+    fastraid_description = "Schedules a raid with the name of the command, tier from channel name and bosses 'All'. " \
                         "Day/timezone will default to today/{0} if not specified. You can use 'server' as timezone. " \
                         "Usage:".format(local_tz)
-    anvil_example = "Examples:\n!anvil Friday 4pm server\n!anvil 21:00 BST"
-    anvil.update(help=anvil_example, brief=anvil_brief, description=anvil_description)
+    fastraid_example = "Examples:\n!anvil Friday 4pm server\n!anvil 21:00 BST"
+    fastraid.update(help=fastraid_example, brief=fastraid_brief, description=fastraid_description)
 
     @staticmethod
     def get_raid_name(name):
