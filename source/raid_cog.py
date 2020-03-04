@@ -282,7 +282,7 @@ class RaidCog(commands.Cog):
             if 'Captain' == emoji.name:
                 off_tank.add(str(emoji))
         for emoji in emojis:
-            if emoji.name in ['Beorning', 'Minstrel']:
+            if emoji.name in ['Beorning', 'Minstrel', 'Runekeeper']:
                 heals.add(str(emoji))
         for emoji in emojis:
             if 'Loremaster' == emoji.name:
@@ -294,7 +294,7 @@ class RaidCog(commands.Cog):
             if 'Captain' == emoji.name:
                 dps_capt.add(str(emoji))
         for emoji in emojis:
-            if emoji.name in ['Champion', 'Hunter', 'Runekeeper', 'Warden']:
+            if emoji.name in ['Burglar', 'Champion', 'Hunter', 'Runekeeper', 'Warden']:
                 dps.add(str(emoji))
         if 0 in slots:
             raid.set_slot(0, main_tank)
