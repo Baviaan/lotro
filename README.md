@@ -1,7 +1,7 @@
 Prerequisites:\
 python >= 3.6\
-discord.py >= 1.0.0 (You can get the library with `python3 -m pip install -U discord.py`)\
-dateparser >= 0.7.1 (`python3 -m pip install -U dateparser`)
+Check the requirements.txt file for required libraries.\
+You can get them with e.g. `python3 -m pip install -U discord.py`\
 
 
 ------------------------------------
