@@ -101,20 +101,25 @@ class RaidCog(commands.Cog):
         if update:
             self.save()
 
-    @commands.command(aliases=['instance', 'r'])
+    raid_brief = "Schedules a raid"
+    raid_description = "Schedules a raid. Day/timezone will default to today/{0} if not specified. " \
+                       "You can use 'server' as timezone. Usage:".format(local_tz)
+    raid_example = "Examples:\n!raid Anvil 2 Friday 4pm server\n!raid throne t3 21:00"
+
+    @commands.command(aliases=['instance', 'r'], help=raid_example, brief=raid_brief, description=raid_description)
     async def raid(self, ctx, name, tier: Tier, *, time: Time(server_tz)):
         """Schedules a raid"""
         raid = await self.raid_command(ctx, name, tier, "All", time)
         self.raids.append(raid)
         self.save()
 
-    raid_brief = "Schedules a raid"
-    raid_description = "Schedules a raid. Day/timezone will default to today/{0} if not specified. " \
-                       "You can use 'server' as timezone. Usage:".format(local_tz)
-    raid_example = "Examples:\n!raid Anvil 2 Friday 4pm server\n!raid throne t3 21:00"
-    raid.update(help=raid_example, brief=raid_brief, description=raid_description)
+    fast_brief = "Shortcut to schedule a raid"
+    fast_description = "Schedules a raid with the name of the command, tier from channel name and bosses 'All'. " \
+                        "Day/timezone will default to today/{0} if not specified. You can use 'server' as timezone. " \
+                        "Usage:".format(local_tz)
+    fast_example = "Examples:\n!anvil Friday 4pm server\n!anvil 21:00 BST"
 
-    @commands.command(aliases=['anvil', 'nod'])
+    @commands.command(aliases=['anvil', 'nod'], help=fast_example, brief=fast_brief, description=fast_description)
     async def fastraid(self, ctx, *, time: Time(server_tz)):
         """Shortcut to schedule a raid"""
         name = ctx.invoked_with
@@ -132,13 +137,6 @@ class RaidCog(commands.Cog):
             raid = await self.raid_command(ctx, name, tier, "All", time, roster=roster)
             self.raids.append(raid)
             self.save()
-
-    fastraid_brief = "Shortcut to schedule a raid"
-    fastraid_description = "Schedules a raid with the name of the command, tier from channel name and bosses 'All'. " \
-                        "Day/timezone will default to today/{0} if not specified. You can use 'server' as timezone. " \
-                        "Usage:".format(local_tz)
-    fastraid_example = "Examples:\n!anvil Friday 4pm server\n!anvil 21:00 BST"
-    fastraid.update(help=fastraid_example, brief=fastraid_brief, description=fastraid_description)
 
     @staticmethod
     def get_raid_name(name):
