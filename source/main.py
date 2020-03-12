@@ -4,6 +4,7 @@ import asyncio
 import datetime
 import discord
 from discord.ext import commands
+import gettext
 import json
 import logging
 
@@ -20,12 +21,23 @@ logging.basicConfig(level=logging.WARNING)
 launch_on_boot = False
 
 # print version number.
-version = "v3.1.2"
+version = "v3.2.0"
 print("Running " + version)
 
 # Load config file.
 with open('config.json', 'r') as f:
     config = json.load(f)
+
+# Localization settings
+language = config['LANGUAGE']
+try:
+    locale = gettext.translation('messages', localedir='locale', languages=[language])
+except FileNotFoundError:
+    print("Language '{0}' not found. Defaulting to English.".format(language))
+    locale = gettext.translation('messages', localedir='locale', languages=['en'])
+finally:
+    locale.install()
+    _ = locale.gettext
 
 # Assign specified config values.
 token = config['BOT_TOKEN']
@@ -120,7 +132,7 @@ async def on_command_error(ctx, error):
     print("Command given: " + ctx.message.content)
     print(error)
     if isinstance(error, commands.NoPrivateMessage):
-        await ctx.send("Please use this command in a server.")
+        await ctx.send(_("Please use this command in a server."))
     else:
         await ctx.send(error, delete_after=10)
 
@@ -137,7 +149,7 @@ async def globally_block_dms(ctx):
 async def uptime(ctx):
     """Shows the bot's uptime"""
     uptime = datetime.datetime.utcnow() - launch_time
-    uptime_str = '**Uptime:** ' + td_format(uptime) + '.'
+    uptime_str = _("**Uptime:** ") + td_format(uptime) + '.'
     await ctx.send(uptime_str)
 
 
@@ -146,14 +158,14 @@ async def uptime(ctx):
 async def load(ctx, ext):
     try:
         bot.load_extension(ext)
-        await ctx.send('Extension loaded.')
+        await ctx.send(_('Extension loaded.'))
     except discord.ext.commands.ExtensionAlreadyLoaded:
         bot.reload_extension(ext)
-        await ctx.send('Extension reloaded.')
+        await ctx.send(_('Extension reloaded.'))
     except discord.ext.commands.ExtensionNotFound:
-        await ctx.send('Extension not found.')
+        await ctx.send(_('Extension not found.'))
     except discord.ext.commands.ExtensionError:
-        await ctx.send('Extension failed to load.')
+        await ctx.send(_('Extension failed to load.'))
 
 
 @bot.command()
@@ -189,7 +201,7 @@ delete.update(hidden=True)
 @delete.error
 async def delete_error(ctx, error):
     if isinstance(error, commands.NotOwner):
-        ctx.send("You do not have permission to use this command.")
+        ctx.send(_("You do not have permission to use this command."))
 
 
 bot.run(token)

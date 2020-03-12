@@ -3,12 +3,12 @@ import asyncio
 
 async def initialise(guild, channel, role_names):
     await channel.purge(limit=60)
-    msg = 'Please mute this bot command channel or lose your sanity like me.\n\n' \
+    msg = _('Please mute this bot command channel or lose your sanity like me.\n\n' \
           'React to this post with each class role you want to sign up for or ' \
           'click \u274C to remove all your class roles.\n\n*Further commands that can be used in this channel*:\n' \
           '`!roles` Shows which class roles you currently have.\n' \
           '`!dwarves` Shows a list of the 13 dwarves in the Anvil raid with their associated skills. ' \
-          '(Work in progress.)\n`!apply` to apply to {0}.'.format(guild.name)
+          '(Work in progress.)\n`!apply` to apply to {0}.').format(guild.name)
     role_post = await channel.send(msg)
     # Get the custom class emojis.
     emojis = await get_role_emojis(guild, role_names)

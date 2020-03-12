@@ -14,7 +14,7 @@ async def role_update(reaction, author, role_names):
     try:
         emoji_name = reaction.emoji.name
     except AttributeError:
-        print(reaction.emoji + " is not a class!")
+        print(reaction.emoji + _(" is not a class!"))
     else:
         if emoji_name in role_names:
             await add_role(channel, author, emoji_name)
