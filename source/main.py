@@ -30,14 +30,10 @@ with open('config.json', 'r') as f:
 
 # Localization settings
 language = config['LANGUAGE']
-try:
-    locale = gettext.translation('messages', localedir='locale', languages=[language])
-except FileNotFoundError:
-    print("Language '{0}' not found. Defaulting to English.".format(language))
-    locale = gettext.translation('messages', localedir='locale', languages=['en'])
-finally:
-    locale.install()
-    _ = locale.gettext
+locale = gettext.translation('messages', localedir='locale', languages=[language], fallback=True)
+if not hasattr(locale, '_catalog'):
+    print("Language file '{0}' not found. Defaulting to English.".format(language))
+locale.install()
 
 # Assign specified config values.
 token = config['BOT_TOKEN']

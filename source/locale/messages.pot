@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2020-03-12 01:58+GMT\n"
+"POT-Creation-Date: 2020-03-12 15:07+GMT\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -57,11 +57,11 @@ msgstr "Réponse de l'utilisateur à '{0}':"
 
 #: apply_handling.py:42
 msgid "An error occurred."
-msgstr ""
+msgstr "Une erreur est survenue."
 
 #: apply_handling.py:44
 msgid "Your application has been successfully submitted. An officer will be in touch soon!"
-msgstr "Une erreur est survenue."
+msgstr ""
 
 #: dwarves.py:3
 msgid ""
@@ -140,38 +140,38 @@ msgid ""
 msgstr ""
 "Veuillez désactiver ce canal de commande de bot ou perdez votre raison comme moi.\n"
 "\n"
-"Réagissez à ce message avec chaque rôle de classe auquel vous souhaitez vous inscrire ou cliquez \u274C pour supprimer tous vos rôles de classe.\n"
+"Réagissez à ce message avec chaque rôle de classe auquel vous souhaitez vous inscrire ou cliquez \\u274C pour supprimer tous vos rôles de classe.\n"
 "\n"
 "*Autres commandes pouvant être utilisées dans ce canal*:\n"
 "`!roles` Affiche les rôles de classe que vous avez actuellement.\n"
 "`!dwarves` Affiche une liste des 13 nains du raid Anvil avec leurs compétences associées. (Work in progress.)\n"
 "`!apply` pour postuler à {0}."
 
-#: main.py:138
+#: main.py:131
 msgid "Please use this command in a server."
 msgstr "Veuillez utiliser cette commande sur un serveur."
 
-#: main.py:155
+#: main.py:148
 msgid "**Uptime:** "
 msgstr "**Disponibilité:** "
 
-#: main.py:164
+#: main.py:157
 msgid "Extension loaded."
 msgstr "Extension chargée."
 
-#: main.py:167
+#: main.py:160
 msgid "Extension reloaded."
 msgstr "Extension rechargée."
 
-#: main.py:169
+#: main.py:162
 msgid "Extension not found."
-msgstr ""
-
-#: main.py:171
-msgid "Extension failed to load."
 msgstr "Extension introuvable."
 
-#: main.py:207
+#: main.py:164
+msgid "Extension failed to load."
+msgstr ""
+
+#: main.py:200
 msgid "You do not have permission to use this command."
 msgstr "Vous n'êtes pas autorisé à utiliser cette commande."
 
@@ -241,11 +241,11 @@ msgstr "Vous n'avez pas la permission de changer les paramètres du raid. Cet in
 
 #: raid_cog.py:198
 msgid "Roster is not enabled for this raid."
-msgstr ""La liste n'est pas activée pour ce raid.""
+msgstr "La liste n'est pas activée pour ce raid."
 
 #: raid_cog.py:207
 msgid "Dearest raid leader, {0} would like to cancel their availability but you have assigned them a spot in the raid. Please resolve this conflict."
-msgstr "Cher chef de raid, {0} souhaite annuler sa disponibilité mais vous leur avez attribué une place dans le raid. Veuillez résoudre ce conflit"
+msgstr "Cher chef de raid, {0} souhaite annuler sa disponibilité mais vous leur avez attribué une place dans le raid. Veuillez résoudre ce conflit."
 
 #: raid_cog.py:222
 msgid "{0} you have not assigned yourself any class roles."
@@ -257,7 +257,7 @@ msgstr "C'est une erreur. Vérifiez les logs."
 
 #: raid_cog.py:245
 msgid "Please respond with 'roster', 'time' or 'boss' to indicate which setting you wish to update for this raid."
-msgstr "Veuillez répondre avec 'liste', 'heure' ou 'boss' pour indiquer le paramètre que vous souhaitez mettre à jour pour ce raid. "
+msgstr "Veuillez répondre avec 'liste', 'heure' ou 'boss' pour indiquer le paramètre que vous souhaitez mettre à jour pour ce raid."
 
 #: raid_cog.py:252
 msgid "Configuration finished!"
@@ -375,27 +375,17 @@ msgstr "Il n'y a aucun joueur à assigner pour ce raid!"
 msgid "**Warning**: removing some noobs from available players!"
 msgstr "**Attention**: suppression de quelques noobs des joueurs disponibles!"
 
-#: raid_cog.py:461
+#: raid_cog.py:461 raid_cog.py:481
 msgid ""
-"Please select the player you want to assign a spot in the raid from the list below  using the corresponding reaction. Assignment will finish after 20s of no interaction.\n"
+"Please select the player you want to assign a spot in the raid from the list below using the corresponding reaction. Assignment will finish after 20s of no interaction.\n"
 "Available players:\n"
 msgstr ""
-"Veuillez sélectionner le joueur auquel vous souhaitez attribuer une place dans le raid dans la liste ci-dessous  en utilisant la réaction correspondante. L'affectation se terminera après 20s sans interaction.\n"
+"Veuillez sélectionner le joueur auquel vous souhaitez attribuer une place dans le raid dans la liste ci-dessous en utilisant la réaction correspondante. L'affectation se terminera après 20s sans interaction.\n"
 "Joueurs disponibles:\n"
 
 #: raid_cog.py:474
 msgid "Select the class for this player."
 msgstr "Sélectionnez la classe de ce joueur."
-
-#: raid_cog.py:481
-msgid ""
-"Please select the player you want to assign a spot in the raid from the list below using the corresponding reaction. Assignment will finish after 20s of no interaction.\n"
-"Available players:\n"
-" "
-msgstr ""
-"Veuillez sélectionner le joueur auquel vous souhaitez attribuer une place dans le raid dans la liste ci-dessous en utilisant la réaction correspondante. L'affectation se terminera après 20s sans interaction. \n"
-"Joueurs disponibles:"
-" "
 
 #: raid_cog.py:496 raid_cog.py:521
 msgid "Player assignment finished!"
