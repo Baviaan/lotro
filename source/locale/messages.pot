@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2020-03-12 01:58+GMT\n"
+"POT-Creation-Date: 2020-03-12 15:07+GMT\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -139,31 +139,31 @@ msgid ""
 "`!apply` to apply to {0}."
 msgstr ""
 
-#: main.py:138
+#: main.py:131
 msgid "Please use this command in a server."
 msgstr ""
 
-#: main.py:155
+#: main.py:148
 msgid "**Uptime:** "
 msgstr ""
 
-#: main.py:164
+#: main.py:157
 msgid "Extension loaded."
 msgstr ""
 
-#: main.py:167
+#: main.py:160
 msgid "Extension reloaded."
 msgstr ""
 
-#: main.py:169
+#: main.py:162
 msgid "Extension not found."
 msgstr ""
 
-#: main.py:171
+#: main.py:164
 msgid "Extension failed to load."
 msgstr ""
 
-#: main.py:207
+#: main.py:200
 msgid "You do not have permission to use this command."
 msgstr ""
 
@@ -359,21 +359,14 @@ msgstr ""
 msgid "**Warning**: removing some noobs from available players!"
 msgstr ""
 
-#: raid_cog.py:461
+#: raid_cog.py:461 raid_cog.py:481
 msgid ""
-"Please select the player you want to assign a spot in the raid from the list below  using the corresponding reaction. Assignment will finish after 20s of no interaction.\n"
+"Please select the player you want to assign a spot in the raid from the list below using the corresponding reaction. Assignment will finish after 20s of no interaction.\n"
 "Available players:\n"
 msgstr ""
 
 #: raid_cog.py:474
 msgid "Select the class for this player."
-msgstr ""
-
-#: raid_cog.py:481
-msgid ""
-"Please select the player you want to assign a spot in the raid from the list below using the corresponding reaction. Assignment will finish after 20s of no interaction.\n"
-"Available players:\n"
-" "
 msgstr ""
 
 #: raid_cog.py:496 raid_cog.py:521

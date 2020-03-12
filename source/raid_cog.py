@@ -458,7 +458,7 @@ class RaidCog(commands.Cog):
             available = available[:20]
             # This only works for the first 20 players.
             await channel.send(_("**Warning**: removing some noobs from available players!"), delete_after=10)
-        msg_content = _("Please select the player you want to assign a spot in the raid from the list below  using the " \
+        msg_content = _("Please select the player you want to assign a spot in the raid from the list below using the " \
                       "corresponding reaction. Assignment will finish after 20s of no " \
                       "interaction.\nAvailable players:\n")
         counter = 0
@@ -480,7 +480,7 @@ class RaidCog(commands.Cog):
             # Update msg
             msg_content = _("Please select the player you want to assign a spot in the raid from the list below using " \
                           "the corresponding reaction. Assignment will finish after 20s of no interaction.\nAvailable" \
-                          " players:\n ")
+                          " players:\n")
             counter = 0
             for player in available:
                 if player in raid.assigned_players:
