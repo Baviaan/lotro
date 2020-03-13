@@ -120,7 +120,13 @@ class RaidCog(commands.Cog):
                         "Usage:").format(local_tz)
     fast_example = _("Examples:\n!anvil Friday 4pm server\n!anvil 21:00 BST")
 
-    @commands.command(aliases=['anvil', 'nod'], help=fast_example, brief=fast_brief, description=fast_description)
+
+    with open('list-of-raids.csv', 'r') as f:
+        reader = csv.reader(f)
+        raid_list = list(reader)
+        nicknames = [x[1] for x in raid_list]
+
+    @commands.command(aliases=nicknames, help=fast_example, brief=fast_brief, description=fast_description)
     async def fastraid(self, ctx, *, time: Time(server_tz)):
         """Shortcut to schedule a raid"""
         name = ctx.invoked_with
