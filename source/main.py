@@ -6,6 +6,7 @@ import discord
 from discord.ext import commands
 import gettext
 import json
+import locale
 import logging
 
 from apply_handling import new_app
@@ -30,10 +31,11 @@ with open('config.json', 'r') as f:
 
 # Localization settings
 language = config['LANGUAGE']
-locale = gettext.translation('messages', localedir='locale', languages=[language], fallback=True)
-if not hasattr(locale, '_catalog'):
+locale.setlocale(locale.LC_TIME, "C")
+localization = gettext.translation('messages', localedir='locale', languages=[language], fallback=True)
+if not hasattr(localization, '_catalog'):
     print("Language file '{0}' not found. Defaulting to English.".format(language))
-locale.install()
+localization.install()
 
 # Assign specified config values.
 token = config['BOT_TOKEN']
