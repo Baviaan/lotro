@@ -31,7 +31,8 @@ with open('config.json', 'r') as f:
 
 # Localization settings
 language = config['LANGUAGE']
-locale.setlocale(locale.LC_TIME, "C")
+if language == 'fr':
+    locale.setlocale(locale.LC_TIME, "fr_FR.UTF-8")
 localization = gettext.translation('messages', localedir='locale', languages=[language], fallback=True)
 if not hasattr(localization, '_catalog'):
     print("Language file '{0}' not found. Defaulting to English.".format(language))
