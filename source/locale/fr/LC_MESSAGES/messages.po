@@ -301,15 +301,15 @@ msgstr "Chasseur"
 
 #: raid_cog.py:283
 msgid "Loremaster"
-msgstr "Maitre du savoir"
+msgstr "Maitredusavoir" # cannot have spaces
 
 #: raid_cog.py:284
 msgid "Minstrel"
-msgstr "Ménestrel"
+msgstr "Menestrel" # cannot have é
 
 #: raid_cog.py:285
 msgid "Runekeeper"
-msgstr "Gardien des runes"
+msgstr "Gardiendesunes" # cannot have spaces
 
 #: raid_cog.py:286
 msgid "Warden"
@@ -449,15 +449,15 @@ msgstr "Heure de raid dans votre heure locale (beta)"
 
 #: raid_cog.py:648
 msgid "London: "
-msgstr "Londre"
+msgstr "Londre: "
 
 #: raid_cog.py:648
 msgid "New York: "
-msgstr "New York"
+msgstr "New York: "
 
 #: raid_cog.py:649
 msgid "Sydney: "
-msgstr "Sydney"
+msgstr "Sydney: "
 
 #: raid_cog.py:655
 msgid "%A %#I:%M %p"
