@@ -1,0 +1,11 @@
+{
+  "BOT_TOKEN": "Token goes here",
+  "CLASSES": ["Beornide","Cambrioleur","Capitaine","Champion","Gardien","Chasseur","Maitredusavoir","Menestrel","Gardiendesrunes","Sentinelle"],
+  "CHANNELS": {
+    "BOT": "bot-commands",
+    "APPLY": "applications"
+  },
+  "LEADER": "Raid Leader",
+  "SERVER_TZ": "Europe/Paris",
+  "LANGUAGE": "fr"
+}
