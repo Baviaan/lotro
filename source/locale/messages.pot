@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2020-03-12 22:38+GMT\n"
+"POT-Creation-Date: 2020-03-13 00:55+GMT\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -127,7 +127,7 @@ msgstr ""
 msgid "**Br\303\241ntokh I Cracktooth**: \"Want to know why they call me cracktooth?\" - AoE swipe (low damage)."
 msgstr ""
 
-#: initialise.py:6
+#: initialise.py:7
 msgid ""
 "Please mute this bot command channel or lose your sanity like me.\n"
 "\n"
@@ -169,6 +169,10 @@ msgstr ""
 
 #: raid_cog.py:27
 msgid "Failed to parse tier argument: "
+msgstr ""
+
+#: raid_cog.py:40 raid_cog.py:42
+msgid "server"
 msgstr ""
 
 #: raid_cog.py:48 raid_cog.py:366

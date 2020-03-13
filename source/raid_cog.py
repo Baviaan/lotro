@@ -37,9 +37,10 @@ class Time(commands.Converter):
         return await self.converter(argument)
 
     async def converter(self, argument):
-        if "server" in argument:
+        server = _("server")
+        if server in argument:
             # Strip off server (time) and return as server time
-            argument = argument.partition("server")[0]
+            argument = argument.partition(server)[0]
             my_settings = {'PREFER_DATES_FROM': 'future', 'TIMEZONE': self.tz, 'RETURN_AS_TIMEZONE_AWARE': True}
         else:
             my_settings = {'PREFER_DATES_FROM': 'future', 'RETURN_AS_TIMEZONE_AWARE': True}

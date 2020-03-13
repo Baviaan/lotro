@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2020-03-12 15:07+GMT\n"
+"POT-Creation-Date: 2020-03-13 00:55+GMT\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: FRENCH <LL@li.org>\n"
@@ -13,7 +13,6 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: utf-8\n"
 "Generated-By: pygettext.py 1.5\n"
-
 
 #: apply_handling.py:13
 msgid "{0} I will send you the info in a pm."
@@ -32,8 +31,12 @@ msgid "Please respond with your characters' names and classes."
 msgstr "Veuillez répondre avec les noms et les classes de vos personnages."
 
 #: apply_handling.py:26
-msgid "Please respond what times you are generally available for raiding (server time)."
-msgstr "Veuillez indiquer les heures auxquelles vous êtes généralement disponible pour effectuer des raids (heure du serveur)."
+msgid ""
+"Please respond what times you are generally available for raiding (server "
+"time)."
+msgstr ""
+"Veuillez indiquer les heures auxquelles vous êtes généralement disponible "
+"pour effectuer des raids (heure du serveur)."
 
 #: apply_handling.py:31
 msgid "Sorry, you took too long to respond."
@@ -60,91 +63,109 @@ msgid "An error occurred."
 msgstr "Une erreur est survenue."
 
 #: apply_handling.py:44
-msgid "Your application has been successfully submitted. An officer will be in touch soon!"
+msgid ""
+"Your application has been successfully submitted. An officer will be in "
+"touch soon!"
 msgstr "Votre candidature a été soumise!"
 
 #: dwarves.py:3
 msgid ""
-"**Ing\303\263r I the Cruel**: \"How much more can your mortal form take?\" - Applies 1 stack of incoming healing debuff.\n"
+"**Ingór I the Cruel**: \"How much more can your mortal form take?\" - "
+"Applies 1 stack of incoming healing debuff.\n"
 msgstr ""
 
 #: dwarves.py:5
-msgid ""
-"**\303\223iko II Rill-Seeker**: \"I seek the mithril stream.\" - Ice line\n"
+msgid "**Óiko II Rill-Seeker**: \"I seek the mithril stream.\" - Ice line\n"
 msgstr ""
 
 #: dwarves.py:6
 msgid ""
-"**D\303\263bruz IV the Unheeding**: \"You look like a weakling.\"/\"I challenge YOU!\" - Picks random target; requires force taunt.\n"
+"**Dóbruz IV the Unheeding**: \"You look like a weakling.\"/\"I challenge YOU!"
+"\" - Picks random target; requires force taunt.\n"
 msgstr ""
 
 #: dwarves.py:8
 msgid ""
-"**Mozun III Wyrmbane**: \"I will not abide a worm to live.\" - Summons worm.\n"
+"**Mozun III Wyrmbane**: \"I will not abide a worm to live.\" - Summons "
+"worm.\n"
 msgstr ""
 
 #: dwarves.py:9
 msgid ""
-"**K\303\272zek Squint-Eye**: TBD - Stand behind him in close range to avoid stun.\n"
+"**Kúzek Squint-Eye**: TBD - Stand behind him in close range to avoid stun.\n"
 msgstr ""
 
 #: dwarves.py:10
 msgid ""
-"**L\303\272vek I the Rueful**: \"I am watching you...\" - +100% melee damage and crit chance on himself.\n"
+"**Lúvek I the Rueful**: \"I am watching you...\" - +100% melee damage and "
+"crit chance on himself.\n"
 msgstr ""
 
 #: dwarves.py:11
 msgid ""
-"**\303\223iko I the Bellower**: \"Sumrutu Vragomu\" - Induction that increases dwarfs' damage.\n"
+"**Óiko I the Bellower**: \"Sumrutu Vragomu\" - Induction that increases "
+"dwarfs' damage.\n"
 msgstr ""
 
 #: dwarves.py:12
 msgid ""
-"**Kamluz II Stoneface**: \"You face the Stoneface!\" - +100% crit chance and +75% damage reflect effect. \n"
+"**Kamluz II Stoneface**: \"You face the Stoneface!\" - +100% crit chance and "
+"+75% damage reflect effect. \n"
 msgstr ""
 
 #: dwarves.py:13
 msgid ""
-"**D\303\263bruz II Stark-heart**: \"The Zhelruka clan is mine to protect.\" - Allies take -50% incoming damage, must be interrupted.\n"
+"**Dóbruz II Stark-heart**: \"The Zhelruka clan is mine to protect.\" - "
+"Allies take -50% incoming damage, must be interrupted.\n"
 msgstr ""
 
 #: dwarves.py:15
 msgid ""
-"**Br\303\241ntokh II the Sunderer**: \"I'll bring this mountain down on your heads!\" - 20m AoE.\n"
+"**Brántokh II the Sunderer**: \"I'll bring this mountain down on your heads!"
+"\" - 20m AoE.\n"
 msgstr ""
 
 #: dwarves.py:16
 msgid ""
-"**Br\303\272nek I Clovenbrow**: \"Taste my axes!\" - DoT on random person until interrupted.\n"
+"**Brúnek I Clovenbrow**: \"Taste my axes!\" - DoT on random person until "
+"interrupted.\n"
 msgstr ""
 
 #: dwarves.py:17
 msgid ""
-"**R\303\272rek VI the Shamed**: \"What have I done?\"/\"I have failed my people.\" - Bubble on dwarf.\n"
+"**Rúrek VI the Shamed**: \"What have I done?\"/\"I have failed my people.\" "
+"- Bubble on dwarf.\n"
 msgstr ""
 
 #: dwarves.py:18
-msgid "**Br\303\241ntokh I Cracktooth**: \"Want to know why they call me cracktooth?\" - AoE swipe (low damage)."
+msgid ""
+"**Brántokh I Cracktooth**: \"Want to know why they call me cracktooth?\" - "
+"AoE swipe (low damage)."
 msgstr ""
 
-#: initialise.py:6
+#: initialise.py:7
 msgid ""
 "Please mute this bot command channel or lose your sanity like me.\n"
 "\n"
-"React to this post with each class role you want to sign up for or click {1} to remove all your class roles.\n"
+"React to this post with each class role you want to sign up for or click {1} "
+"to remove all your class roles.\n"
 "\n"
 "*Further commands that can be used in this channel*:\n"
 "`!roles` Shows which class roles you currently have.\n"
-"`!dwarves` Shows a list of the 13 dwarves in the Anvil raid with their associated skills. (Work in progress.)\n"
+"`!dwarves` Shows a list of the 13 dwarves in the Anvil raid with their "
+"associated skills. (Work in progress.)\n"
 "`!apply` to apply to {0}."
 msgstr ""
-"Veuillez désactiver ce canal de commande de bot ou perdez votre raison comme moi.\n"
+"Veuillez désactiver ce canal de commande de bot ou perdez votre raison comme "
+"moi.\n"
 "\n"
-"Réagissez à ce message avec chaque rôle de classe auquel vous souhaitez vous inscrire ou cliquez {1} pour supprimer tous vos rôles de classe.\n"
+"Réagissez à ce message avec chaque rôle de classe auquel vous souhaitez vous "
+"inscrire ou cliquez {1} pour supprimer tous vos rôles de classe.\n"
 "\n"
 "*Autres commandes pouvant être utilisées dans ce canal*:\n"
 "`!roles` Affiche les rôles de classe que vous avez actuellement.\n"
-"`!dwarves` Affiche une liste des 13 nains du raid Anvil avec leurs compétences associées. (Work in progress.)\n"
+"`!dwarves` Affiche une liste des 13 nains du raid Anvil avec leurs "
+"compétences associées. (Work in progress.)\n"
 "`!apply` pour postuler à {0}."
 
 #: main.py:131
@@ -179,21 +200,31 @@ msgstr "Vous n'êtes pas autorisé à utiliser cette commande."
 msgid "Failed to parse tier argument: "
 msgstr "Échec de l'analyse de l'argument de niveau:"
 
+#: raid_cog.py:40 raid_cog.py:42
+msgid "server"
+msgstr "serveur"
+
 #: raid_cog.py:48 raid_cog.py:366
 msgid "Failed to parse time argument: "
-msgstr "Échec de l'analyse de l'argument de l'heure:"
+msgstr "Échec de l'analyse de l'argument de l'heure: "
 
 #: raid_cog.py:54
 msgid "You cannot post raids more than a week in advance."
-msgstr "Vous n'êtes pas autorisés à crée un raid plus d'une semaine a l'avance."
+msgstr ""
+"Vous n'êtes pas autorisés à crée un raid plus d'une semaine a l'avance."
 
 #: raid_cog.py:104
 msgid "Schedules a raid"
 msgstr "Planifie un raid"
 
 #: raid_cog.py:105
-msgid "Schedules a raid. Day/timezone will default to today/{0} if not specified. You can use 'server' as timezone. Usage:"
-msgstr "Planifie un raid. Le jour/fuseau horaire sera par défaut aujourd'hui/{0} s'il n'est pas spécifié. Vous pouvez utiliser 'serveur' comme fuseau horaire. Utilisation:"
+msgid ""
+"Schedules a raid. Day/timezone will default to today/{0} if not specified. "
+"You can use 'server' as timezone. Usage:"
+msgstr ""
+"Planifie un raid. Le jour/fuseau horaire sera par défaut aujourd'hui/{0} "
+"s'il n'est pas spécifié. Vous pouvez utiliser 'serveur' comme fuseau "
+"horaire. Utilisation:"
 
 #: raid_cog.py:107
 msgid ""
@@ -214,8 +245,15 @@ msgid "Shortcut to schedule a raid"
 msgstr "Raccourci pour planifier un raid"
 
 #: raid_cog.py:117
-msgid "Schedules a raid with the name of the command, tier from channel name and bosses 'All'. Day/timezone will default to today/{0} if not specified. You can use 'server' as timezone. Usage:"
-msgstr "Planifie un raid avec le nom de la commande, le tier du nom du canal et les boss 'Tout'. Le jour/fuseau horaire sera par défaut aujourd'hui/{0} s'il n'est pas spécifié. Vous pouvez utiliser 'serveur' comme fuseau horaire. Utilisation:"
+msgid ""
+"Schedules a raid with the name of the command, tier from channel name and "
+"bosses 'All'. Day/timezone will default to today/{0} if not specified. You "
+"can use 'server' as timezone. Usage:"
+msgstr ""
+"Planifie un raid avec le nom de la commande, le tier du nom du canal et les "
+"boss 'Tout'. Le jour/fuseau horaire sera par défaut aujourd'hui/{0} s'il "
+"n'est pas spécifié. Vous pouvez utiliser 'serveur' comme fuseau horaire. "
+"Utilisation:"
 
 #: raid_cog.py:120
 msgid ""
@@ -237,15 +275,21 @@ msgstr "Le nom du canal ne spécifie pas de niveau."
 
 #: raid_cog.py:192
 msgid "You do not have permission to change the raid settings."
-msgstr "Vous n'avez pas la permission de changer les paramètres du raid. Cet incident sera signalé."
+msgstr ""
+"Vous n'avez pas la permission de changer les paramètres du raid. Cet "
+"incident sera signalé."
 
 #: raid_cog.py:198
 msgid "Roster is not enabled for this raid."
 msgstr "La liste n'est pas activée pour ce raid."
 
 #: raid_cog.py:207
-msgid "Dearest raid leader, {0} would like to cancel their availability but you have assigned them a spot in the raid. Please resolve this conflict."
-msgstr "Cher chef de raid, {0} souhaite annuler sa disponibilité mais vous leur avez attribué une place dans le raid. Veuillez résoudre ce conflit."
+msgid ""
+"Dearest raid leader, {0} would like to cancel their availability but you "
+"have assigned them a spot in the raid. Please resolve this conflict."
+msgstr ""
+"Cher chef de raid, {0} souhaite annuler sa disponibilité mais vous leur avez "
+"attribué une place dans le raid. Veuillez résoudre ce conflit."
 
 #: raid_cog.py:222
 msgid "{0} you have not assigned yourself any class roles."
@@ -256,8 +300,12 @@ msgid "That's an error. Check the logs."
 msgstr "C'est une erreur. Vérifiez les logs."
 
 #: raid_cog.py:245
-msgid "Please respond with 'roster', 'time' or 'boss' to indicate which setting you wish to update for this raid."
-msgstr "Veuillez répondre avec 'liste', 'heure' ou 'boss' pour indiquer le paramètre que vous souhaitez mettre à jour pour ce raid."
+msgid ""
+"Please respond with 'roster', 'time' or 'boss' to indicate which setting you "
+"wish to update for this raid."
+msgstr ""
+"Veuillez répondre avec 'liste', 'heure' ou 'boss' pour indiquer le paramètre "
+"que vous souhaitez mettre à jour pour ce raid."
 
 #: raid_cog.py:252
 msgid "Configuration finished!"
@@ -299,17 +347,20 @@ msgstr "Gardien"
 msgid "Hunter"
 msgstr "Chasseur"
 
+# cannot have spaces
 #: raid_cog.py:283
 msgid "Loremaster"
-msgstr "Maitredusavoir" # cannot have spaces
+msgstr "Maitredusavoir"
 
+# cannot have é
 #: raid_cog.py:284
 msgid "Minstrel"
-msgstr "Menestrel" # cannot have é
+msgstr "Menestrel"
 
+# cannot have spaces
 #: raid_cog.py:285
 msgid "Runekeeper"
-msgstr "Gardiendesrunes" # cannot have spaces
+msgstr "Gardiendesrunes"
 
 #: raid_cog.py:286
 msgid "Warden"
@@ -324,8 +375,12 @@ msgid "Please specify the new raid time."
 msgstr "Veuillez spécifier la nouvelle heure de raid."
 
 #: raid_cog.py:380
-msgid "Please respond with 'yes/no' to indicate whether you want to use the roster for this raid."
-msgstr "Veuillez répondre par 'oui/non' pour indiquer si vous souhaitez utiliser la liste pour ce raid."
+msgid ""
+"Please respond with 'yes/no' to indicate whether you want to use the roster "
+"for this raid."
+msgstr ""
+"Veuillez répondre par 'oui/non' pour indiquer si vous souhaitez utiliser la "
+"liste pour ce raid."
 
 #: raid_cog.py:385 raid_cog.py:395 raid_cog.py:412
 msgid "Roster configuration finished!"
@@ -352,8 +407,15 @@ msgid "Roster enabled for this raid."
 msgstr "Liste activée pour ce raid."
 
 #: raid_cog.py:405
-msgid "If you wish to overwrite a default raid slot please respond with the slot number followed by the class emojis you would like. Configuration will finish after 20s of no interaction. "
-msgstr "Si vous souhaitez remplacer un emplacement de raid par défaut, veuillez répondre avec le numéro de l'emplacement suivi de l'emojis de classe que vous souhaitez. La configuration se terminera après 20 secondes sans interaction."
+msgid ""
+"If you wish to overwrite a default raid slot please respond with the slot "
+"number followed by the class emojis you would like. Configuration will "
+"finish after 20s of no interaction. "
+msgstr ""
+"Si vous souhaitez remplacer un emplacement de raid par défaut, veuillez "
+"répondre avec le numéro de l'emplacement suivi de l'emojis de classe que "
+"vous souhaitez. La configuration se terminera après 20 secondes sans "
+"interaction."
 
 #: raid_cog.py:424
 msgid "No valid slot provided!"
@@ -377,10 +439,14 @@ msgstr "**Attention**: suppression de quelques noobs des joueurs disponibles!"
 
 #: raid_cog.py:461 raid_cog.py:481
 msgid ""
-"Please select the player you want to assign a spot in the raid from the list below using the corresponding reaction. Assignment will finish after 20s of no interaction.\n"
+"Please select the player you want to assign a spot in the raid from the list "
+"below using the corresponding reaction. Assignment will finish after 20s of "
+"no interaction.\n"
 "Available players:\n"
 msgstr ""
-"Veuillez sélectionner le joueur auquel vous souhaitez attribuer une place dans le raid dans la liste ci-dessous en utilisant la réaction correspondante. L'affectation se terminera après 20s sans interaction.\n"
+"Veuillez sélectionner le joueur auquel vous souhaitez attribuer une place "
+"dans le raid dans la liste ci-dessous en utilisant la réaction "
+"correspondante. L'affectation se terminera après 20s sans interaction.\n"
 "Joueurs disponibles:\n"
 
 #: raid_cog.py:474
@@ -473,7 +539,8 @@ msgstr "Le Gondor appelle à l'aide! "
 
 #: raid_cog.py:723
 msgid "will you answer the call? We are forming for the raid now."
-msgstr "Allez-vous répondre à l'appel? Nous nous préparons pour le raid maintenant."
+msgstr ""
+"Allez-vous répondre à l'appel? Nous nous préparons pour le raid maintenant."
 
 #: reaction_handling.py:17
 msgid " is not a class!"
@@ -494,4 +561,3 @@ msgstr "{0} ajouté à @{1}"
 #: role_handling.py:33
 msgid "Removed {0} from @{1}"
 msgstr "{0} supprimé de @{1}"
-
