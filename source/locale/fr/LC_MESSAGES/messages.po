@@ -309,7 +309,7 @@ msgstr "Menestrel" # cannot have é
 
 #: raid_cog.py:285
 msgid "Runekeeper"
-msgstr "Gardiendesunes" # cannot have spaces
+msgstr "Gardiendesrunes" # cannot have spaces
 
 #: raid_cog.py:286
 msgid "Warden"
