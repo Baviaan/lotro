@@ -238,7 +238,7 @@ msgstr ""
 
 #: raid_cog.py:112 raid_cog.py:137
 msgid "All"
-msgstr "Tout"
+msgstr "Tous"
 
 #: raid_cog.py:116
 msgid "Shortcut to schedule a raid"
