@@ -398,7 +398,7 @@ class RaidCog(commands.Cog):
                     raid.set_roster(False)
                     await channel.send(_("Roster disabled for this raid.\nRoster configuration finished!"), delete_after=10)
                     return True
-            elif not reply.content.lower().starswith(_("y")):
+            elif not reply.content.lower().startswith(_("y")):
                 await channel.send(_("Roster configuration finished!"), delete_after=10)
                 return False
         finally:
