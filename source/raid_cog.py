@@ -202,8 +202,9 @@ class RaidCog(commands.Cog):
                 return False
         if str(emoji) == "\u26CF":  # Pick emoji
             if not raid.roster:
-                await channel.send(_("Roster is not enabled for this raid."), delete_after=10)
-                return False
+                raid.set_roster(True)
+                self.set_default_roster(raid, emojis)
+                await channel.send(_("Enabling roster for this raid."), delete_after=10)
             update = await self.select_players(user, channel, raid, emojis)
         elif str(emoji) == "\U0001F6E0":  # Config emoji
             update = await self.configure(user, channel, raid, emojis)
