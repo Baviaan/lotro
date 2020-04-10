@@ -6,6 +6,13 @@ You can get them with e.g. `python3 -m pip install -U discord.py`
 See details further below how to specify your configuration file and then simply run with `python3 main.py`
 
 ------------------------------------
+**Instructions for Windows.**\
+Python does not come pre-installed on Windows so you will need to install it yourself. Go to https://www.python.org/downloads/ and click the big yellow button to download Python 3.8. Simply run the downloaded file to install Python. Now to save yourself a world of pain, BEFORE you click the 'Install Now' button, make sure you check the box 'Add Python 3.8 to PATH'. This will allow you to use the python command in your terminal (command prompt).
+
+To check installation was successful open a terminal and type `python --version`, it will return (as of writing) Python 3.8.2, assuming you do not have Python 2 installed. You can continue as above to install the required Python libraries but replace `python3` by `python`.
+To edit your configuration file simply open it with notepad. (Windows might complain it doesn't know how to open json files, but simply select to open it with notepad and it'll work fine.)
+
+------------------------------------
 
 This is a discord bot aimed at making it easy to schedule raids in a discord server. It is developed for LotRO but could work for any game if you edit the class names in the config file.
 
