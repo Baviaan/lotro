@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.WARNING)
 launch_on_boot = False
 
 # print version number.
-version = "v3.2.1"
+version = "v3.2.2"
 print("Running " + version)
 
 # Load config file.
@@ -34,7 +34,9 @@ language = config['LANGUAGE']
 if language == 'fr':
     locale.setlocale(locale.LC_TIME, "fr_FR.UTF-8")
 localization = gettext.translation('messages', localedir='locale', languages=[language], fallback=True)
-if not hasattr(localization, '_catalog'):
+if language == 'en' or hasattr(localization, '_catalog'): # Technically 'en' has no file.
+    print("Using language file for '{0}'.".format(language))
+else:
     print("Language file '{0}' not found. Defaulting to English.".format(language))
 localization.install()
 
@@ -62,9 +64,11 @@ if launch_on_boot:
     asyncio.sleep(10)
 print("Continuing...")
 
-launch_time = None
+launch_time = datetime.datetime.utcnow()
 prefix = "!"
 bot = commands.Bot(command_prefix=prefix, case_insensitive=True)
+bot.load_extension('dev_cog')
+bot.load_extension('raid_cog')
 
 
 def td_format(td_object):
@@ -97,10 +101,6 @@ async def on_ready():
     for guild in bot.guilds:
         print('Welcome to {0}'.format(guild))
 
-    global launch_time
-    if not launch_time:
-        launch_time = datetime.datetime.utcnow()
-
     global role_post_ids
     role_post_ids = []
     for guild in bot.guilds:
@@ -112,8 +112,6 @@ async def on_ready():
             print("Missing permissions for {0}".format(guild.name))
         else:
             role_post_ids.append(role_post.id)
-    bot.load_extension('dev_cog')
-    bot.load_extension('raid_cog')
 
 
 @bot.event
