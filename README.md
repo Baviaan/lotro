@@ -41,7 +41,8 @@ See below for a guide how to create a discord bot.
 Config file values:\
 BOT_TOKEN: Your discord's bot token (this is not the client secret).\
 CLASSES: The classes in your game. Note your discord server must have custom emojis named exactly the same. Emojis for LotRO are included, you can upload these to your discord server.\
-CHANNELS: The role post will be posted to the BOT channel. This channel will be purged so do NOT use a channel with info you want to keep. (In particular do not post your raids in the BOT channel.) Any incoming applications will be posted to the APPLY channel, so this should be officer only.\
+LINEUP: A sequence of zeroes and ones indicating for each slot whether the class should be present, in the order as specified under CLASSES. This will **ABSOLUTELY BREAK THE UI** if you specify too many ones. Please contain yourself.\
+CHANNELS: The role post will be posted to the BOT channel. This channel will be purged so do NOT use a channel with info you want to keep. (In particular **DO NOT post your raids in the BOT channel**.) Any incoming applications will be posted to the APPLY channel, so this should be officer only.\
 LEADER: Name of the discord role that will be allowed to update bosses and times for raid post.\
 SERVER_TZ: The raid time in the header of the embed will be posted in this timezone. (Requires TZ database name)\
 PREFIX: The prefix that will be used to start a command.\
