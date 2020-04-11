@@ -143,21 +143,6 @@ async def globally_block_dms(ctx):
 
 
 @bot.command()
-@commands.is_owner()
-async def load(ctx, ext):
-    try:
-        bot.load_extension(ext)
-        await ctx.send(_('Extension loaded.'))
-    except discord.ext.commands.ExtensionAlreadyLoaded:
-        bot.reload_extension(ext)
-        await ctx.send(_('Extension reloaded.'))
-    except discord.ext.commands.ExtensionNotFound:
-        await ctx.send(_('Extension not found.'))
-    except discord.ext.commands.ExtensionError:
-        await ctx.send(_('Extension failed to load.'))
-
-
-@bot.command()
 async def roles(ctx):
     """Shows the class roles you have"""
     await show_roles(ctx.channel, ctx.author, role_names)
