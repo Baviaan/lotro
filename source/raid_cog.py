@@ -210,7 +210,7 @@ class RaidCog(commands.Cog):
             try:
                 player = Player(user)
                 if player in raid.assigned_players:
-                    error_msg = _("Dearest raid leader, {0} would like to cancel their availability but you have " \
+                    error_msg = _("Dearest raid leader, {0} would like to cancel their availability but you have "
                                   "assigned them a spot in the raid. Please resolve this conflict.").format(
                         user.mention)
                     await channel.send(error_msg)
@@ -249,7 +249,7 @@ class RaidCog(commands.Cog):
         def check(msg):
             return user == msg.author
 
-        text = _("Please respond with 'roster', 'time' or 'boss' to indicate which setting you wish to update for this " \
+        text = _("Please respond with 'roster', 'time' or 'boss' to indicate which setting you wish to update for this "
                  "raid.")
         msg = await channel.send(text)
         try:
@@ -682,7 +682,7 @@ class RaidCog(commands.Cog):
         raids = self.raids
         save_time = 36  # Save to file every three hours.
         expiry_time = datetime.timedelta(seconds=7200)  # Delete raids after 2 hours.
-        notify_time = datetime.timedelta(seconds=300) # Notify raiders 5 minutes before.
+        notify_time = datetime.timedelta(seconds=300)  # Notify raiders 5 minutes before.
         self.counter = self.counter + 1
         current_time = datetime.datetime.utcnow()  # Raid time is stored in UTC.
         # Copy the list to iterate over.
@@ -734,6 +734,7 @@ class RaidCog(commands.Cog):
     @background_task.before_loop
     async def before_background_task(self):
         await self.bot.wait_until_ready()
+
 
 def setup(bot):
     raids = []
