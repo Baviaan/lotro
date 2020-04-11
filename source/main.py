@@ -183,23 +183,5 @@ async def apply(ctx):
     await new_app(bot, ctx.message, channel_names['APPLY'])
 
 
-@bot.command()
-@commands.is_owner()
-async def delete(ctx, msg_id: int):
-    """Deletes a message"""
-    msg = await ctx.channel.fetch_message(msg_id)
-    await ctx.message.delete()
-    await asyncio.sleep(0.25)
-    await msg.delete()
-
-delete.update(hidden=True)
-
-
-@delete.error
-async def delete_error(ctx, error):
-    if isinstance(error, commands.NotOwner):
-        ctx.send(_("You do not have permission to use this command."))
-
-
 bot.run(token)
 print("Shutting down.")
