@@ -5,6 +5,8 @@ import dateparser
 import discord
 from discord.ext import commands
 from discord.ext import tasks
+from distutils.util import strtobool
+from itertools import compress
 import json
 import os
 import pickle
@@ -76,6 +78,16 @@ class RaidCog(commands.Cog):
     role_names = config['CLASSES']
     # change to immutable tuple
     role_names = tuple(role_names)
+    # Line up
+    default_lineup = []
+    for string in config['LINEUP']:
+        bitmask = [strtobool(char) for char in string]
+        default_lineup.append(bitmask)
+    slots_class_names = []
+    for bitmask in default_lineup:
+        class_names = list(compress(role_names, bitmask))
+        slots_class_names.append(class_names)
+
 
     # Load raid (nick)names
     with open('list-of-raids.csv', 'r') as f:
@@ -278,63 +290,9 @@ class RaidCog(commands.Cog):
 
     @staticmethod
     def set_default_roster(raid, emojis, slots=range(12)):
-        main_tank = set()
-        off_tank = set()
-        heals = set()
-        lm = set()
-        burg = set()
-        dps_capt = set()
-        dps = set()
-
-        beorning = _("Beorning")
-        burglar = _("Burglar")
-        captain = _("Captain")
-        champion = _("Champion")
-        guardian = _("Guardian")
-        hunter = _("Hunter")
-        loremaster = _("Loremaster")
-        minstrel = _("Minstrel")
-        runekeeper = _("Runekeeper")
-        warden = _("Warden")
-
-        for emoji in emojis:
-            if emoji.name == guardian:
-                main_tank.add(str(emoji))
-        for emoji in emojis:
-            if emoji.name == captain:
-                off_tank.add(str(emoji))
-        for emoji in emojis:
-            if emoji.name in [beorning, minstrel, runekeeper]:
-                heals.add(str(emoji))
-        for emoji in emojis:
-            if emoji.name == loremaster:
-                lm.add(str(emoji))
-        for emoji in emojis:
-            if emoji.name == burglar:
-                burg.add(str(emoji))
-        for emoji in emojis:
-            if emoji.name == captain:
-                dps_capt.add(str(emoji))
-        for emoji in emojis:
-            if emoji.name in [burglar, champion, hunter, runekeeper, warden]:
-                dps.add(str(emoji))
-        if 0 in slots:
-            raid.set_slot(0, main_tank)
-        if 1 in slots:
-            raid.set_slot(1, off_tank)
-        if 2 in slots:
-            raid.set_slot(2, heals)
-        if 3 in slots:
-            raid.set_slot(3, heals)
-        if 4 in slots:
-            raid.set_slot(4, lm)
-        if 5 in slots:
-            raid.set_slot(5, burg)
-        if 6 in slots:
-            raid.set_slot(6, dps_capt)
-        for i in range(7, 12):
-            if i in slots:
-                raid.set_slot(i, dps)
+        for i in slots:
+            slot_set = [str(emoji) for emoji in emojis if emoji.name in RaidCog.slots_class_names[i]]
+            raid.set_slot(i, slot_set)
 
     @staticmethod
     def set_roster(raid, emoji, slot):
