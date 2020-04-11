@@ -65,7 +65,7 @@ if launch_on_boot:
 print("Continuing...")
 
 launch_time = datetime.datetime.utcnow()
-prefix = "!"
+prefix = config['PREFIX']
 bot = commands.Bot(command_prefix=prefix, case_insensitive=True)
 bot.load_extension('dev_cog')
 bot.load_extension('raid_cog')

@@ -7,5 +7,6 @@
   },
   "LEADER": "Raid Leader",
   "SERVER_TZ": "Europe/Paris",
+  "PREFIX": "!",
   "LANGUAGE": "fr"
 }
