@@ -143,14 +143,6 @@ async def globally_block_dms(ctx):
 
 
 @bot.command()
-async def uptime(ctx):
-    """Shows the bot's uptime"""
-    uptime = datetime.datetime.utcnow() - launch_time
-    uptime_str = _("**Uptime:** ") + td_format(uptime) + '.'
-    await ctx.send(uptime_str)
-
-
-@bot.command()
 @commands.is_owner()
 async def load(ctx, ext):
     try:
@@ -181,6 +173,33 @@ async def dwarves(ctx):
 async def apply(ctx):
     """Apply to the kin"""
     await new_app(bot, ctx.message, channel_names['APPLY'])
+
+
+@bot.command()
+async def about(ctx):
+    """Shows info about the bot"""
+    bot = ctx.bot
+    dev = "Baviaan#4862"
+    repo = "https://github.com/Baviaan/lotro"
+    server = "https://discord.gg/dGcBzPN"
+    app_info = await bot.application_info()
+    host = app_info.owner.name
+    uptime = datetime.datetime.utcnow() - launch_time
+    uptime = td_format(uptime)
+
+    title = "{0}".format(bot.user)
+    about = [
+            _("A bot for scheduling raids!"),
+            _("**Developer:** {0}").format(dev),
+            _("**[Source code]({0})**").format(repo),
+            _("**[Support server]({0})**\n").format(server),
+            _("**Hosted by:** {0}").format(host),
+            _("**Command prefix:** {0}").format(prefix),
+            _("**Uptime:** {0}.").format(uptime)
+            ]
+    content = "\n".join(about)
+    embed = discord.Embed(title=title, colour=discord.Colour(0x3498db), description=content)
+    await ctx.send(embed=embed)
 
 
 bot.run(token)
