@@ -44,7 +44,7 @@ CLASSES: The classes in your game. Note your discord server must have custom emo
 CHANNELS: The role post will be posted to the BOT channel. This channel will be purged so do NOT use a channel with info you want to keep. (In particular do not post your raids in the BOT channel.) Any incoming applications will be posted to the APPLY channel, so this should be officer only.\
 LEADER: Name of the discord role that will be allowed to update bosses and times for raid post.\
 SERVER_TZ: The raid time in the header of the embed will be posted in this timezone. (Requires TZ database name)\
-PREFIX: The prefix that will be used to start a command.
+PREFIX: The prefix that will be used to start a command.\
 LANGUAGE: The language of the bot. Currently only English "en" and French "fr" are supported.
 
 See [es/messages.po](./source/locale/es/LC_MESSAGES/messages.po) if you wish to help translate to Spanish.

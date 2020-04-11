@@ -68,6 +68,7 @@ class RaidCog(commands.Cog):
     # Get server timezone
     server_tz = config['SERVER_TZ']
     print("Server timezone: " + server_tz)
+    prefix = config['PREFIX']
     # Specify names for class roles.
     # These will be automatically created on the server if they do not exist.
     raid_leader_name = config['LEADER']
@@ -109,7 +110,7 @@ class RaidCog(commands.Cog):
     raid_brief = _("Schedules a raid")
     raid_description = _("Schedules a raid. Day/timezone will default to today/{0} if not specified. "
                          "You can use 'server' as timezone. Usage:").format(local_tz)
-    raid_example = _("Examples:\n!raid Anvil 2 Friday 4pm server\n!raid throne t3 21:00")
+    raid_example = _("Examples:\n{0}raid Anvil 2 Friday 4pm server\n{0}raid throne t3 21:00").format(prefix)
 
     @commands.command(aliases=['instance', 'r'], help=raid_example, brief=raid_brief, description=raid_description)
     async def raid(self, ctx, name, tier: Tier, *, time: Time(server_tz)):
@@ -122,7 +123,7 @@ class RaidCog(commands.Cog):
     fast_description = _("Schedules a raid with the name of the command, tier from channel name and bosses 'All'. "
                          "Day/timezone will default to today/{0} if not specified. You can use 'server' as timezone. "
                          "Usage:").format(local_tz)
-    fast_example = _("Examples:\n!anvil Friday 4pm server\n!anvil 21:00 BST")
+    fast_example = _("Examples:\n{0}anvil Friday 4pm server\n{0}anvil 21:00 BST").format(prefix)
 
     @commands.command(aliases=nicknames, help=fast_example, brief=fast_brief, description=fast_description)
     async def fastraid(self, ctx, *, time: Time(server_tz)):

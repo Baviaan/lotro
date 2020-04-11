@@ -107,7 +107,7 @@ async def on_ready():
         # Initialise the role post in the bot channel.
         try:
             bot_channel = await get_channel(guild, channel_names['BOT'])
-            role_post = await initialise(guild, bot_channel, role_names)
+            role_post = await initialise(guild, bot_channel, prefix, role_names)
         except discord.Forbidden:
             print("Missing permissions for {0}".format(guild.name))
         else:
