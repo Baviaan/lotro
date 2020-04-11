@@ -1,21 +1,21 @@
-Helegrod: Drake Wing,drake_wing
-Helegrod: Spider Wing,spider_wing
-Helegrod: Giant Wing,giant_wing
-Helegrod: Dragon Wing,thorog
-The Rift of Nûrz Ghâshu,rift
-The Vile Maw,watcher
-Filikul,turtle
-Dâr Narbugud,dn
-Barad Guldur,bg
-Ost Dunhoth,od
-Draigoch's Lair,draigoch
-Tower of Orthanc,too
-Flight to the Lonely Mountain,flight
-The Fires of Smaug,smaug
-The Battle for Erebor,bfe
-The Deeping Wall,dw
-Throne of the Dread Terror,throne
-The Abyss of Mordath,abyss
-The Anvil of Winterstith,anvil
-"Remmorchant, The Net of Darkness",nod
-"Remmorchant, The Net of Darkness",rem
+drake_wing,Helegrod: Drake Wing
+spider_wing,Helegrod: Spider Wing
+giant_wing,Helegrod: Giant Wing
+thorog,Helegrod: Dragon Wing
+rift,The Rift of Nûrz Ghâshu
+watcher,The Vile Maw
+turtle,Filikul
+dn,Dâr Narbugud
+bg,Barad Guldur
+od,Ost Dunhoth
+draigoch,Draigoch's Lair
+too,Tower of Orthanc
+flight,Flight to the Lonely Mountain
+smaug,The Fires of Smaug
+bfe,The Battle for Erebor
+dw,The Deeping Wall
+throne,Throne of the Dread Terror
+abyss,The Abyss of Mordath
+anvil,The Anvil of Winterstith
+nod,"Remmorchant, The Net of Darkness"
+rem,"Remmorchant, The Net of Darkness"

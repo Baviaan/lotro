@@ -64,24 +64,28 @@ class RaidCog(commands.Cog):
     # Load config file.
     with open('config.json', 'r') as f:
         config = json.load(f)
+
     # Get server timezone
     server_tz = config['SERVER_TZ']
     print("Server timezone: " + server_tz)
+    # Specify names for class roles.
+    # These will be automatically created on the server if they do not exist.
+    raid_leader_name = config['LEADER']
+    role_names = config['CLASSES']
+    # change to immutable tuple
+    role_names = tuple(role_names)
+
+    # Load raid (nick)names
+    with open('list-of-raids.csv', 'r') as f:
+        reader = csv.reader(f)
+        raid_lookup = dict(reader)
+    nicknames = list(raid_lookup.keys())
 
     def __init__(self, bot, raids):
         self.bot = bot
         self._last_member = None
         self.raids = raids
-        # Load config file.
-        with open('config.json', 'r') as f:
-            config = json.load(f)
-
-        # Specify names for class roles.
-        # These will be automatically created on the server if they do not exist.
-        self.raid_leader_name = config['LEADER']
-        role_names = config['CLASSES']
-        # change to immutable tuple
-        self.role_names = tuple(role_names)
+        # Run background task
         bot.loop.create_task(self.background_task())
 
     @commands.Cog.listener()
@@ -103,8 +107,8 @@ class RaidCog(commands.Cog):
             self.save()
 
     raid_brief = _("Schedules a raid")
-    raid_description = _("Schedules a raid. Day/timezone will default to today/{0} if not specified. " \
-                       "You can use 'server' as timezone. Usage:").format(local_tz)
+    raid_description = _("Schedules a raid. Day/timezone will default to today/{0} if not specified. "
+                         "You can use 'server' as timezone. Usage:").format(local_tz)
     raid_example = _("Examples:\n!raid Anvil 2 Friday 4pm server\n!raid throne t3 21:00")
 
     @commands.command(aliases=['instance', 'r'], help=raid_example, brief=raid_brief, description=raid_description)
@@ -115,16 +119,10 @@ class RaidCog(commands.Cog):
         self.save()
 
     fast_brief = _("Shortcut to schedule a raid")
-    fast_description = _("Schedules a raid with the name of the command, tier from channel name and bosses 'All'. " \
-                        "Day/timezone will default to today/{0} if not specified. You can use 'server' as timezone. " \
-                        "Usage:").format(local_tz)
+    fast_description = _("Schedules a raid with the name of the command, tier from channel name and bosses 'All'. "
+                         "Day/timezone will default to today/{0} if not specified. You can use 'server' as timezone. "
+                         "Usage:").format(local_tz)
     fast_example = _("Examples:\n!anvil Friday 4pm server\n!anvil 21:00 BST")
-
-
-    with open('list-of-raids.csv', 'r') as f:
-        reader = csv.reader(f)
-        raid_list = list(reader)
-        nicknames = [x[1] for x in raid_list]
 
     @commands.command(aliases=nicknames, help=fast_example, brief=fast_brief, description=fast_description)
     async def fastraid(self, ctx, *, time: Time(server_tz)):
@@ -145,21 +143,15 @@ class RaidCog(commands.Cog):
             self.raids.append(raid)
             self.save()
 
-    @staticmethod
-    def get_raid_name(name):
-        with open('list-of-raids.csv', 'r') as f:
-            reader = csv.reader(f)
-            raid_list = list(reader)
-            names = [x[0] for x in raid_list]
+    def get_raid_name(self, name):
+        try:
+            name = self.raid_lookup[name]
+        except KeyError:
+            names = list(self.raid_lookup.values())
             match = get_match(name, names)
             if match[0]:
                 return match[0]
-            nicknames = [x[1] for x in raid_list]
-            match = get_match(name, nicknames)
-            if match[0]:
-                result = [x[0] for x in raid_list if x[1] == match[0]]
-                return result[0]
-            return name
+        return name
 
     async def raid_command(self, ctx, name, tier, boss, time, roster=False):
         name = self.get_raid_name(name)
@@ -213,7 +205,8 @@ class RaidCog(commands.Cog):
                 player = Player(user)
                 if player in raid.assigned_players:
                     error_msg = _("Dearest raid leader, {0} would like to cancel their availability but you have " \
-                                "assigned them a spot in the raid. Please resolve this conflict.").format(user.mention)
+                                  "assigned them a spot in the raid. Please resolve this conflict.").format(
+                        user.mention)
                     await channel.send(error_msg)
                     update = False
                 else:
@@ -251,7 +244,7 @@ class RaidCog(commands.Cog):
             return user == msg.author
 
         text = _("Please respond with 'roster', 'time' or 'boss' to indicate which setting you wish to update for this " \
-               "raid.")
+                 "raid.")
         msg = await channel.send(text)
         try:
             reply = await bot.wait_for('message', timeout=20, check=check)
@@ -397,7 +390,8 @@ class RaidCog(commands.Cog):
             if reply.content.lower().startswith(_("n")):
                 if raid.roster:
                     raid.set_roster(False)
-                    await channel.send(_("Roster disabled for this raid.\nRoster configuration finished!"), delete_after=10)
+                    await channel.send(_("Roster disabled for this raid.\nRoster configuration finished!"),
+                                       delete_after=10)
                     return True
             elif not reply.content.lower().startswith(_("y")):
                 await channel.send(_("Roster configuration finished!"), delete_after=10)
@@ -410,8 +404,8 @@ class RaidCog(commands.Cog):
             self.set_default_roster(raid, emojis)
             update = True
         await channel.send(_("Roster enabled for this raid."), delete_after=10)
-        text = _("If you wish to overwrite a default raid slot please respond with the slot number followed by the " \
-               "class emojis you would like. Configuration will finish after 20s of no interaction. ")
+        text = _("If you wish to overwrite a default raid slot please respond with the slot number followed by the "
+                 "class emojis you would like. Configuration will finish after 20s of no interaction. ")
         msg = await channel.send(text)
         while True:
             try:
@@ -442,7 +436,7 @@ class RaidCog(commands.Cog):
                     if counter > 3:
                         break  # allow maximum of 4 classes
                 if new_classes != "":
-                    self.set_roster(raid, new_classes, index-1)
+                    self.set_roster(raid, new_classes, index - 1)
                     await channel.send(_("Classes for slot {0} updated!").format(index), delete_after=10)
                     update = True
         await msg.delete()
@@ -466,9 +460,9 @@ class RaidCog(commands.Cog):
             available = available[:20]
             # This only works for the first 20 players.
             await channel.send(_("**Warning**: removing some noobs from available players!"), delete_after=10)
-        msg_content = _("Please select the player you want to assign a spot in the raid from the list below using the " \
-                      "corresponding reaction. Assignment will finish after 20s of no " \
-                      "interaction.\nAvailable players:\n")
+        msg_content = _("Please select the player you want to assign a spot in the raid from the list below using the "
+                        "corresponding reaction. Assignment will finish after 20s of no "
+                        "interaction.\nAvailable players:\n")
         counter = 0
         for player in available:
             if player in raid.assigned_players:
@@ -486,9 +480,9 @@ class RaidCog(commands.Cog):
 
         while True:
             # Update msg
-            msg_content = _("Please select the player you want to assign a spot in the raid from the list below using " \
-                          "the corresponding reaction. Assignment will finish after 20s of no interaction.\nAvailable" \
-                          " players:\n")
+            msg_content = _("Please select the player you want to assign a spot in the raid from the list below using "
+                            "the corresponding reaction. Assignment will finish after 20s of no interaction.\nAvailable"
+                            " players:\n")
             counter = 0
             for player in available:
                 if player in raid.assigned_players:
@@ -728,7 +722,8 @@ class RaidCog(commands.Cog):
                             for player in raid.assigned_players:
                                 if player:
                                     raid_start_msg = raid_start_msg + "<@{0}> ".format(player.id)
-                            raid_start_msg = raid_start_msg + _("will you answer the call? We are forming for the raid now.")
+                            raid_start_msg = raid_start_msg + _(
+                                "will you answer the call? We are forming for the raid now.")
                             await channel.send(raid_start_msg, delete_after=sleep_time * 2)
             if counter >= save_time:
                 self.save()  # Save raids to file.
