@@ -1,7 +1,7 @@
 Prerequisites:\
 python >= 3.6\
 Check the requirements.txt file for required libraries.\
-You can get them with e.g. `python3 -m pip install -U discord.py`
+You can get all of them with: `python3 -m pip install -U -r requirements.txt`, assuming requirements.txt is in your current directory.
 
 See details further below how to specify your configuration file and then simply run with `python3 main.py`
 
