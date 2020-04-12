@@ -444,7 +444,7 @@ class RaidCog(commands.Cog):
             await class_msg.add_reaction(reaction)
 
         while True:
-            # Update msg
+            # Update player msg
             msg_content = _("Available players:\n")
             counter = 0
             for player in available:
@@ -495,7 +495,7 @@ class RaidCog(commands.Cog):
                         continue
 
                 else:
-                    await msg.remove_reaction(reaction, user)
+                    await player_msg.remove_reaction(reaction, user)
                     await channel.send(_("That is not a class, please start over!"), delete_after=10)
                     continue
             # Check for free slot
