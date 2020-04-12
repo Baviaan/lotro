@@ -9,7 +9,9 @@ async def initialise(guild, channel, prefix, role_names):
            _("*Further commands that can be used in this channel*:"),
            _("`{0}roles` Shows which class roles you currently have.").format(prefix),
            _("`{0}dwarves` Shows a list of the 13 dwarves in the Anvil raid with their associated skills. (Work in progress.)").format(prefix),
-           _("`{0}apply` to apply to {1}.").format(prefix, guild.name)]
+           _("`{0}apply` to apply to {1}.").format(prefix, guild.name),
+           _("`{0}help` for further instructions.").format(prefix),
+           _("`{0}about` to see the bot info.").format(prefix)]
     msg = "\n".join(msgs)
     role_post = await channel.send(msg)
     # Get the custom class emojis.

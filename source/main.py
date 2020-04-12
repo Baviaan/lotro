@@ -8,6 +8,7 @@ import gettext
 import json
 import locale
 import logging
+import requests
 
 from apply_handling import new_app
 from channel_handling import get_channel
@@ -172,6 +173,17 @@ async def about(ctx):
     uptime = datetime.datetime.utcnow() - launch_time
     uptime = td_format(uptime)
 
+    releases = repo + "/releases/latest"
+    r = requests.get(releases, allow_redirects=False)
+    if r.ok:
+        try:
+            location = r.headers['location']
+        except KeyError:
+            latest_version = "N/A"
+        else:
+            (x, y, latest_version) = location.rpartition('/')
+    else:
+        latest_version = "N/A"
     title = "{0}".format(bot.user)
     about = [
             _("A bot for scheduling raids!"),
@@ -180,7 +192,9 @@ async def about(ctx):
             _("**[Support server]({0})**\n").format(server),
             _("**Hosted by:** {0}").format(host),
             _("**Command prefix:** {0}").format(prefix),
-            _("**Uptime:** {0}.").format(uptime)
+            _("**Uptime:** {0}.\n").format(uptime),
+            _("**Using version:** {0}").format(version),
+            _("**Latest version:** {0}").format(latest_version)
             ]
     content = "\n".join(about)
     embed = discord.Embed(title=title, colour=discord.Colour(0x3498db), description=content)
