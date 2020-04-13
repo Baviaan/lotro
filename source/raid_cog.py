@@ -642,7 +642,8 @@ class RaidCog(commands.Cog):
         raids = self.raids
         save_time = 36  # Save to file every three hours.
         expiry_time = datetime.timedelta(seconds=7200)  # Delete raids after 2 hours.
-        notify_time = datetime.timedelta(seconds=300)  # Notify raiders 5 minutes before.
+        notify_seconds = 300  # Notify raiders 5 minutes before.
+        notify_time = datetime.timedelta(seconds=notify_seconds)
         self.counter = self.counter + 1
         current_time = datetime.datetime.utcnow()  # Raid time is stored in UTC.
         # Copy the list to iterate over.
@@ -686,7 +687,7 @@ class RaidCog(commands.Cog):
                                 raid_start_msg = raid_start_msg + "<@{0}> ".format(player.id)
                         raid_start_msg = raid_start_msg + _(
                             "will you answer the call? We are forming for the raid now.")
-                        await channel.send(raid_start_msg, delete_after=notify_time * 2)
+                        await channel.send(raid_start_msg, delete_after=notify_seconds * 2)
         if self.counter >= save_time:
             self.save()  # Save raids to file.
             self.counter = 0  # Reset counter to 0.
