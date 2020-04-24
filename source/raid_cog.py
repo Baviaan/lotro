@@ -704,7 +704,7 @@ def setup(bot):
         with open('raids.pkl', 'rb') as f:
             raids = pickle.load(f)
     except (OSError, IOError, EOFError):
-        pass
+        print("Failed to load raid file.")
     print("We have the following raid data in memory.")
     for raid in raids:
         print(raid)

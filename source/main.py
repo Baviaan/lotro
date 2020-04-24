@@ -23,7 +23,7 @@ logging.basicConfig(level=logging.WARNING)
 launch_on_boot = False
 
 # print version number.
-version = "v3.3.2"
+version = "v3.3.3"
 print("Running " + version)
 
 # Load config file.
