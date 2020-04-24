@@ -698,13 +698,13 @@ class RaidCog(commands.Cog):
 
 
 def setup(bot):
-    raids = []
     # Load the saved raid posts from file.
     try:
         with open('raids.pkl', 'rb') as f:
             raids = pickle.load(f)
     except (OSError, IOError, EOFError):
         print("Failed to load raid file.")
+        raids = []
     print("We have the following raid data in memory.")
     for raid in raids:
         print(raid)
