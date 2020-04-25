@@ -8,7 +8,7 @@
   },
   "LEADER": "Raid Leader",
   "SERVER_TZ": "America/New_York",
-  "TIMEZONES": ["America/New_York", "Europe/London", "Australia/Sydney"],
+  "TIMEZONES": ["America/Los_Angeles", "Europe/London", "Australia/Sydney"],
   "PREFIX": "!",
   "LANGUAGE": "en"
 }
