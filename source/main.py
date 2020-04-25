@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.WARNING)
 launch_on_boot = False
 
 # print version number.
-version = "v3.3.3"
+version = "v3.4.0"
 print("Running " + version)
 
 # Load config file.
@@ -120,8 +120,9 @@ async def on_reaction_add(reaction, user):
     if user == bot.user:
         return
     # Check if the reaction is to the role post.
-    if reaction.message.id in role_post_ids:
-        await role_update(reaction, user, role_names)
+    message = reaction.message
+    if message.id in role_post_ids:
+        await role_update(message.channel, user, reaction.emoji, role_names)
 
 
 @bot.event

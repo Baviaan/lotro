@@ -12,9 +12,10 @@ import os
 import pickle
 import re
 
+from channel_handling import get_channel
 from initialise import add_emojis, get_role_emojis
 from raid import Raid
-from role_handling import get_role
+from role_handling import get_role, role_update
 from player import Player, PlayerClass
 from utils import alphabet_emojis, get_match
 
@@ -87,6 +88,7 @@ class RaidCog(commands.Cog):
     for bitmask in default_lineup:
         class_names = list(compress(role_names, bitmask))
         slots_class_names.append(class_names)
+    bot_channel_name = config['CHANNELS']['BOT']
 
 
     # Load raid (nick)names
@@ -243,6 +245,10 @@ class RaidCog(commands.Cog):
                 await channel.send(error_msg, delete_after=15)
         elif emoji in emojis:
             update = raid.add_player(user, emoji)
+            role = await get_role(channel.guild, emoji.name)
+            if role not in user.roles:
+                bot_channel = await get_channel(guild, self.bot_channel_name)
+                await role_update(bot_channel, user, emoji, self.role_names)
         await self.update_raid_post(raid, channel)
         return update
 
