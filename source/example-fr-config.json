@@ -8,6 +8,7 @@
   },
   "LEADER": "Raid Leader",
   "SERVER_TZ": "Europe/Paris",
+  "TIMEZONES": ["America/Montreal", "Europe/Paris"],
   "PREFIX": "!",
   "LANGUAGE": "fr"
 }

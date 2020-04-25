@@ -7,7 +7,8 @@
     "APPLY": "applications"
   },
   "LEADER": "Raid Leader",
-  "SERVER_TZ": "US/Eastern",
+  "SERVER_TZ": "America/New_York",
+  "TIMEZONES": ["America/New_York", "Europe/London", "Australia/Sydney"],
   "PREFIX": "!",
   "LANGUAGE": "en"
 }

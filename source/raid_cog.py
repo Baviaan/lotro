@@ -89,6 +89,7 @@ class RaidCog(commands.Cog):
         class_names = list(compress(role_names, bitmask))
         slots_class_names.append(class_names)
     bot_channel_name = config['CHANNELS']['BOT']
+    display_times = config['TIMEZONES']
 
 
     # Load raid (nick)names
@@ -616,11 +617,12 @@ class RaidCog(commands.Cog):
         return msg
 
     def build_time_string(self, time):
-        ny_time = self.local_time(time, "US/Eastern")
-        lon_time = self.local_time(time, "Europe/London")
-        syd_time = self.local_time(time, "Australia/Sydney")
-        time_string = _('New York: ') + self.format_time(ny_time) + '\n' + _('London: ') + self.format_time(
-            lon_time) + '\n' + _('Sydney: ') + self.format_time(syd_time)
+        time_string = ''
+        for timezone in self.display_times:
+            local_time = self.local_time(time, timezone)
+            _, _, city = timezone.partition('/')
+            city = city.replace('_', ' ')
+            time_string = time_string + city + ": " + self.format_time(local_time) + '\n'
         return time_string
 
     @staticmethod
