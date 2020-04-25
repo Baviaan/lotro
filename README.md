@@ -1,3 +1,5 @@
+This is a discord bot aimed at making it easy to schedule raids in a discord server. It is developed for LotRO but could work for any game if you edit the class names in the config file.
+
 Prerequisites:\
 python >= 3.6\
 Check the requirements.txt file for required libraries.\
@@ -20,8 +22,6 @@ See below for further instructions what to put in the configuration file.
 Once you are done you can run the bot by typing `python main.py` in your terminal.
 
 ------------------------------------
-
-This is a discord bot aimed at making it easy to schedule raids in a discord server. It is developed for LotRO but could work for any game if you edit the class names in the config file.
 
 When the `!raid` command is called the bot will create an embed specifying the raid time in server time (New York), Los Angeles', London's and Sydney's time.
 All time zones are configurable.
