@@ -7,7 +7,7 @@ See details further below how to specify your configuration file and then simply
 
 ------------------------------------
 **Instructions for Windows.**\
-Python does not come pre-installed on Windows so you will need to install it yourself. Go to https://www.python.org/downloads/ and click the big yellow button to download Python 3.8. Simply run the downloaded file to install Python. Now to save yourself a world of pain, BEFORE you click the 'Install Now' button, make sure you check the box 'Add Python 3.8 to PATH'. This will allow you to use the python command in your terminal (command prompt).
+Python does not come pre-installed on Windows so you will need to install it yourself. Go to https://www.python.org/downloads/ and click the big yellow button to download Python 3.8. Simply run the downloaded file to install Python. Now to save yourself a world of pain, BEFORE you click the 'Install Now' button, make sure you check the box **'Add Python 3.8 to PATH'**. This will allow you to use the python command in your terminal (command prompt).
 
 To check installation was successful open a terminal and type `python --version`, it will return (as of writing) Python 3.8.2, assuming you do not have Python 2 installed.
 (Search for cmd and press enter to open a terminal.)
