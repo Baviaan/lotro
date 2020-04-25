@@ -14,8 +14,7 @@ from apply_handling import new_app
 from channel_handling import get_channel
 from dwarves import show_dwarves
 from initialise import initialise
-from reaction_handling import role_update
-from role_handling import show_roles
+from role_handling import show_roles, role_update
 
 logging.basicConfig(level=logging.WARNING)
 
