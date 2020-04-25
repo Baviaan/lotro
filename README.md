@@ -9,8 +9,15 @@ See details further below how to specify your configuration file and then simply
 **Instructions for Windows.**\
 Python does not come pre-installed on Windows so you will need to install it yourself. Go to https://www.python.org/downloads/ and click the big yellow button to download Python 3.8. Simply run the downloaded file to install Python. Now to save yourself a world of pain, BEFORE you click the 'Install Now' button, make sure you check the box 'Add Python 3.8 to PATH'. This will allow you to use the python command in your terminal (command prompt).
 
-To check installation was successful open a terminal and type `python --version`, it will return (as of writing) Python 3.8.2, assuming you do not have Python 2 installed. You can continue as above to install the required Python libraries but replace `python3` by `python`.
-To edit your configuration file simply open it with notepad. (Windows might complain it doesn't know how to open json files, but simply select to open it with notepad and it'll work fine.)
+To check installation was successful open a terminal and type `python --version`, it will return (as of writing) Python 3.8.2, assuming you do not have Python 2 installed.
+(Search for cmd and press enter to open a terminal.)
+Download the latest release from https://github.com/Baviaan/lotro/releases/latest by clicking on the zip version and extract the folder on your computer.
+In your terminal change directory to wherever you extracted the files.
+(For example type `cd Desktop\lotro-3.4.0` if you downloaded version 3.4.0 and extracted the folder to your desktop.)
+Now you can install the required Python libraries with `python -m pip install -U -r source\requirements.txt`.
+Before you run the bot you will need to edit your configuration file.
+See below for further instructions what to put in the configuration file.
+Once you are done you can run the bot by typing `python main.py` in your terminal.
 
 ------------------------------------
 
@@ -46,6 +53,7 @@ For a detailed explanation how to use the bot's commands please use `!help` once
 ------------------------------------
 
 You will need to make a copy of the 'example-config.json' file, name it 'config.json' and specify your configuration values.
+(Windows might complain it doesn't know how to open json files, but simply select to open it with notepad and it'll work fine.)
 See below for a guide how to create a discord bot.
 
 Config file values:\
