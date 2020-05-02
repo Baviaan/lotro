@@ -16,14 +16,19 @@ from dwarves import show_dwarves
 from initialise import initialise
 from role_handling import show_roles, role_update
 
-logging.basicConfig(level=logging.WARNING)
+logfile = 'raid_bot.log'
+print("Writing to log at: " + logfile)
+logging.basicConfig(filename=logfile, level=logging.WARNING, format='%(asctime)s %(levelname)s: %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S')
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 # If testing it will skip 10s delay.
 launch_on_boot = False
 
-# print version number.
-version = "v3.4.0"
-print("Running " + version)
+# log version number.
+version = "v3.5.0"
+logger.info("Running " + version)
 
 # Load config file.
 with open('config.json', 'r') as f:
@@ -34,10 +39,10 @@ language = config['LANGUAGE']
 if language == 'fr':
     locale.setlocale(locale.LC_TIME, "fr_FR.UTF-8")
 localization = gettext.translation('messages', localedir='locale', languages=[language], fallback=True)
-if language == 'en' or hasattr(localization, '_catalog'): # Technically 'en' has no file.
-    print("Using language file for '{0}'.".format(language))
+if language == 'en' or hasattr(localization, '_catalog'):  # Technically 'en' has no file.
+    logger.info("Using language file for '{0}'.".format(language))
 else:
-    print("Language file '{0}' not found. Defaulting to English.".format(language))
+    logger.warning("Language file '{0}' not found. Defaulting to English.".format(language))
 localization.install()
 
 # Assign specified config values.
@@ -60,9 +65,9 @@ server_tz = config['SERVER_TZ']
 if launch_on_boot:
     # On boot the system launches the bot faster than it gains internet access.
     # Avoid all the resulting errors.
-    print("Waiting 10s for system to gain internet access.")
+    logger.info("Waiting 10s for system to gain internet access.")
     asyncio.sleep(10)
-print("Continuing...")
+    logger.info("Continuing...")
 
 launch_time = datetime.datetime.utcnow()
 prefix = config['PREFIX']
@@ -94,12 +99,10 @@ def td_format(td_object):
 
 @bot.event
 async def on_ready():
-    print("We have logged in as {0.user}".format(bot))
-    print("The time is:")
-    print(datetime.datetime.now())
+    logger.info("We have logged in as {0.user}".format(bot))
     await bot.change_presence(activity=discord.Game(name=version))
     for guild in bot.guilds:
-        print('Welcome to {0}'.format(guild))
+        logger.info('Welcome to {0}'.format(guild))
 
     global role_post_ids
     role_post_ids = []
@@ -109,7 +112,7 @@ async def on_ready():
             bot_channel = await get_channel(guild, channel_names['BOT'])
             role_post = await initialise(guild, bot_channel, prefix, role_names)
         except discord.Forbidden:
-            print("Missing permissions for {0}".format(guild.name))
+            logger.warning("Missing permissions for {0}".format(guild.name))
         else:
             role_post_ids.append(role_post.id)
 
@@ -127,12 +130,13 @@ async def on_reaction_add(reaction, user):
 
 @bot.event
 async def on_command_error(ctx, error):
-    print("Command given: " + ctx.message.content)
-    print(error)
     if isinstance(error, commands.NoPrivateMessage):
         await ctx.send(_("Please use this command in a server."))
     else:
         await ctx.send(error, delete_after=10)
+        if not isinstance(error, commands.CommandNotFound):
+            logger.warning("Error for command: " + ctx.message.content)
+            logger.warning(error)
 
 
 @bot.check
@@ -202,4 +206,4 @@ async def about(ctx):
 
 
 bot.run(token)
-print("Shutting down.")
+logger.info("Shutting down.")

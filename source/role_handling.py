@@ -1,9 +1,12 @@
 import asyncio
 import discord
+import logging
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 async def show_roles(channel, author, role_names):
-    # Prints each role in roles_names the user has.
+    # Sends each role in roles_names the user has.
     msg = _("{0} has the following roles: ").format(author.mention)
     has_role = False
     # Build string to send.
@@ -15,7 +18,6 @@ async def show_roles(channel, author, role_names):
     msg = msg + "."
     if not has_role:
         msg = _("{0} does not have any roles assigned.").format(author.mention)
-    print(msg)
     await channel.send(msg)
 
 
@@ -29,7 +31,7 @@ async def role_update(channel, author, emoji, role_names):
     try:
         emoji_name = emoji.name
     except AttributeError:
-        print(emoji + _(" is not a class!"))
+        logger.debug(emoji + _(" is not a class emoji!"))
     else:
         if emoji_name in role_names:
             await add_role(channel, author, emoji_name)

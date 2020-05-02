@@ -8,6 +8,7 @@ from discord.ext import tasks
 from distutils.util import strtobool
 from itertools import compress
 import json
+import logging
 import os
 import pickle
 import re
@@ -18,6 +19,9 @@ from raid import Raid
 from role_handling import get_role, role_update
 from player import Player, PlayerClass
 from utils import alphabet_emojis, get_match
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 class Tier(commands.Converter):
@@ -64,14 +68,14 @@ class Time(commands.Converter):
 class RaidCog(commands.Cog):
     # Get local timezone using mad hacks.
     local_tz = str(datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo)
-    print("Default timezone: " + local_tz)
+    logger.info("Default timezone for raid commands: " + local_tz)
     # Load config file.
     with open('config.json', 'r') as f:
         config = json.load(f)
 
     # Get server timezone
     server_tz = config['SERVER_TZ']
-    print("Server timezone: " + server_tz)
+    logger.info("Server timezone for raid commands: " + server_tz)
     prefix = config['PREFIX']
     # Specify names for class roles.
     # These will be automatically created on the server if they do not exist.
@@ -210,7 +214,7 @@ class RaidCog(commands.Cog):
             raid_leader = await get_role(guild, self.raid_leader_name)
             if raid_leader not in user.roles:
                 error_msg = _("You do not have permission to change the raid settings.")
-                print("Putting {0} on the naughty list.".format(user.name))
+                logger.info("Putting {0} on the naughty list.".format(user.name))
                 await channel.send(error_msg, delete_after=15)
                 return False
         if str(emoji) == "\u26CF":  # Pick emoji
@@ -260,12 +264,11 @@ class RaidCog(commands.Cog):
         try:
             await post.edit(embed=embed)
         except discord.HTTPException:
-            print("An error occurred sending the following messages as embed.")
-            print(embed.title)
-            print(embed.description)
-            print(embed.fields)
+            logger.warning("An error occurred sending the following messages as embed.")
+            logger.warning(embed.title)
+            logger.warning(embed.description)
+            logger.warning(embed.fields)
             await channel.send(_("That's an error. Check the logs."))
-
 
     async def configure(self, user, channel, raid, emojis):
         bot = self.bot
@@ -642,7 +645,7 @@ class RaidCog(commands.Cog):
     def save(self):
         with open('raids.pkl', 'wb') as f:
             pickle.dump(self.raids, f)
-        print("Saved raids to file at: " + str(datetime.datetime.now()))
+        logger.info("Saving raids to file.")
 
     @tasks.loop(seconds=300)
     async def background_task(self):
@@ -656,46 +659,38 @@ class RaidCog(commands.Cog):
         current_time = datetime.datetime.utcnow()  # Raid time is stored in UTC.
         # Copy the list to iterate over.
         for raid in raids[:]:
-            if current_time > raid.time + expiry_time:
-                # Find the raid post and delete it.
+            if current_time >= raid.time - notify_time * 2:
                 channel = bot.get_channel(raid.channel_id)
-                try:
-                    post = await channel.fetch_message(raid.post_id)
-                except discord.NotFound:
-                    print("Raid post already deleted.")
-                except discord.Forbidden:
-                    print("We are missing required permissions to delete raid post.")
-                except AttributeError:
-                    print("Raid channel has been deleted.")
+                if channel:
+                    try:
+                        post = await channel.fetch_message(raid.post_id)
+                    except discord.NotFound:
+                        logger.info("Raid post already deleted.")
+                        raids.remove(raid)
+                        logger.info("Deleted old raid from memory.")
+                    except discord.Forbidden:
+                        logger.warning("We are missing required permissions to see raid post.")
+                        raids.remove(raid)
+                        logger.info("Deleted old raid from memory.")
+                    else:
+                        if current_time > raid.time + expiry_time:
+                            await post.delete()
+                            logger.info("Deleted expired raid post.")
+                            raids.remove(raid)
+                            logger.info("Deleted expired raid from memory.")
+                        elif current_time < raid.time - notify_time:
+                            if raid.roster:
+                                raid_start_msg = _("Gondor calls for aid! ")
+                                for player in raid.assigned_players:
+                                    if player:
+                                        raid_start_msg = raid_start_msg + "<@{0}> ".format(player.id)
+                                raid_start_msg = raid_start_msg + _(
+                                    "will you answer the call? We are forming for the raid now.")
+                                await channel.send(raid_start_msg, delete_after=notify_seconds * 2)
                 else:
-                    await post.delete()
-                    print("Deleted old raid post.")
-                finally:
+                    logger.info("Raid channel has been deleted.")
                     raids.remove(raid)
-                    print("Deleted old raid.")
-            elif current_time < raid.time - notify_time and current_time >= raid.time - notify_time * 2:
-                channel = bot.get_channel(raid.channel_id)
-                try:
-                    await channel.fetch_message(raid.post_id)
-                except discord.NotFound:
-                    print("Raid post already deleted.")
-                    raids.remove(raid)
-                    print("Deleted old raid.")
-                except discord.Forbidden:
-                    print("We are missing required permissions to see raid post.")
-                except AttributeError:
-                    print("Raid channel has been deleted.")
-                    raids.remove(raid)
-                    print("Deleted old raid.")
-                else:
-                    if raid.roster:
-                        raid_start_msg = _("Gondor calls for aid! ")
-                        for player in raid.assigned_players:
-                            if player:
-                                raid_start_msg = raid_start_msg + "<@{0}> ".format(player.id)
-                        raid_start_msg = raid_start_msg + _(
-                            "will you answer the call? We are forming for the raid now.")
-                        await channel.send(raid_start_msg, delete_after=notify_seconds * 2)
+                    logger.info("Deleted old raid from memory.")
         if self.counter >= save_time:
             self.save()  # Save raids to file.
             self.counter = 0  # Reset counter to 0.
@@ -710,11 +705,12 @@ def setup(bot):
     try:
         with open('raids.pkl', 'rb') as f:
             raids = pickle.load(f)
-    except (OSError, IOError, EOFError):
-        print("Failed to load raid file.")
+    except (OSError, IOError, EOFError) as e:
+        logger.warning("Failed to load raid file.")
+        logger.warning(e)
         raids = []
-    print("We have the following raid data in memory.")
+    logger.info("We have the following raid data in memory.")
     for raid in raids:
-        print(raid)
+        logger.info(raid)
     bot.add_cog(RaidCog(bot, raids))
-    print("Loaded Raid Cog.")
+    logger.info("Loaded Raid Cog.")

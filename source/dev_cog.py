@@ -1,5 +1,9 @@
 from subprocess import Popen, PIPE
 from discord.ext import commands
+import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 class Dev(commands.Cog):
@@ -38,4 +42,4 @@ class Dev(commands.Cog):
 
 def setup(bot):
     bot.add_cog(Dev(bot))
-    print("Loaded Dev Cog.")
+    logger.info("Loaded Dev Cog.")
