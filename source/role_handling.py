@@ -31,7 +31,7 @@ async def role_update(channel, author, emoji, role_names):
     try:
         emoji_name = emoji.name
     except AttributeError:
-        logger.debug(emoji + _(" is not a class emoji!"))
+        logger.debug(emoji + " is not a class emoji!")
     else:
         if emoji_name in role_names:
             await add_role(channel, author, emoji_name)

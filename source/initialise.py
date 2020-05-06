@@ -15,7 +15,7 @@ async def initialise(guild, channel, prefix, role_names):
     msg = "\n".join(msgs)
     role_post = await channel.send(msg)
     # Get the custom class emojis.
-    emojis = await get_role_emojis(guild, role_names)
+    emojis = get_role_emojis(guild, role_names)
     # Add cancel emoji.
     emojis.append("\u274C")
     await add_emojis(emojis, role_post)
@@ -29,9 +29,17 @@ async def add_emojis(emojis, message):
         await message.add_reaction(emoji)
 
 
-async def get_role_emojis(guild, role_names):
+def get_role_emojis(guild, role_names):
     emojis = []
     for emoji in guild.emojis:
         if emoji.name in role_names:
             emojis.append(emoji)
+    return emojis
+
+
+def get_role_emojis_dict(guild, role_names):
+    emojis = {}
+    for emoji in guild.emojis:
+        if emoji.name in role_names:
+            emojis[emoji.name] = str(emoji)
     return emojis

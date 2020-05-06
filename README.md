@@ -16,7 +16,7 @@ To check installation was successful open a terminal and type `python --version`
 Download the latest release from https://github.com/Baviaan/lotro/releases/latest by clicking on the zip version and extract the folder on your computer.
 In your terminal change directory to wherever you extracted the files.
 (For example type `cd Desktop\lotro-3.4.0` if you downloaded version 3.4.0 and extracted the folder to your desktop.)
-Now you can install the required Python libraries with `python -m pip install -U -r source\requirements.txt`.
+Now you can install the required Python libraries with `python -m pip install -U -r requirements.txt`.
 Before you run the bot you will need to edit your configuration file.
 See below for further instructions what to put in the configuration file.
 Once you are done you can run the bot by typing `python main.py` in your terminal.
