@@ -112,6 +112,7 @@ class RaidCog(commands.Cog):
             logger.error("Could not create database connection!")
         self.conn = conn
         self.raids = select(conn, 'raids', 'raid_id')
+        logger.info("We have loaded {} raids in memory.".format(len(self.raids)))
         # Run background task
         self.background_task.start()
 
@@ -187,6 +188,7 @@ class RaidCog(commands.Cog):
         for i in range(len(self.slots_class_names)):
             assign_player(self.conn, raid_id, i, None, available, ','.join(self.slots_class_names[i]))
         self.conn.commit()
+        logger.info("Created new raid: {0} at {1}".format(name, time))
         embed = self.build_raid_message(ctx.guild, raid_id, "\u200B")
         await post.edit(embed=embed)
         emojis = ["\U0001F6E0", "\u26CF", "\u274C", "\u2705"]  # Config, pick, cancel, check
