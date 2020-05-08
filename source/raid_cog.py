@@ -5,7 +5,6 @@ import dateparser
 import discord
 from discord.ext import commands
 from discord.ext import tasks
-from distutils.util import strtobool
 from itertools import compress
 import json
 import logging
@@ -85,7 +84,7 @@ class RaidCog(commands.Cog):
     # Line up
     default_lineup = []
     for string in config['LINEUP']:
-        bitmask = [strtobool(char) for char in string]
+        bitmask = [int(char) for char in string]
         default_lineup.append(bitmask)
     slots_class_names = []
     for bitmask in default_lineup:
