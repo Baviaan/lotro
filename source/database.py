@@ -88,7 +88,7 @@ def add_player_class(conn, raid, player, byname, player_classes):
     """ insert or update player into players table """
     sql = "update Players set "
     for player_class in player_classes:
-        sql = sql + player_class + "=True, "
+        sql = sql + player_class + "=1, "
     sql = sql[:-2] + " where raid_id=? and player_id=?;"
     try:
         c = conn.cursor()
@@ -98,7 +98,7 @@ def add_player_class(conn, raid, player, byname, player_classes):
             sql_values = "values (?,?,?"
             for player_class in player_classes:
                 sql_columns = sql_columns + ", " + player_class
-                sql_values = sql_values + ",True"
+                sql_values = sql_values + ",1"
             sql = sql_columns + ") " + sql_values + ");"
             c.execute(sql, (raid, player, byname))
     except sqlite3.Error as e:
