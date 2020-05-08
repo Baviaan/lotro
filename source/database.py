@@ -107,14 +107,13 @@ def add_player_class(conn, raid, player, byname, player_classes):
 
 def assign_player(conn, raid, slot, player_id, player_name, class_name):
     """ insert or update player into assignment table """
-    sql = """insert into Assignment(raid_id, slot_id, player_id, byname, class_name)
-          values (?,?,?,?,?)
-          on conflict(raid_id, slot_id) do update set
-          player_id=?, byname=?, class_name=?
-          ;"""
+    sql = "update Assignment set player_id=?, byname=?, class_name=? where raid_id=? and slot_id=?;"
     try:
         c = conn.cursor()
-        c.execute(sql, (raid, slot, player_id, player_name, class_name, player_id, player_name, class_name))
+        c.execute(sql, (player_id, player_name, class_name, raid, slot))
+        if c.rowcount == 0:
+            sql = "insert into Assignment(raid_id, slot_id, player_id, byname, class_name) values (?,?,?,?,?)"
+            c.execute(sql, (raid, slot, player_id, player_name, class_name))
     except sqlite3.Error as e:
         logger.warning(e)
 
