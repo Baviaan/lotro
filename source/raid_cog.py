@@ -229,16 +229,14 @@ class RaidCog(commands.Cog):
             else:
                 delete_raid_player(self.conn, user.id, raid_id)
         elif str(emoji) == "\u2705":  # Check mark emoji
-            has_class_role = False
             role_names = [role.name for role in user.roles if role.name in self.role_names]
-            for name in role_names:
-                add_player_class(self.conn, raid_id, user.id, user.display_name, name)
-                has_class_role = True
-            if not has_class_role:
+            if role_names:
+                add_player_class(self.conn, raid_id, user.id, user.display_name, role_names)
+            else:
                 error_msg = _("{0} you have not assigned yourself any class roles.").format(user.mention)
                 await channel.send(error_msg, delete_after=15)
         elif emoji.name in self.role_names:
-            add_player_class(self.conn, raid_id, user.id, user.display_name, emoji.name)
+            add_player_class(self.conn, raid_id, user.id, user.display_name, [emoji.name])
             role = await get_role(channel.guild, emoji.name)
             if role not in user.roles:
                 bot_channel = await get_channel(guild, self.bot_channel_name)

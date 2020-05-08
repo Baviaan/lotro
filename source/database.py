@@ -84,15 +84,23 @@ def add_raid(conn, raid):
         logger.warning(e)
 
 
-def add_player_class(conn, raid, player, byname, player_class):
+def add_player_class(conn, raid, player, byname, player_classes):
     """ insert or update player into players table """
-    sql = """insert into Players(raid_id, player_id, byname,
-          """ + player_class + """) values (?,?,?,True)
-          on conflict(raid_id, player_id) do update set
-          """ + player_class + "=True;"
+    sql = "update Players set "
+    for player_class in player_classes:
+        sql = sql + player_class + "=True, "
+    sql = sql[:-2] + " where raid_id=? and player_id=?;"
     try:
         c = conn.cursor()
-        c.execute(sql, (raid, player, byname))
+        c.execute(sql, (raid, player))
+        if c.rowcount == 0:
+            sql_columns = "insert into Players (raid_id, player_id, byname"
+            sql_values = "values (?,?,?"
+            for player_class in player_classes:
+                sql_columns = sql_columns + ", " + player_class
+                sql_values = sql_values + ",True"
+            sql = sql_columns + ") " + sql_values + ");"
+            c.execute(sql, (raid, player, byname))
     except sqlite3.Error as e:
         logger.warning(e)
 
