@@ -589,8 +589,8 @@ class RaidCog(commands.Cog):
             number_of_players = len(result)
             number_of_fields = ((number_of_players - 1) // block_size) + 1
             # Create the player strings
-            i = 2
             for row in result:
+                i = 2
                 player_string = row[i] + " "
                 for name in self.role_names:
                     i = i + 1
