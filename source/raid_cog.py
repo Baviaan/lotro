@@ -710,5 +710,4 @@ class RaidCog(commands.Cog):
 
 def setup(bot):
     bot.add_cog(RaidCog(bot))
-    # print raids in memory?
     logger.info("Loaded Raid Cog.")
