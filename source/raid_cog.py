@@ -495,14 +495,14 @@ class RaidCog(commands.Cog):
             # Check for free slot
             search = '%' + reaction.emoji.name + '%'
             slot_id = select_one_slot(self.conn, raid_id, search)
-            if slot_id:
+            if slot_id is None:
+                await channel.send(_("There are no slots available for the selected class."), delete_after=10)
+            else:
                 assign_player(self.conn, raid_id, slot_id, *selected_player, reaction.emoji.name)
                 assigned_ids.append(selected_player[0])
                 msg_content = _("Assigned {0} to {1}.").format(selected_player[1], str(reaction.emoji))
                 await channel.send(msg_content, delete_after=10)
                 await self.update_raid_post(raid_id, channel)
-            else:
-                await channel.send(_("There are no slots available for the selected class."), delete_after=10)
 
         await info_msg.delete()
         await player_msg.delete()
