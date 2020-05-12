@@ -354,7 +354,6 @@ msgid "That's an error. Check the logs."
 msgstr "C'est une erreur. Vérifiez les logs."
 
 #: raid_cog.py:267
-#, fuzzy
 msgid ""
 "Please respond with 'b(oss), 'd(ate)', 'r(oster)' or 't(ier)' to indicate "
 "which setting you wish to update for this raid."
