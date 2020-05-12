@@ -336,7 +336,7 @@ class RaidCog(commands.Cog):
         def check(msg):
             return author == msg.author
 
-        msg = await channel.send(_("Please specify the new tier."))
+        msg = await channel.send(_("Please specify the new raid tier."))
         try:
             response = await bot.wait_for('message', check=check, timeout=30)
         except asyncio.TimeoutError:
