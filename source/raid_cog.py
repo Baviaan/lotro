@@ -24,10 +24,10 @@ logger.setLevel(logging.INFO)
 
 class Tier(commands.Converter):
     async def convert(self, ctx, argument):
-        return await self.converter(argument)
+        return self.converter(argument)
 
     @staticmethod
-    async def converter(argument):
+    def converter(argument):
         tier = re.search(r'\d+', argument)  # Filter out non-numbers
         if tier is None:
             raise commands.BadArgument(_("Failed to parse tier argument: ") + argument)
@@ -153,16 +153,17 @@ class RaidCog(commands.Cog):
         if name == "fastraid":
             name = _("unknown raid")
         try:
-            tier = await Tier().converter(ctx.channel.name)
+            tier = Tier().converter(ctx.channel.name)
         except commands.BadArgument:
-            await ctx.send(_("Channel name does not specify tier."))
+            msg = _("Channel name does not specify tier.") + "\n" + _("Defaulting to tier 1.")
+            await ctx.send(msg, delete_after=10)
+            tier = 'T1'
+        if '1' in tier or '2' in tier:
+            roster = False
         else:
-            if '1' in tier or '2' in tier:
-                roster = False
-            else:
-                roster = True
-            raid_id = await self.raid_command(ctx, name, tier, _("All"), time, roster=roster)
-            self.raids.append(raid_id)
+            roster = True
+        raid_id = await self.raid_command(ctx, name, tier, _("All"), time, roster=roster)
+        self.raids.append(raid_id)
 
     def get_raid_name(self, name):
         try:
@@ -263,8 +264,8 @@ class RaidCog(commands.Cog):
         def check(msg):
             return user == msg.author
 
-        text = _("Please respond with 'roster', 'time' or 'boss' to indicate which setting you wish to update for this "
-                 "raid.")
+        text = _("Please respond with 'b(oss), 'd(ate)', 'r(oster)' or 't(ier)' to indicate which setting you wish to "
+                 "update for this raid.")
         msg = await channel.send(text)
         try:
             reply = await bot.wait_for('message', timeout=20, check=check)
@@ -277,10 +278,12 @@ class RaidCog(commands.Cog):
             await reply.delete()
             if reply.content.lower().startswith(_("r")):
                 await self.roster_configure(user, channel, raid_id)
-            elif reply.content.lower().startswith(_("t")):
+            elif reply.content.lower().startswith(_("d")):
                 await self.time_configure(user, channel, raid_id)
             elif reply.content.lower().startswith(_("b")):
                 await self.boss_configure(user, channel, raid_id)
+            elif reply.content.lower().startswith(_("t")):
+                await self.tier_configure(user, channel, raid_id)
         return
 
     async def boss_configure(self, author, channel, raid_id):
@@ -325,6 +328,25 @@ class RaidCog(commands.Cog):
             await response.delete()
         timestamp = int(time.replace(tzinfo=datetime.timezone.utc).timestamp())  # Do not use local tz.
         update_raid(self.conn, 'raids', 'time', timestamp, raid_id)
+        return
+
+    async def tier_configure(self, author, channel, raid_id):
+        bot = self.bot
+
+        def check(msg):
+            return author == msg.author
+
+        msg = await channel.send(_("Please specify the new tier."))
+        try:
+            response = await bot.wait_for('message', check=check, timeout=30)
+        except asyncio.TimeoutError:
+            return
+        else:
+            await response.delete()
+        finally:
+            await msg.delete()
+        tier = Tier.converter(response.content)
+        update_raid(self.conn, 'raids', 'tier', tier, raid_id)
         return
 
     async def roster_configure(self, author, channel, raid_id):
