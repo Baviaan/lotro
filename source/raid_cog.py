@@ -9,6 +9,7 @@ from itertools import compress
 import json
 import logging
 import os
+import pytz
 import re
 
 from channel_handling import get_channel
@@ -53,9 +54,9 @@ class Time(commands.Converter):
         time = dateparser.parse(argument, settings=my_settings)
         if time is None:
             raise commands.BadArgument(_("Failed to parse time argument: ") + argument)
-        time = RaidCog.convert2UTC(time)
+        time = RaidCog.local_time(time, 'Etc/UTC')
         # Check if time is in near future.
-        current_time = datetime.datetime.now()
+        current_time = datetime.datetime.utcnow()
         delta_time = datetime.timedelta(days=7)
         if current_time + delta_time < time:
             error_message = _("You cannot post raids more than a week in advance.")
@@ -531,20 +532,6 @@ class RaidCog(commands.Cog):
         await class_msg.delete()
         return
 
-    @staticmethod
-    def convert2UTC(time):
-        offset = time.utcoffset()
-        time = time.replace(tzinfo=None)
-        time = time - offset
-        return time
-
-    @staticmethod
-    def convert2local(time):
-        offset = time.utcoffset()
-        time = time.replace(tzinfo=None)
-        time = time + offset
-        return time
-
     def build_raid_message(self, guild, raid_id, embed_texts):
         timestamp = int(select_one(self.conn, 'Raids', 'time', raid_id))  # Why can't this return an int by itself?
         time = datetime.datetime.utcfromtimestamp(timestamp)
@@ -666,10 +653,13 @@ class RaidCog(commands.Cog):
             time_string = time.strftime(_("%A %-I:%M %p"))
         return time_string
 
-    def local_time(self, time, timezone):
-        local_settings = {'TIMEZONE': timezone, 'RETURN_AS_TIMEZONE_AWARE': True}
-        local_time = dateparser.parse(str(time), settings=local_settings)
-        local_time = self.convert2local(local_time)
+    @staticmethod
+    def local_time(time, timezone):
+        if not time.tzinfo:
+            time = pytz.utc.localize(time)  # time is stored as UTC
+        tz = pytz.timezone(timezone)
+        local_time = time.astimezone(tz)  # Convert to local time
+        local_time = local_time.replace(tzinfo=None)  # Strip tz
         return local_time
 
     @tasks.loop(seconds=300)
