@@ -41,9 +41,9 @@ class Time(commands.Converter):
         self.tz = tz
 
     async def convert(self, ctx, argument):
-        return await self.converter(argument)
+        return await self.converter(ctx.channel, argument)
 
-    async def converter(self, argument):
+    async def converter(self, channel, argument):
         server = _("server")
         if server in argument:
             # Strip off server (time) and return as server time
@@ -54,14 +54,31 @@ class Time(commands.Converter):
         time = dateparser.parse(argument, settings=my_settings)
         if time is None:
             raise commands.BadArgument(_("Failed to parse time argument: ") + argument)
-        time = RaidCog.local_time(time, 'Etc/UTC')
-        # Check if time is in near future.
+        time = self.local_time(time, 'Etc/UTC')
+        time = time.replace(tzinfo=None)  # Strip tz info
+        # Check if time is in near future. Otherwise parsed date was likely unintended.
         current_time = datetime.datetime.utcnow()
         delta_time = datetime.timedelta(days=7)
         if current_time + delta_time < time:
-            error_message = _("You cannot post raids more than a week in advance.")
-            raise commands.BadArgument(error_message)
+            error_message = _("Please check the date. Posting a raid for: " + str(time) + " UTC")
+            await channel.send(error_message, delete_after=30)
         return time
+
+    @staticmethod
+    def format_time(time):
+        if os.name == "nt":  # Windows uses '#' instead of '-'.
+            time_string = time.strftime(_("%A %#I:%M %p"))
+        else:
+            time_string = time.strftime(_("%A %-I:%M %p"))
+        return time_string
+
+    @staticmethod
+    def local_time(time, timezone):
+        if not time.tzinfo:
+            time = pytz.utc.localize(time)  # time is stored as UTC
+        tz = pytz.timezone(timezone)
+        local_time = time.astimezone(tz)  # Convert to local time
+        return local_time
 
 
 class RaidCog(commands.Cog):
@@ -320,7 +337,7 @@ class RaidCog(commands.Cog):
         finally:
             await msg.delete()
         try:
-            time = await Time(self.server_tz).converter(response.content)
+            time = await Time(self.server_tz).converter(channel, response.content)
         except commands.BadArgument:
             error_msg = _("Failed to parse time argument: ") + response.content
             await channel.send(error_msg, delete_after=20)
@@ -545,8 +562,8 @@ class RaidCog(commands.Cog):
         else:
             number_of_players = 0
 
-        server_time = self.local_time(time, self.server_tz)
-        header_time = self.format_time(server_time) + _(" server time")
+        server_time = Time.local_time(time, self.server_tz)
+        header_time = Time.format_time(server_time) + _(" server time")
         embed_title = _("{0} {1} at {2}").format(name, tier, header_time)
         embed_description = _("Bosses: {0}").format(boss)
         embed = discord.Embed(title=embed_title, colour=discord.Colour(0x3498db), description=embed_description)
@@ -639,28 +656,11 @@ class RaidCog(commands.Cog):
     def build_time_string(self, time):
         time_string = ''
         for timezone in self.display_times:
-            local_time = self.local_time(time, timezone)
+            local_time = Time.local_time(time, timezone)
             _, _, city = timezone.partition('/')
             city = city.replace('_', ' ')
-            time_string = time_string + city + ": " + self.format_time(local_time) + '\n'
+            time_string = time_string + city + ": " + Time.format_time(local_time) + '\n'
         return time_string
-
-    @staticmethod
-    def format_time(time):
-        if os.name == "nt":  # Windows uses '#' instead of '-'.
-            time_string = time.strftime(_("%A %#I:%M %p"))
-        else:
-            time_string = time.strftime(_("%A %-I:%M %p"))
-        return time_string
-
-    @staticmethod
-    def local_time(time, timezone):
-        if not time.tzinfo:
-            time = pytz.utc.localize(time)  # time is stored as UTC
-        tz = pytz.timezone(timezone)
-        local_time = time.astimezone(tz)  # Convert to local time
-        local_time = local_time.replace(tzinfo=None)  # Strip tz
-        return local_time
 
     @tasks.loop(seconds=300)
     async def background_task(self):
