@@ -67,7 +67,7 @@ class Time(commands.Converter):
         current_time = datetime.datetime.utcnow()
         delta_time = datetime.timedelta(days=7)
         if current_time + delta_time < time:
-            error_message = _("Please check the date. Posting a raid for: " + str(time) + " UTC")
+            error_message = _("Please check the date. Posting a raid for: ") + str(time) + " UTC"
             await channel.send(error_message, delete_after=30)
         return time
 
