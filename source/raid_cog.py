@@ -54,6 +54,13 @@ class Time(commands.Converter):
         time = dateparser.parse(argument, settings=my_settings)
         if time is None:
             raise commands.BadArgument(_("Failed to parse time argument: ") + argument)
+
+        # Parse again with time zone specific relative base as workaround for upstream issue
+        # Upstream always checks if the time has passed in UTC, not in the specified timezone
+        tz = time.tzinfo
+        my_settings['RELATIVE_BASE'] = datetime.datetime.now().astimezone(tz).replace(tzinfo=None)
+        time = dateparser.parse(argument, settings=my_settings)
+
         time = self.local_time(time, 'Etc/UTC')
         time = time.replace(tzinfo=None)  # Strip tz info
         # Check if time is in near future. Otherwise parsed date was likely unintended.
