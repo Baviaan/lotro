@@ -362,10 +362,10 @@ msgstr "C'est une erreur. Vérifiez les logs."
 
 #: raid_cog.py:292
 msgid ""
-"Please respond with 'b(oss), 'd(ate)', 'r(oster)' or 't(ier)' to indicate "
+"Please respond with 'b(oss)', 'd(ate)', 'r(oster)' or 't(ier)' to indicate "
 "which setting you wish to update for this raid."
 msgstr ""
-"Veuillez répondre avec 'b(oss)', 'h(eure)', 'l(iste)', ou 'n(iveau)' pour "
+"Veuillez répondre avec 'b(oss)', 'h(eure)', 'l(iste)' ou 'n(iveau)' pour "
 "indiquer le paramètre que vous souhaitez mettre à jour pour ce raid."
 
 #: raid_cog.py:299
