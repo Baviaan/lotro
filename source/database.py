@@ -16,12 +16,15 @@ def create_connection(db_file):
     return conn
 
 
-def create_table(conn, sql, columns=[]):
+def create_table(conn, sql, columns=None):
     """ create a table from the sql statement """
+    if columns is None:
+        columns = []
     sql_dict = {
         'raid': sql_raid_table(),
         'player': sql_player_table(columns),
-        'assign': sql_assign_table()
+        'assign': sql_assign_table(),
+        'timezone': sql_timezone_table()
     }
     sql = sql_dict[sql]
     try:
@@ -71,6 +74,28 @@ def sql_assign_table():
         foreign key (raid_id) references Raids(raid_id)
         );"""
     return sql
+
+
+def sql_timezone_table():
+    sql = """ create table if not exists Timezone (
+            player_id integer,
+            timezone text,
+            primary key(player_id)
+            );"""
+    return sql
+
+
+def add_timezone(conn, user_id, timezone):
+    """ insert or update user's default timezone into the timezone table """
+    sql = """ update Timezone set timezone=? where player_id=?;"""
+    try:
+        c = conn.cursor()
+        c.execute(sql, (timezone, user_id))
+        if c.rowcount == 0:
+            sql = """ insert into Timezone(player_id, timezone) values(?,?); """
+            c.execute(sql, (user_id, timezone))
+    except sqlite3.Error as e:
+        logger.warning(e)
 
 
 def add_raid(conn, raid):
@@ -135,9 +160,9 @@ def select(conn, table, column, where=None):
     return [i[0] for i in result]
 
 
-def select_one(conn, table, column, primary_key):
+def select_one(conn, table, column, primary_key, pk_column='raid_id'):
     """ return one field in column from table in the database """
-    sql = "select " + column + " from " + table + " where raid_id=?;"
+    sql = "select " + column + " from " + table + " where " + pk_column + "=?;"
     result = None
     try:
         c = conn.cursor()

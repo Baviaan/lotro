@@ -13,8 +13,8 @@ import pytz
 import re
 
 from channel_handling import get_channel
-from database import add_raid, add_player_class, assign_player, create_connection, create_table, delete_raid_player, \
-    delete_row, select, select_one, select_one_player, select_one_slot, select_rows, update_raid
+from database import add_raid, add_player_class, add_timezone, assign_player, create_connection, create_table, \
+    delete_raid_player, delete_row, select, select_one, select_one_player, select_one_slot, select_rows, update_raid
 from initialise import add_emojis, get_role_emojis, get_role_emojis_dict
 from role_handling import get_role, role_update
 from utils import alphabet_emojis, get_match
@@ -41,23 +41,30 @@ class Time(commands.Converter):
         self.tz = tz
 
     async def convert(self, ctx, argument):
-        return await self.converter(ctx.channel, argument)
+        return await self.converter(ctx.channel, ctx.author, argument)
 
-    async def converter(self, channel, argument):
+    async def converter(self, channel, author, argument):
+        my_settings = {'PREFER_DATES_FROM': 'future'}
         server = _("server")
         if server in argument:
             # Strip off server (time) and return as server time
             argument = argument.partition(server)[0]
-            my_settings = {'PREFER_DATES_FROM': 'future', 'TIMEZONE': self.tz, 'RETURN_AS_TIMEZONE_AWARE': True}
-        else:
-            my_settings = {'PREFER_DATES_FROM': 'future', 'RETURN_AS_TIMEZONE_AWARE': True}
+            my_settings['TIMEZONE'] = self.tz
+            my_settings['RETURN_AS_TIMEZONE_AWARE'] = True
         time = dateparser.parse(argument, settings=my_settings)
         if time is None:
             raise commands.BadArgument(_("Failed to parse time argument: ") + argument)
-
+        if time.tzinfo is None:
+            user_timezone = Time.get_user_timezone(author)
+            if user_timezone is None:
+                user_timezone = self.tz
+            my_settings['TIMEZONE'] = user_timezone
+            my_settings['RETURN_AS_TIMEZONE_AWARE'] = True
+            tz = pytz.timezone(my_settings['TIMEZONE'])
+        else:
+            tz = time.tzinfo
         # Parse again with time zone specific relative base as workaround for upstream issue
         # Upstream always checks if the time has passed in UTC, not in the specified timezone
-        tz = time.tzinfo
         my_settings['RELATIVE_BASE'] = datetime.datetime.now().astimezone(tz).replace(tzinfo=None)
         time = dateparser.parse(argument, settings=my_settings)
 
@@ -70,6 +77,17 @@ class Time(commands.Converter):
             error_message = _("Please check the date. Posting a raid for: ") + str(time) + " UTC"
             await channel.send(error_message, delete_after=30)
         return time
+
+    @staticmethod
+    def get_user_timezone(author):
+        conn = create_connection('raid_db')
+        if conn:
+            logger.info("Connected to raid database.")
+        else:
+            logger.error("Could not create database connection!")
+        result = select_one(conn, 'Timezone', 'timezone', author.id, pk_column='player_id')
+        conn.close()
+        return result
 
     @staticmethod
     def format_time(time):
@@ -132,6 +150,7 @@ class RaidCog(commands.Cog):
             create_table(conn, 'raid')
             create_table(conn, 'player', columns=self.role_names)
             create_table(conn, 'assign')
+            create_table(conn, 'timezone')
         else:
             logger.error("Could not create database connection!")
         self.conn = conn
@@ -154,9 +173,30 @@ class RaidCog(commands.Cog):
             message = await channel.fetch_message(payload.message_id)
             await message.remove_reaction(payload.emoji, payload.member)
 
+    timezone_brief = _("Sets the user's default timezone to be used for raid commands.")
+    timezone_description = _("This command allows a user to set their default timezone to be used to interpret "
+                             "commands issued by them. This setting will only apply to that specific user. Timezone "
+                             "is to be provided in the tz database format. See "
+                             "https://en.wikipedia.org/wiki/List_of_tz_database_time_zones")
+    timezone_example = _("Examples:\n{0}timezone Australia/Sydney\n{0}timezone Europe/London\n{0}timezone "
+                         "America/New_York").format(prefix)
+
+    @commands.command(help=timezone_example, brief=timezone_brief, description=timezone_description)
+    async def timezone(self, ctx, timezone):
+        """Sets the user's default timezone to be used for raid commands."""
+        try:
+            tz = pytz.timezone(timezone)
+        except pytz.UnknownTimeZoneError as e:
+            await ctx.send(str(e) + _(" is not a valid timezone!"))
+        else:
+            tz = str(tz)
+            add_timezone(self.conn, ctx.author.id, tz)
+            self.conn.commit()
+            await ctx.send(_("Set default timezone for {0} to {1}.").format(ctx.author.mention, tz))
+        return
+
     raid_brief = _("Schedules a raid")
-    raid_description = _("Schedules a raid. Day/timezone will default to today/{0} if not specified. "
-                         "You can use 'server' as timezone. Usage:").format(local_tz)
+    raid_description = _("Schedules a raid. Day/timezone will default to today/server if not specified. Usage:")
     raid_example = _("Examples:\n{0}raid Anvil 2 Friday 4pm server\n{0}raid throne t3 21:00").format(prefix)
 
     @commands.command(aliases=['instance', 'r'], help=raid_example, brief=raid_brief, description=raid_description)
@@ -167,8 +207,7 @@ class RaidCog(commands.Cog):
 
     fast_brief = _("Shortcut to schedule a raid")
     fast_description = _("Schedules a raid with the name of the command, tier from channel name and bosses 'All'. "
-                         "Day/timezone will default to today/{0} if not specified. You can use 'server' as timezone. "
-                         "Usage:").format(local_tz)
+                         "Day/timezone will default to today/server if not specified. Usage:")
     fast_example = _("Examples:\n{0}anvil Friday 4pm server\n{0}anvil 21:00 BST").format(prefix)
 
     @commands.command(aliases=nicknames, help=fast_example, brief=fast_brief, description=fast_description)
