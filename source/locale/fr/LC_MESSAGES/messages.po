@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2020-06-21 23:36+BST\n"
+"POT-Creation-Date: 2020-06-22 00:03+BST\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: FRENCH <LL@li.org>\n"
@@ -185,20 +185,25 @@ msgstr "`{0}roles` Affiche les rôles de classe que vous avez actuellement."
 #: initialise.py:11
 msgid ""
 "`{0}dwarves` Shows a list of the 13 dwarves in the Anvil raid with their "
-"associated skills. (Work in progress.)"
+"associated skills."
 msgstr ""
 "`{0}dwarves` Affiche une liste des 13 nains du raid Anvil avec leurs "
-"compétences associées. (Work in progress.)"
+"compétences associées."
 
 #: initialise.py:12
+msgid ""
+"`{0}timezone` to set your default timezone to be used for your raid commands."
+msgstr ""
+
+#: initialise.py:13
 msgid "`{0}apply` to apply to {1}."
 msgstr "`{0}apply` pour postuler à {1}."
 
-#: initialise.py:13
+#: initialise.py:14
 msgid "`{0}help` for further instructions."
 msgstr "`{0}help pour plus d'informations.`"
 
-#: initialise.py:14
+#: initialise.py:15
 msgid "`{0}about` to see the bot info."
 msgstr "`{0}about` pour voir les informations du bot"
 
@@ -299,14 +304,12 @@ msgid "Schedules a raid"
 msgstr "Planifie un raid"
 
 #: raid_cog.py:199
-#, fuzzy
 msgid ""
 "Schedules a raid. Day/timezone will default to today/server if not "
 "specified. Usage:"
 msgstr ""
-"Planifie un raid. Le jour/fuseau horaire sera par défaut aujourd'hui/{0} "
-"s'il n'est pas spécifié. Vous pouvez utiliser 'serveur' comme fuseau "
-"horaire. Utilisation:"
+"Planifie un raid. Le jour/fuseau horaire sera par défaut aujourd'hui/serveur "
+"s'il n'est pas spécifié. Utilisation:"
 
 #: raid_cog.py:200
 msgid ""
@@ -327,16 +330,14 @@ msgid "Shortcut to schedule a raid"
 msgstr "Raccourci pour planifier un raid"
 
 #: raid_cog.py:209
-#, fuzzy
 msgid ""
 "Schedules a raid with the name of the command, tier from channel name and "
 "bosses 'All'. Day/timezone will default to today/server if not specified. "
 "Usage:"
 msgstr ""
 "Planifie un raid avec le nom de la commande, le tier du nom du canal et les "
-"boss 'Tout'. Le jour/fuseau horaire sera par défaut aujourd'hui/{0} s'il "
-"n'est pas spécifié. Vous pouvez utiliser 'serveur' comme fuseau horaire. "
-"Utilisation:"
+"boss 'Tout'. Le jour/fuseau horaire sera par défaut aujourd'hui/serveur s'il "
+"n'est pas spécifié. Utilisation:"
 
 #: raid_cog.py:211
 msgid ""

@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2020-06-21 23:36+BST\n"
+"POT-Creation-Date: 2020-06-22 00:03+BST\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -162,18 +162,22 @@ msgid "`{0}roles` Shows which class roles you currently have."
 msgstr ""
 
 #: initialise.py:11
-msgid "`{0}dwarves` Shows a list of the 13 dwarves in the Anvil raid with their associated skills. (Work in progress.)"
+msgid "`{0}dwarves` Shows a list of the 13 dwarves in the Anvil raid with their associated skills."
 msgstr ""
 
 #: initialise.py:12
-msgid "`{0}apply` to apply to {1}."
+msgid "`{0}timezone` to set your default timezone to be used for your raid commands."
 msgstr ""
 
 #: initialise.py:13
-msgid "`{0}help` for further instructions."
+msgid "`{0}apply` to apply to {1}."
 msgstr ""
 
 #: initialise.py:14
+msgid "`{0}help` for further instructions."
+msgstr ""
+
+#: initialise.py:15
 msgid "`{0}about` to see the bot info."
 msgstr ""
 
