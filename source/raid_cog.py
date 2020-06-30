@@ -259,7 +259,10 @@ class RaidCog(commands.Cog):
         emojis.extend(class_emojis)
         await add_emojis(emojis, post)
         await asyncio.sleep(0.25)
-        await post.pin()
+        try:
+            await post.pin()
+        except discord.Forbidden:
+            await ctx.send(_("Error: Missing 'Manage Messages' permission to pin the raid post."), delete_after=30)
         return post.id
 
     async def raid_update(self, payload):
@@ -302,10 +305,13 @@ class RaidCog(commands.Cog):
                 await channel.send(error_msg, delete_after=15)
         elif emoji.name in self.role_names:
             add_player_class(self.conn, raid_id, user.id, user.display_name, [emoji.name])
-            role = await get_role(channel.guild, emoji.name)
-            if role not in user.roles:
-                bot_channel = await get_channel(guild, self.bot_channel_name)
-                await role_update(bot_channel, user, emoji, self.role_names)
+            try:
+                role = await get_role(channel.guild, emoji.name)
+                if role not in user.roles:
+                    bot_channel = await get_channel(guild, self.bot_channel_name)
+                    await role_update(bot_channel, user, emoji, self.role_names)
+            except discord.Forbidden:
+                await channel.send(_("Error: Missing 'Manage roles' permission to assign the class role."))
         self.conn.commit()
         await self.update_raid_post(raid_id, channel)
 

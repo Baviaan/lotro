@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2020-06-22 00:03+BST\n"
+"POT-Creation-Date: 2020-06-30 01:43+BST\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -166,7 +166,7 @@ msgid "`{0}dwarves` Shows a list of the 13 dwarves in the Anvil raid with their 
 msgstr ""
 
 #: initialise.py:12
-msgid "`{0}timezone` to set your default timezone to be used for your raid commands."
+msgid "`{0}timezone` to set your default time zone to be used for your raid commands."
 msgstr ""
 
 #: initialise.py:13
@@ -231,7 +231,7 @@ msgstr ""
 msgid "server"
 msgstr ""
 
-#: raid_cog.py:56 raid_cog.py:388
+#: raid_cog.py:56 raid_cog.py:395
 msgid "Failed to parse time argument: "
 msgstr ""
 
@@ -317,200 +317,208 @@ msgstr ""
 msgid "Defaulting to tier 1."
 msgstr ""
 
-#: raid_cog.py:251 raid_cog.py:484 raid_cog.py:505
+#: raid_cog.py:251 raid_cog.py:491 raid_cog.py:512
 msgid "<Available>"
 msgstr ""
 
-#: raid_cog.py:276
+#: raid_cog.py:265
+msgid "Error: Missing 'Manage Messages' permission to pin the raid post."
+msgstr ""
+
+#: raid_cog.py:279
 msgid "You do not have permission to change the raid settings."
 msgstr ""
 
-#: raid_cog.py:284
+#: raid_cog.py:287
 msgid "Enabling roster for this raid."
 msgstr ""
 
-#: raid_cog.py:291
+#: raid_cog.py:294
 msgid "Dearest raid leader, {0} would like to cancel their availability but you have assigned them a spot in the raid. Please resolve this conflict."
 msgstr ""
 
-#: raid_cog.py:301
+#: raid_cog.py:304
 msgid "{0} you have not assigned yourself any class roles."
 msgstr ""
 
-#: raid_cog.py:323
+#: raid_cog.py:311
+msgid "Error: Missing 'Manage roles' permission to assign the class role."
+msgstr ""
+
+#: raid_cog.py:330
 msgid "That's an error. Check the logs."
 msgstr ""
 
-#: raid_cog.py:331
+#: raid_cog.py:338
 msgid "Please respond with 'b(oss)', 'd(ate)', 'r(oster)' or 't(ier)' to indicate which setting you wish to update for this raid."
 msgstr ""
 
-#: raid_cog.py:338
+#: raid_cog.py:345
 msgid "Configuration finished!"
 msgstr ""
 
-#: raid_cog.py:343
+#: raid_cog.py:350
 msgid "r"
 msgstr ""
 
-#: raid_cog.py:345
+#: raid_cog.py:352
 msgid "d"
 msgstr ""
 
-#: raid_cog.py:347
+#: raid_cog.py:354
 msgid "b"
 msgstr ""
 
-#: raid_cog.py:349
+#: raid_cog.py:356
 msgid "t"
 msgstr ""
 
-#: raid_cog.py:359
+#: raid_cog.py:366
 msgid "Please specify the new raid boss."
 msgstr ""
 
-#: raid_cog.py:378
+#: raid_cog.py:385
 msgid "Please specify the new raid time."
 msgstr ""
 
-#: raid_cog.py:403
+#: raid_cog.py:410
 msgid "Please specify the new raid tier."
 msgstr ""
 
-#: raid_cog.py:423
+#: raid_cog.py:430
 msgid "Please respond with 'yes/no' to indicate whether you want to use the roster for this raid."
 msgstr ""
 
-#: raid_cog.py:428 raid_cog.py:439 raid_cog.py:461
+#: raid_cog.py:435 raid_cog.py:446 raid_cog.py:468
 msgid "Roster configuration finished!"
 msgstr ""
 
-#: raid_cog.py:432
+#: raid_cog.py:439
 msgid "n"
 msgstr ""
 
-#: raid_cog.py:435
+#: raid_cog.py:442
 msgid ""
 "Roster disabled for this raid.\n"
 "Roster configuration finished!"
 msgstr ""
 
-#: raid_cog.py:438
+#: raid_cog.py:445
 msgid "y"
 msgstr ""
 
-#: raid_cog.py:445
+#: raid_cog.py:452
 msgid "Roster enabled for this raid."
 msgstr ""
 
-#: raid_cog.py:454
+#: raid_cog.py:461
 msgid "If you wish to overwrite a default raid slot please respond with the slot number followed by the class emojis you would like. Configuration will finish after 20s of no interaction. "
 msgstr ""
 
-#: raid_cog.py:471
+#: raid_cog.py:478
 msgid "No valid slot provided!"
 msgstr ""
 
-#: raid_cog.py:474
+#: raid_cog.py:481
 msgid "No slot provided!"
 msgstr ""
 
-#: raid_cog.py:482
+#: raid_cog.py:489
 msgid "You may only provide up to 3 classes per slot."
 msgstr ""
 
-#: raid_cog.py:486
+#: raid_cog.py:493
 msgid "Classes for slot {0} updated!"
 msgstr ""
 
-#: raid_cog.py:508
+#: raid_cog.py:515
 msgid "There are no players to assign for this raid!"
 msgstr ""
 
-#: raid_cog.py:512
+#: raid_cog.py:519
 msgid "**Warning**: removing some noobs from available players!"
 msgstr ""
 
-#: raid_cog.py:513
+#: raid_cog.py:520
 msgid "Please select the player you want to assign a spot in the raid from the list below using the corresponding reaction. Assignment will finish after {0}s of no interaction."
 msgstr ""
 
-#: raid_cog.py:517
+#: raid_cog.py:524
 msgid ""
 "Available players:\n"
 "*Please wait... Loading*"
 msgstr ""
 
-#: raid_cog.py:521
+#: raid_cog.py:528
 msgid "Select the class for this player."
 msgstr ""
 
-#: raid_cog.py:528
+#: raid_cog.py:535
 msgid ""
 "Available players:\n"
 msgstr ""
 
-#: raid_cog.py:541 raid_cog.py:567
+#: raid_cog.py:548 raid_cog.py:574
 msgid "Player assignment finished!"
 msgstr ""
 
-#: raid_cog.py:548
+#: raid_cog.py:555
 msgid "Please select a player first!"
 msgstr ""
 
-#: raid_cog.py:559
+#: raid_cog.py:566
 msgid "Removed {0} from the line up!"
 msgstr ""
 
-#: raid_cog.py:574
+#: raid_cog.py:581
 msgid "{0} did not sign up with {1}!"
 msgstr ""
 
-#: raid_cog.py:579
+#: raid_cog.py:586
 msgid "That is not a class, please start over!"
 msgstr ""
 
-#: raid_cog.py:585
+#: raid_cog.py:592
 msgid "There are no slots available for the selected class."
 msgstr ""
 
-#: raid_cog.py:589
+#: raid_cog.py:596
 msgid "Assigned {0} to {1}."
 msgstr ""
 
-#: raid_cog.py:612
+#: raid_cog.py:619
 msgid " server time"
 msgstr ""
 
-#: raid_cog.py:613
+#: raid_cog.py:620
 msgid "{0} {1} at {2}"
 msgstr ""
 
-#: raid_cog.py:614
+#: raid_cog.py:621
 msgid "Bosses: {0}"
 msgstr ""
 
-#: raid_cog.py:617
+#: raid_cog.py:624
 msgid "Time zones:"
 msgstr ""
 
-#: raid_cog.py:623
+#: raid_cog.py:630
 msgid "Selected line up:"
 msgstr ""
 
-#: raid_cog.py:643
+#: raid_cog.py:650
 msgid "The following {0} players are available:"
 msgstr ""
 
-#: raid_cog.py:647
+#: raid_cog.py:654
 msgid "Raid time in your local time (beta)"
 msgstr ""
 
-#: raid_cog.py:742
+#: raid_cog.py:749
 msgid "Gondor calls for aid! "
 msgstr ""
 
-#: raid_cog.py:748
+#: raid_cog.py:755
 msgid "will you answer the call? We are forming for the raid now."
 msgstr ""
 
