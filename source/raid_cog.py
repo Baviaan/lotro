@@ -557,7 +557,7 @@ class RaidCog(commands.Cog):
                     await player_msg.remove_reaction(reaction, user)
                     selected_player = available[index]
                     slot = select_one_player(self.conn, 'Assignment', 'slot_id', selected_player[0], raid_id)
-                    if slot:
+                    if slot is not None:
                         # Player already assigned a slot, remove player and reset slot.
                         class_names = ','.join(self.slots_class_names[slot])
                         assign_player(self.conn, raid_id, slot, None, default_name, class_names)
