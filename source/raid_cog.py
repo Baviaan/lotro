@@ -251,8 +251,9 @@ class RaidCog(commands.Cog):
     displaytime_description = _("This command allows a user overwrite the timezones displayed in raid posts. Timezone "
                                  "is to be provided in the tz database format. See "
                                  "https://en.wikipedia.org/wiki/List_of_tz_database_time_zones")
-    displaytime_example = _("Examples:\n{0}displaytime Australia/Sydney\n{0}displaytime Europe/London\n{0}displaytime "
-                           "America/New_York").format(prefix)
+    displaytime_example = _("Examples:\n{0}displaytimes Australia/Sydney Australia/Adelaide Australia/Perth\n"
+                            "{0}displaytimes Europe/London Europe/Amsterdam\n"
+                            "{0}displaytimes Europe/London America/New_York America/Los_Angeles").format(prefix)
 
     @commands.command(help=displaytime_example, brief=displaytime_brief, description=displaytime_description)
     async def displaytimes(self, ctx, *timezones):
