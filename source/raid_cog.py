@@ -269,7 +269,7 @@ class RaidCog(commands.Cog):
         bot = self.bot
         guild = bot.get_guild(payload.guild_id)
         channel = guild.get_channel(payload.channel_id)
-        user = guild.get_member(payload.user_id)
+        user = payload.member
         raid_id = payload.message_id
         emoji = payload.emoji
 
@@ -308,7 +308,7 @@ class RaidCog(commands.Cog):
         elif emoji.name in self.role_names:
             add_player_class(self.conn, raid_id, user.id, user.display_name, [emoji.name])
             try:
-                role = await get_role(channel.guild, emoji.name)
+                role = await get_role(guild, emoji.name)
                 if role not in user.roles:
                     bot_channel = await get_channel(guild, self.bot_channel_name)
                     await role_update(bot_channel, user, emoji, self.role_names)

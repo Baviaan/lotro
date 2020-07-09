@@ -27,7 +27,7 @@ logger.setLevel(logging.INFO)
 launch_on_boot = False
 
 # log version number.
-version = "v3.6.3"
+version = "v3.7.0"
 logger.info("Running " + version)
 
 # Load config file.
@@ -71,7 +71,7 @@ if launch_on_boot:
 
 launch_time = datetime.datetime.utcnow()
 prefix = config['PREFIX']
-bot = commands.Bot(command_prefix=prefix, case_insensitive=True)
+bot = commands.Bot(command_prefix=prefix, case_insensitive=True, guild_subscriptions=False, fetch_offline_members=False)
 bot.load_extension('dev_cog')
 bot.load_extension('raid_cog')
 
