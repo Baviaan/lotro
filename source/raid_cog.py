@@ -289,11 +289,14 @@ class RaidCog(commands.Cog):
         elif str(emoji) == "\U0001F6E0":  # Config emoji
             await self.configure(user, channel, raid_id)
         elif str(emoji) == "\u274C":  # Cancel emoji
-            assigned = select_one_player(self.conn, 'Assignment', 'slot_id', user.id, raid_id)
-            if assigned:
+            assigned_slot = select_one_player(self.conn, 'Assignment', 'slot_id', user.id, raid_id)
+            if assigned_slot is not None:
+                class_name = select_one_player(self.conn, 'Assignment', 'class_name', user.id, raid_id)
                 error_msg = _("Dearest raid leader, {0} has cancelled their availability. "
-                              "Please note they were assigned a spot in the raid.").format(user.mention)
+                              "Please note they were assigned to {1} in the raid.").format(user.mention, class_name)
                 await channel.send(error_msg)
+                class_names = ','.join(self.slots_class_names[assigned_slot])
+                assign_player(self.conn, raid_id, assigned_slot, None, _("<Available>"), class_names)
             delete_raid_player(self.conn, user.id, raid_id)
         elif str(emoji) == "\u2705":  # Check mark emoji
             role_names = [role.name for role in user.roles if role.name in self.role_names]
