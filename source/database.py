@@ -24,7 +24,8 @@ def create_table(conn, sql, columns=None):
         'raid': sql_raid_table(),
         'player': sql_player_table(columns),
         'assign': sql_assign_table(),
-        'timezone': sql_timezone_table()
+        'timezone': sql_timezone_table(),
+        'timezones': sql_timezones_table()
     }
     sql = sql_dict[sql]
     try:
@@ -85,6 +86,16 @@ def sql_timezone_table():
     return sql
 
 
+def sql_timezones_table():
+    sql = """ create table if not exists Timezones (
+            guild_id integer,
+            server text,
+            display text[],
+            primary key(guild_id)
+            );"""
+    return sql
+
+
 def add_timezone(conn, user_id, timezone):
     """ insert or update user's default timezone into the timezone table """
     sql = """ update Timezone set timezone=? where player_id=?;"""
@@ -94,6 +105,39 @@ def add_timezone(conn, user_id, timezone):
         if c.rowcount == 0:
             sql = """ insert into Timezone(player_id, timezone) values(?,?); """
             c.execute(sql, (user_id, timezone))
+        return True
+    except sqlite3.Error as e:
+        logger.warning(e)
+
+
+def add_server_timezone(conn, guild_id, timezone):
+    """ insert or update user's default timezone into the timezone table """
+    sql = """ update Timezones set server=? where guild_id=?;"""
+    try:
+        c = conn.cursor()
+        c.execute(sql, (timezone, guild_id))
+        if c.rowcount == 0:
+            sql = """ insert into Timezones(guild_id, server) values(?,?); """
+            c.execute(sql, (guild_id, timezone))
+        return True
+    except sqlite3.Error as e:
+        logger.warning(e)
+
+
+def add_display_timezones(conn, guild_id, timezones):
+    """ insert or update user's default timezone into the timezone table """
+    sql = """ update Timezones set display=? where guild_id=?;"""
+    tzs = ''
+    for timezone in timezones:
+        tzs = tzs + timezone + ','
+    tzs = tzs[:-1]
+    try:
+        c = conn.cursor()
+        c.execute(sql, (tzs, guild_id))
+        if c.rowcount == 0:
+            sql = """ insert into Timezones(guild_id, display) values(?,?); """
+            c.execute(sql, (guild_id, tzs))
+        return True
     except sqlite3.Error as e:
         logger.warning(e)
 

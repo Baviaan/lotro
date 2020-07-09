@@ -13,8 +13,9 @@ import pytz
 import re
 
 from channel_handling import get_channel
-from database import add_raid, add_player_class, add_timezone, assign_player, create_connection, create_table, \
-    delete_raid_player, delete_row, select, select_one, select_one_player, select_one_slot, select_rows, update_raid
+from database import add_raid, add_player_class, add_display_timezones, add_timezone, add_server_timezone, assign_player, \
+    create_connection, create_table, delete_raid_player, delete_row, select, select_one, select_one_player, \
+    select_one_slot, select_rows, update_raid
 from initialise import add_emojis, get_role_emojis, get_role_emojis_dict
 from role_handling import get_role, role_update
 from utils import alphabet_emojis, get_match
@@ -37,8 +38,22 @@ class Tier(commands.Converter):
 
 
 class Time(commands.Converter):
-    def __init__(self, tz):
-        self.tz = tz
+    with open('config.json', 'r') as f:
+        config = json.load(f)
+
+    # Get server timezone
+    server_tz = config['SERVER_TZ']
+    # Get display times
+    display_times = config['TIMEZONES']
+
+    conn = create_connection('raid_db')
+    if conn:
+        logger.info("Connected to raid database.")
+    else:
+        logger.error("Could not create database connection!")
+
+    def __init__(self):
+        return
 
     async def convert(self, ctx, argument):
         return await self.converter(ctx.channel, ctx.author, argument)
@@ -49,15 +64,13 @@ class Time(commands.Converter):
         if server in argument:
             # Strip off server (time) and return as server time
             argument = argument.partition(server)[0]
-            my_settings['TIMEZONE'] = self.tz
+            my_settings['TIMEZONE'] = Time.server_tz
             my_settings['RETURN_AS_TIMEZONE_AWARE'] = True
         time = dateparser.parse(argument, settings=my_settings)
         if time is None:
             raise commands.BadArgument(_("Failed to parse time argument: ") + argument)
         if time.tzinfo is None:
             user_timezone = Time.get_user_timezone(author)
-            if user_timezone is None:
-                user_timezone = self.tz
             my_settings['TIMEZONE'] = user_timezone
             my_settings['RETURN_AS_TIMEZONE_AWARE'] = True
             tz = pytz.timezone(my_settings['TIMEZONE'])
@@ -80,13 +93,25 @@ class Time(commands.Converter):
 
     @staticmethod
     def get_user_timezone(author):
-        conn = create_connection('raid_db')
-        if conn:
-            logger.info("Connected to raid database.")
+        result = select_one(Time.conn, 'Timezone', 'timezone', author.id, pk_column='player_id')
+        if result is None:
+            result = Time.server_tz
+        return result
+
+    @staticmethod
+    def get_display_times(guild):
+        result = select_one(Time.conn, 'Timezones', 'display', guild.id, pk_column='guild_id')
+        if result is None:
+            result = Time.display_times
         else:
-            logger.error("Could not create database connection!")
-        result = select_one(conn, 'Timezone', 'timezone', author.id, pk_column='player_id')
-        conn.close()
+            result = result.split(',')
+        return result
+
+    @staticmethod
+    def get_server_time(guild):
+        result = select_one(Time.conn, 'Timezones', 'server', guild.id, pk_column='guild_id')
+        if result is None:
+            result = Time.server_tz
         return result
 
     @staticmethod
@@ -134,7 +159,6 @@ class RaidCog(commands.Cog):
         class_names = list(compress(role_names, bitmask))
         slots_class_names.append(class_names)
     bot_channel_name = config['CHANNELS']['BOT']
-    display_times = config['TIMEZONES']
 
     # Load raid (nick)names
     with open('list-of-raids.csv', 'r') as f:
@@ -151,6 +175,7 @@ class RaidCog(commands.Cog):
             create_table(conn, 'player', columns=self.role_names)
             create_table(conn, 'assign')
             create_table(conn, 'timezone')
+            create_table(conn, 'timezones')
         else:
             logger.error("Could not create database connection!")
         self.conn = conn
@@ -190,9 +215,69 @@ class RaidCog(commands.Cog):
             await ctx.send(str(e) + _(" is not a valid timezone!"))
         else:
             tz = str(tz)
-            add_timezone(self.conn, ctx.author.id, tz)
-            self.conn.commit()
-            await ctx.send(_("Set default timezone for {0} to {1}.").format(ctx.author.mention, tz))
+            res = add_timezone(self.conn, ctx.author.id, tz)
+            if res:
+                self.conn.commit()
+                await ctx.send(_("Set default timezone for {0} to {1}.").format(ctx.author.mention, tz))
+            else:
+                await ctx.send(_("An error occurred."))
+        return
+
+    servertime_brief = _("Sets the server time to be used in this guild.")
+    servertime_description = _("This command allows a user overwrite the timezone for their game server. Timezone "
+                               "is to be provided in the tz database format. See "
+                               "https://en.wikipedia.org/wiki/List_of_tz_database_time_zones")
+    servertime_example = _("Examples:\n{0}servertime Australia/Sydney\n{0}servertime Europe/London\n{0}servertime "
+                           "America/New_York").format(prefix)
+
+    @commands.command(help=servertime_example, brief=servertime_brief, description=servertime_description)
+    async def servertime(self, ctx, timezone):
+        """Sets the user's default timezone to be used for raid commands."""
+        try:
+            tz = pytz.timezone(timezone)
+        except pytz.UnknownTimeZoneError as e:
+            await ctx.send(str(e) + _(" is not a valid timezone!"))
+        else:
+            tz = str(tz)
+            res = add_server_timezone(self.conn, ctx.guild.id, tz)
+            if res:
+                self.conn.commit()
+                await ctx.send(_("Set server time to {0}.").format(tz))
+            else:
+                await ctx.send(_("An error occurred."))
+        return
+
+    displaytime_brief = _("Sets the display times to be used in raid posts for this guild.")
+    displaytime_description = _("This command allows a user overwrite the timezones displayed in raid posts. Timezone "
+                                 "is to be provided in the tz database format. See "
+                                 "https://en.wikipedia.org/wiki/List_of_tz_database_time_zones")
+    displaytime_example = _("Examples:\n{0}displaytime Australia/Sydney\n{0}displaytime Europe/London\n{0}displaytime "
+                           "America/New_York").format(prefix)
+
+    @commands.command(help=displaytime_example, brief=displaytime_brief, description=displaytime_description)
+    async def displaytimes(self, ctx, *timezones):
+        """Sets the user's default timezone to be used for raid commands."""
+        tzs = []
+        for timezone in timezones:
+            try:
+                tz = pytz.timezone(timezone)
+            except pytz.UnknownTimeZoneError as e:
+                await ctx.send(str(e) + _(" is not a valid timezone!"))
+            else:
+                tzs.append(str(tz))
+        if tzs:
+            res = add_display_timezones(self.conn, ctx.guild.id, tzs)
+            if res:
+                self.conn.commit()
+                msg_content = _("Set display times to: ")
+                for tz in tzs:
+                    msg_content = msg_content + tz + ", "
+                msg_content = msg_content[:-2] + "."
+                await ctx.send(msg_content)
+            else:
+                await ctx.send(_("An error occurred."))
+        else:
+            await ctx.send(_("Please provide a time zone argument!"))
         return
 
     raid_brief = _("Schedules a raid")
@@ -200,7 +285,7 @@ class RaidCog(commands.Cog):
     raid_example = _("Examples:\n{0}raid Anvil 2 Friday 4pm server\n{0}raid throne t3 21:00").format(prefix)
 
     @commands.command(aliases=['instance', 'r'], help=raid_example, brief=raid_brief, description=raid_description)
-    async def raid(self, ctx, name, tier: Tier, *, time: Time(server_tz)):
+    async def raid(self, ctx, name, tier: Tier, *, time: Time()):
         """Schedules a raid"""
         raid_id = await self.raid_command(ctx, name, tier, _("All"), time)
         self.raids.append(raid_id)
@@ -211,7 +296,7 @@ class RaidCog(commands.Cog):
     fast_example = _("Examples:\n{0}anvil Friday 4pm server\n{0}anvil 21:00 BST").format(prefix)
 
     @commands.command(aliases=nicknames, help=fast_example, brief=fast_brief, description=fast_description)
-    async def fastraid(self, ctx, *, time: Time(server_tz)):
+    async def fastraid(self, ctx, *, time: Time()):
         """Shortcut to schedule a raid"""
         name = ctx.invoked_with
         if name == "fastraid":
@@ -391,7 +476,7 @@ class RaidCog(commands.Cog):
         finally:
             await msg.delete()
         try:
-            time = await Time(self.server_tz).converter(channel, author, response.content)
+            time = await Time().converter(channel, author, response.content)
         except commands.BadArgument:
             error_msg = _("Failed to parse time argument: ") + response.content
             await channel.send(error_msg, delete_after=20)
@@ -616,12 +701,13 @@ class RaidCog(commands.Cog):
         else:
             number_of_players = 0
 
-        server_time = Time.local_time(time, self.server_tz)
+        server_tz = Time.get_server_time(guild)
+        server_time = Time.local_time(time, server_tz)
         header_time = Time.format_time(server_time) + _(" server time")
         embed_title = _("{0} {1} at {2}").format(name, tier, header_time)
         embed_description = _("Bosses: {0}").format(boss)
         embed = discord.Embed(title=embed_title, colour=discord.Colour(0x3498db), description=embed_description)
-        time_string = self.build_time_string(time)
+        time_string = self.build_time_string(time, guild)
         embed.add_field(name=_("Time zones:"), value=time_string)
         if roster:
             emojis_dict = get_role_emojis_dict(guild, self.role_names)
@@ -707,9 +793,11 @@ class RaidCog(commands.Cog):
             msg = self.build_raid_players(raid_id, block_size=block_size // 2)
         return msg
 
-    def build_time_string(self, time):
+    @staticmethod
+    def build_time_string(time, guild):
         time_string = ''
-        for timezone in self.display_times:
+        display_times = Time.get_display_times(guild)
+        for timezone in display_times:
             local_time = Time.local_time(time, timezone)
             _, _, city = timezone.partition('/')
             city = city.replace('_', ' ')
