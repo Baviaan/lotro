@@ -391,7 +391,7 @@ class RaidCog(commands.Cog):
         finally:
             await msg.delete()
         try:
-            time = await Time(self.server_tz).converter(channel, response.content)
+            time = await Time(self.server_tz).converter(channel, author, response.content)
         except commands.BadArgument:
             error_msg = _("Failed to parse time argument: ") + response.content
             await channel.send(error_msg, delete_after=20)
