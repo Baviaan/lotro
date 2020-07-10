@@ -74,6 +74,7 @@ prefix = config['PREFIX']
 bot = commands.Bot(command_prefix=prefix, case_insensitive=True, guild_subscriptions=False, fetch_offline_members=False)
 bot.load_extension('dev_cog')
 bot.load_extension('raid_cog')
+bot.load_extension('time_cog')
 
 
 def td_format(td_object):

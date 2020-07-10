@@ -11,7 +11,6 @@ class Dev(commands.Cog):
         self.bot = bot
         self._last_member = None
 
-
     @commands.command()
     @commands.is_owner()
     async def load(self, ctx, ext):
@@ -26,7 +25,6 @@ class Dev(commands.Cog):
             await ctx.send(_('Extension not found.'))
         except commands.ExtensionError:
             await ctx.send(_('Extension failed to load.'))
-
 
     @commands.group()
     @commands.is_owner()
