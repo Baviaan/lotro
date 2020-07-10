@@ -9,6 +9,7 @@ from discord.ext import commands
 
 from database import add_display_timezones, add_timezone, add_server_timezone, create_connection, create_table, \
     select_one
+from role_handling import get_role
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -53,6 +54,18 @@ class Time(commands.Converter):
         return time
 
 
+def is_raid_leader():
+    async def predicate(ctx):
+        raid_leader = await get_role(ctx.guild, TimeCog.raid_leader_name)
+        if raid_leader in ctx.author.roles:
+            return True
+        error_msg = _("You do not have permission to change the raid settings.")
+        logger.info("Putting {0} on the naughty list.".format(ctx.author.name))
+        await ctx.send(error_msg, delete_after=15)
+        return False
+    return commands.check(predicate)
+
+
 class TimeCog(commands.Cog):
     with open('config.json', 'r') as f:
         config = json.load(f)
@@ -63,6 +76,8 @@ class TimeCog(commands.Cog):
     display_times = config['TIMEZONES']
     # Get command prefix
     prefix = config['PREFIX']
+    # Get raid leader role name
+    raid_leader_name = config['LEADER']
 
     conn = create_connection('raid_db')
     if conn:
@@ -108,8 +123,9 @@ class TimeCog(commands.Cog):
                            "America/New_York").format(prefix)
 
     @commands.command(help=servertime_example, brief=servertime_brief, description=servertime_description)
+    @is_raid_leader()
     async def servertime(self, ctx, timezone):
-        """Sets the user's default timezone to be used for raid commands."""
+        """Sets the timezone to be displayed as server time."""
         try:
             tz = pytz.timezone(timezone)
         except pytz.UnknownTimeZoneError as e:
@@ -133,8 +149,9 @@ class TimeCog(commands.Cog):
                             "{0}displaytimes Europe/London America/New_York America/Los_Angeles").format(prefix)
 
     @commands.command(help=displaytime_example, brief=displaytime_brief, description=displaytime_description)
+    @is_raid_leader()
     async def displaytimes(self, ctx, *timezones):
-        """Sets the user's default timezone to be used for raid commands."""
+        """Sets additional timezones to be displayed."""
         tzs = []
         for timezone in timezones:
             try:
