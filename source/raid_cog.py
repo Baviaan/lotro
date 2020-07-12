@@ -13,7 +13,7 @@ from channel_handling import get_channel
 from database import add_raid, add_player_class, assign_player, \
     create_connection, create_table, delete_raid_player, delete_row, select, select_one, select_one_player, \
     select_one_slot, select_rows, update_raid
-from initialise import add_emojis, get_role_emojis, get_role_emojis_dict
+from initialise import add_emojis, get_role_emojis_dict, initialise
 from role_handling import get_role, role_update
 from time_cog import Time, TimeCog
 from utils import alphabet_emojis, get_match
@@ -36,13 +36,16 @@ class Tier(commands.Converter):
 
 
 class RaidCog(commands.Cog):
-    # Get local timezone using mad hacks.
-    local_tz = str(datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo)
-    logger.info("Default timezone for raid commands: " + local_tz)
     # Load config file.
     with open('config.json', 'r') as f:
         config = json.load(f)
 
+    # Get id for discord server hosting custom emoji.
+    # If not specified the bot will attempt to use emoji from the first server it sees.
+    try:
+        host_id = config['HOST']
+    except KeyError:
+        host_id = None
     # Get server timezone
     server_tz = config['SERVER_TZ']
     logger.info("Server timezone for raid commands: " + server_tz)
@@ -63,7 +66,8 @@ class RaidCog(commands.Cog):
         class_names = list(compress(role_names, bitmask))
         slots_class_names.append(class_names)
     bot_channel_name = config['CHANNELS']['BOT']
-
+    # role post ids
+    role_posts = []
     # Load raid (nick)names
     with open('list-of-raids.csv', 'r') as f:
         reader = csv.reader(f)
@@ -85,6 +89,14 @@ class RaidCog(commands.Cog):
         self.conn = conn
         self.raids = select(conn, 'raids', 'raid_id')
         logger.info("We have loaded {} raids in memory.".format(len(self.raids)))
+        # Emojis
+        host_guild = bot.get_guild(self.host_id)
+        if not host_guild:
+            host_guild = bot.guilds[0]
+        logger.info("Using emoji from {0}.".format(host_guild))
+        self.class_emojis_dict = get_role_emojis_dict(host_guild, self.role_names)
+        self.class_emojis = list(self.class_emojis_dict.values())
+
         # Run background task
         self.background_task.start()
 
@@ -96,11 +108,15 @@ class RaidCog(commands.Cog):
     async def on_raw_reaction_add(self, payload):
         if payload.user_id == self.bot.user.id:
             return
+        channel = self.bot.get_channel(payload.channel_id)
         if payload.message_id in self.raids:
             await self.raid_update(payload)
-            channel = self.bot.get_channel(payload.channel_id)
-            message = await channel.fetch_message(payload.message_id)
-            await message.remove_reaction(payload.emoji, payload.member)
+        elif payload.message_id in self.role_posts:
+            await role_update(channel, payload.member, payload.emoji, self.role_names)
+        else:
+            return
+        message = await channel.fetch_message(payload.message_id)
+        await message.remove_reaction(payload.emoji, payload.member)
 
     raid_brief = _("Schedules a raid")
     raid_description = _("Schedules a raid. Day/timezone will default to today/server if not specified. Usage:")
@@ -149,7 +165,6 @@ class RaidCog(commands.Cog):
     async def raid_command(self, ctx, name, tier, boss, time, roster=False):
         name = self.get_raid_name(name)
         boss = boss.capitalize()
-        class_emojis = get_role_emojis(ctx.guild, self.role_names)
         post = await ctx.send('\u200B')
         raid_id = post.id
         timestamp = int(time.replace(tzinfo=datetime.timezone.utc).timestamp())  # Do not use local tz.
@@ -163,7 +178,7 @@ class RaidCog(commands.Cog):
         embed = self.build_raid_message(ctx.guild, raid_id, "\u200B")
         await post.edit(embed=embed)
         emojis = ["\U0001F6E0", "\u26CF", "\u274C", "\u2705"]  # Config, pick, cancel, check
-        emojis.extend(class_emojis)
+        emojis.extend(self.class_emojis)
         await add_emojis(emojis, post)
         await asyncio.sleep(0.25)
         try:
@@ -409,8 +424,6 @@ class RaidCog(commands.Cog):
 
         timeout = 60
         reaction_limit = 20
-        guild = channel.guild
-        class_emojis = get_role_emojis(guild, self.role_names)
         reactions = alphabet_emojis()
         reactions = reactions[:reaction_limit]
 
@@ -435,7 +448,7 @@ class RaidCog(commands.Cog):
             await player_msg.add_reaction(reaction)
         class_msg_content = _("Select the class for this player.")
         class_msg = await channel.send(class_msg_content)
-        for reaction in class_emojis:
+        for reaction in self.class_emojis:
             await class_msg.add_reaction(reaction)
 
         while True:
@@ -482,7 +495,7 @@ class RaidCog(commands.Cog):
                 await channel.send(_("Player assignment finished!"), delete_after=10)
                 break
             else:
-                if reaction.emoji in class_emojis:
+                if str(reaction.emoji) in self.class_emojis:
                     await class_msg.remove_reaction(reaction, user)
                     signup = select_one_player(self.conn, 'Players', reaction.emoji.name, selected_player[0], raid_id)
                     if not signup:
@@ -532,7 +545,6 @@ class RaidCog(commands.Cog):
         time_string = self.build_time_string(time, guild)
         embed.add_field(name=_("Time zones:"), value=time_string)
         if roster:
-            emojis_dict = get_role_emojis_dict(guild, self.role_names)
             result = select_rows(self.conn, 'Assignment', 'byname, class_name', raid_id)
             number_of_slots = len(result)
             # Add first half
@@ -541,7 +553,7 @@ class RaidCog(commands.Cog):
             for row in result[:number_of_slots//2]:
                 class_names = row[1].split(',')
                 for class_name in class_names:
-                    embed_text = embed_text + emojis_dict[class_name]
+                    embed_text = embed_text + self.class_emojis_dict[class_name]
                 embed_text = embed_text + ": " + row[0] + "\n"
             embed.add_field(name=embed_name, value=embed_text)
             # Add second half
@@ -550,7 +562,7 @@ class RaidCog(commands.Cog):
             for row in result[number_of_slots//2:]:
                 class_names = row[1].split(',')
                 for class_name in class_names:
-                    embed_text = embed_text + emojis_dict[class_name]
+                    embed_text = embed_text + self.class_emojis_dict[class_name]
                 embed_text = embed_text + ": " + row[0] + "\n"
             embed.add_field(name=embed_name, value=embed_text)
         # Add a field for each embed text
@@ -567,7 +579,6 @@ class RaidCog(commands.Cog):
     def build_raid_players(self, raid_id, block_size=6):
         guild_id = select_one(self.conn, 'Raids', 'guild_id', raid_id)
         guild = self.bot.get_guild(guild_id)
-        emojis_dict = get_role_emojis_dict(guild, self.role_names)
         columns = 'raid_id, player_id, byname'
         for name in self.role_names:
             columns = columns + ", " + name
@@ -583,7 +594,7 @@ class RaidCog(commands.Cog):
                 for name in self.role_names:
                     i = i + 1
                     if row[i]:
-                        player_string = player_string + emojis_dict[name]
+                        player_string = player_string + self.class_emojis_dict[name]
                 player_string = player_string + "\n"
                 player_strings.append(player_string)
             # Sort the strings by length
@@ -682,6 +693,16 @@ class RaidCog(commands.Cog):
     @background_task.before_loop
     async def before_background_task(self):
         await self.bot.wait_until_ready()
+        # I suppose we could put this here.
+        for guild in self.bot.guilds:
+            # Initialise the role post in the bot channel.
+            try:
+                bot_channel = await get_channel(guild, self.bot_channel_name)
+                role_post = await initialise(guild.name, bot_channel, self.bot.command_prefix, self.class_emojis)
+            except discord.Forbidden:
+                logger.warning("Missing permissions for {0}".format(guild.name))
+            else:
+                self.role_posts.append(role_post.id)
 
 
 def setup(bot):

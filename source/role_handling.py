@@ -5,6 +5,7 @@ import logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+
 async def show_roles(channel, author, role_names):
     # Sends each role in roles_names the user has.
     msg = _("{0} has the following roles: ").format(author.mention)
@@ -22,11 +23,10 @@ async def show_roles(channel, author, role_names):
 
 
 async def role_update(channel, author, emoji, role_names):
-    if emoji == "\u274C":
+    if str(emoji) == "\u274C":
         for role_name in role_names:
             if role_name in [role.name for role in author.roles]:
                 await remove_role(channel, author, role_name)
-                await asyncio.sleep(0.5)
         return
     try:
         emoji_name = emoji.name

@@ -11,9 +11,7 @@ import logging
 import requests
 
 from apply_handling import new_app
-from channel_handling import get_channel
 from dwarves import show_dwarves
-from initialise import initialise
 from role_handling import show_roles, role_update
 
 logfile = 'raid_bot.log'
@@ -72,9 +70,6 @@ if launch_on_boot:
 launch_time = datetime.datetime.utcnow()
 prefix = config['PREFIX']
 bot = commands.Bot(command_prefix=prefix, case_insensitive=True, guild_subscriptions=False, fetch_offline_members=False)
-bot.load_extension('dev_cog')
-bot.load_extension('raid_cog')
-bot.load_extension('time_cog')
 
 
 def td_format(td_object):
@@ -100,33 +95,17 @@ def td_format(td_object):
 
 @bot.event
 async def on_ready():
-    logger.info("We have logged in as {0.user}".format(bot))
-    await bot.change_presence(activity=discord.Game(name=version))
+    logger.info("We have logged in as {0}.".format(bot.user))
+    if not bot.guilds:
+        logger.error("The bot is not in any guilds. Shutting down.")
+        await bot.close()
+        return
     for guild in bot.guilds:
         logger.info('Welcome to {0}'.format(guild))
-
-    global role_post_ids
-    role_post_ids = []
-    for guild in bot.guilds:
-        # Initialise the role post in the bot channel.
-        try:
-            bot_channel = await get_channel(guild, channel_names['BOT'])
-            role_post = await initialise(guild, bot_channel, prefix, role_names)
-        except discord.Forbidden:
-            logger.warning("Missing permissions for {0}".format(guild.name))
-        else:
-            role_post_ids.append(role_post.id)
-
-
-@bot.event
-async def on_reaction_add(reaction, user):
-    # Check if the reaction is by the bot itself.
-    if user == bot.user:
-        return
-    # Check if the reaction is to the role post.
-    message = reaction.message
-    if message.id in role_post_ids:
-        await role_update(message.channel, user, reaction.emoji, role_names)
+    bot.load_extension('dev_cog')
+    bot.load_extension('raid_cog')
+    bot.load_extension('time_cog')
+    await bot.change_presence(activity=discord.Game(name=version))
 
 
 @bot.event

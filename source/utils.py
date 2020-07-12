@@ -2,35 +2,14 @@ from fuzzywuzzy import fuzz
 from fuzzywuzzy import process
 from fuzzywuzzy import utils
 
+
 def alphabet_emojis():
-    alphabet = []
-    alphabet.append("\U0001F1E6")
-    alphabet.append("\U0001F1E7")
-    alphabet.append("\U0001F1E8")
-    alphabet.append("\U0001F1E9")
-    alphabet.append("\U0001F1EA")
-    alphabet.append("\U0001F1EB")
-    alphabet.append("\U0001F1EC")
-    alphabet.append("\U0001F1ED")
-    alphabet.append("\U0001F1EE")
-    alphabet.append("\U0001F1EF")
-    alphabet.append("\U0001F1F0")
-    alphabet.append("\U0001F1F1")
-    alphabet.append("\U0001F1F2")
-    alphabet.append("\U0001F1F3")
-    alphabet.append("\U0001F1F4")
-    alphabet.append("\U0001F1F5")
-    alphabet.append("\U0001F1F6")
-    alphabet.append("\U0001F1F7")
-    alphabet.append("\U0001F1F8")
-    alphabet.append("\U0001F1F9")
-    alphabet.append("\U0001F1FA")
-    alphabet.append("\U0001F1FB")
-    alphabet.append("\U0001F1FC")
-    alphabet.append("\U0001F1FD")
-    alphabet.append("\U0001F1FE")
-    alphabet.append("\U0001F1FF")
+    alphabet = ["\U0001F1E6", "\U0001F1E7", "\U0001F1E8", "\U0001F1E9", "\U0001F1EA", "\U0001F1EB", "\U0001F1EC",
+                "\U0001F1ED", "\U0001F1EE", "\U0001F1EF", "\U0001F1F0", "\U0001F1F1", "\U0001F1F2", "\U0001F1F3",
+                "\U0001F1F4", "\U0001F1F5", "\U0001F1F6", "\U0001F1F7", "\U0001F1F8", "\U0001F1F9", "\U0001F1FA",
+                "\U0001F1FB", "\U0001F1FC", "\U0001F1FD", "\U0001F1FE", "\U0001F1FF"]
     return alphabet
+
 
 def fp_ratio(s1, s2, force_ascii=True, full_process=True):
     """
