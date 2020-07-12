@@ -12,7 +12,7 @@ import requests
 
 from apply_handling import new_app
 from dwarves import show_dwarves
-from role_handling import show_roles, role_update
+from role_handling import show_roles
 
 logfile = 'raid_bot.log'
 print("Writing to log at: " + logfile)

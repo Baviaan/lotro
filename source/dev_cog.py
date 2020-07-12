@@ -1,6 +1,9 @@
 from subprocess import Popen, PIPE
 from discord.ext import commands
+import datetime
+import discord
 import logging
+import psutil
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -36,6 +39,46 @@ class Dev(commands.Cog):
         ctx.git_cmd.append('pull')
         p = Popen(ctx.git_cmd, stdout=PIPE)
         await ctx.send(p.stdout.read().decode("utf-8"))
+
+    @commands.command()
+    @commands.is_owner()
+    async def stats(self, ctx):
+        """Shows stats about the bot"""
+        guild_count = len(self.bot.guilds)
+        member_count = sum([guild.member_count for guild in self.bot.guilds])
+
+        available_memory = psutil.virtual_memory().available
+        bot_process = psutil.Process()
+        process_memory = bot_process.memory_info().vms
+        cpu = bot_process.cpu_times()
+        cpu_time = cpu.system + cpu.user
+        cpu_time = str(datetime.timedelta(seconds=cpu_time))
+
+        data_sizes = {
+            'B': 1,
+            'KB': 1024,
+            'MB': 1048576,
+            'GB': 1073741824
+        }
+        for size, value in data_sizes.items():
+            if (process_memory / value) > 1 < 1024:
+                process_memory_str = "{} {}".format(
+                    round(process_memory / value, 2), size)
+            if (available_memory / value) > 1 < 1024:
+                available_memory_str = "{} {}".format(
+                    round(available_memory / value, 2), size)
+
+        title = "Bot stats"
+        about = [
+            _("Resource usage:"),
+            _("**CPU time:** {0}").format(cpu_time),
+            _("**Memory:** {0}/{1}\n").format(process_memory_str, available_memory_str),
+            _("**Servers:** {0}").format(guild_count),
+            _("**Members:** {0}").format(member_count)
+        ]
+        content = "\n".join(about)
+        embed = discord.Embed(title=title, colour=discord.Colour(0x3498db), description=content)
+        await ctx.send(embed=embed)
 
 
 def setup(bot):
