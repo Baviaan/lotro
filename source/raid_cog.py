@@ -43,7 +43,7 @@ class RaidCog(commands.Cog):
     # Get id for discord server hosting custom emoji.
     # If not specified the bot will attempt to use emoji from the first server it sees.
     try:
-        host_id = config['HOST']
+        host_id = int(config['HOST'])
     except KeyError:
         host_id = None
     # Get server timezone
