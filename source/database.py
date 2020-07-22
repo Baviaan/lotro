@@ -110,6 +110,17 @@ def add_timezone(conn, user_id, timezone):
         logger.warning(e)
 
 
+def remove_timezone(conn, user_id):
+    """ Delete user's default timezone in the timezone table """
+    sql = """ delete from Timezone where player_id=?;"""
+    try:
+        c = conn.cursor()
+        c.execute(sql, (user_id,))  # This needs a tuple.
+        return True
+    except sqlite3.Error as e:
+        logger.warning(e)
+
+
 def add_server_timezone(conn, guild_id, timezone):
     """ insert or update user's default timezone into the timezone table """
     sql = """ update Timezones set server=? where guild_id=?;"""

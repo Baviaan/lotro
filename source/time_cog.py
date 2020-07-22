@@ -8,7 +8,7 @@ import pytz
 from discord.ext import commands
 
 from database import add_display_timezones, add_timezone, add_server_timezone, create_connection, create_table, \
-    select_one
+    remove_timezone, select_one
 from role_handling import get_role
 
 logger = logging.getLogger(__name__)
@@ -94,13 +94,25 @@ class TimeCog(commands.Cog):
     timezone_description = _("This command allows a user to set their default timezone to be used to interpret "
                              "commands issued by them. This setting will only apply to that specific user. Timezone "
                              "is to be provided in the tz database format. See "
-                             "https://en.wikipedia.org/wiki/List_of_tz_database_time_zones")
+                             "https://en.wikipedia.org/wiki/List_of_tz_database_time_zones"
+                             "You can delete your stored timezone information by providing 'delete' as argument.")
     timezone_example = _("Examples:\n{0}timezone Australia/Sydney\n{0}timezone Europe/London\n{0}timezone "
                          "America/New_York").format(prefix)
 
     @commands.command(help=timezone_example, brief=timezone_brief, description=timezone_description)
     async def timezone(self, ctx, timezone):
         """Sets the user's default timezone to be used for raid commands."""
+        delete = _("delete")
+        reset = _("reset")
+        default = _("default")
+        if timezone in [delete, reset, default]:
+            res = remove_timezone(self.conn, ctx.author.id)
+            if res:
+                self.conn.commit()
+                await ctx.send(_("Deleted timezone information for {0}.").format(ctx.author.mention))
+            else:
+                await ctx.send(_("An error occurred."))
+            return
         try:
             tz = pytz.timezone(timezone)
         except pytz.UnknownTimeZoneError as e:

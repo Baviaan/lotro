@@ -14,7 +14,7 @@ class Dev(commands.Cog):
         self.bot = bot
         self._last_member = None
 
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.is_owner()
     async def load(self, ctx, ext):
         ext = ext + "_cog"
@@ -29,7 +29,7 @@ class Dev(commands.Cog):
         except commands.ExtensionError:
             await ctx.send(_('Extension failed to load.'))
 
-    @commands.group()
+    @commands.group(hidden=True)
     @commands.is_owner()
     async def git(self, ctx):
         ctx.git_cmd = ['git']
@@ -40,7 +40,7 @@ class Dev(commands.Cog):
         p = Popen(ctx.git_cmd, stdout=PIPE)
         await ctx.send(p.stdout.read().decode("utf-8"))
 
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.is_owner()
     async def stats(self, ctx):
         """Shows stats about the bot"""
@@ -79,6 +79,19 @@ class Dev(commands.Cog):
         content = "\n".join(about)
         embed = discord.Embed(title=title, colour=discord.Colour(0x3498db), description=content)
         await ctx.send(embed=embed)
+
+    @commands.command()
+    async def privacy(self, ctx):
+        """ Information on data collection. """
+        msg = _("**PII:**\n"
+                "When you sign up for a raid the bot stores your discord id, discord nickname and the class(es) you "
+                "sign up with. This information is automatically deleted 2 hours after the scheduled raid time or "
+                "immediately when you cancel your sign up.\n"
+                "If you set a default timezone for yourself, the bot will store your timezone along with your discord "
+                "id such that it can parse times provided in your commands in your preferred timezone."
+                "You can delete this information with the command `!timezone delete`.")
+        await ctx.send(msg)
+        return
 
 
 def setup(bot):
