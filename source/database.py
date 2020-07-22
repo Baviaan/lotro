@@ -273,6 +273,19 @@ def select_rows(conn, table, columns, where):
     return result
 
 
+def count_rows(conn, table, where):
+    """ returns number of rows from table in database """
+    sql = "select count() from " + table + " where guild_id=?;"
+    result = None
+    try:
+        c = conn.cursor()
+        c.execute(sql, (where,))  # This needs a tuple.
+        result = c.fetchone()
+    except sqlite3.Error as e:
+        logger.warning(e)
+    return result[0]
+
+
 def delete_row(conn, table, primary_key):
     """ delete row from table in the database """
     sql = "delete from " + table + " where raid_id=?;"

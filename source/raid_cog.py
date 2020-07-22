@@ -10,7 +10,7 @@ import logging
 import re
 
 from channel_handling import get_channel
-from database import add_raid, add_player_class, assign_player, \
+from database import add_raid, add_player_class, assign_player, count_rows, \
     create_connection, create_table, delete_raid_player, delete_row, select, select_one, select_one_player, \
     select_one_slot, select_rows, update_raid
 from initialise import add_emojis, get_role_emojis_dict, initialise
@@ -125,6 +125,10 @@ class RaidCog(commands.Cog):
     @commands.command(aliases=['instance', 'r'], help=raid_example, brief=raid_brief, description=raid_description)
     async def raid(self, ctx, name, tier: Tier, *, time: Time()):
         """Schedules a raid"""
+        res = count_rows(self.conn, "Raids", ctx.guild.id)
+        if self.host_id and res > 4:  # host_id will not be set for private bots
+            await ctx.send(_("Due to limited resources you may only post up to 5 concurrent raids."))
+            return
         raid_id = await self.raid_command(ctx, name, tier, _("All"), time)
         self.raids.append(raid_id)
 
@@ -136,6 +140,10 @@ class RaidCog(commands.Cog):
     @commands.command(aliases=nicknames, help=fast_example, brief=fast_brief, description=fast_description)
     async def fastraid(self, ctx, *, time: Time()):
         """Shortcut to schedule a raid"""
+        res = count_rows(self.conn, "Raids", ctx.guild.id)
+        if self.host_id and res > 4:  # host_id will not be set for private bots
+            await ctx.send(_("Due to limited resources you may only post up to 5 concurrent raids."))
+            return
         name = ctx.invoked_with
         if name == "fastraid":
             name = _("unknown raid")
