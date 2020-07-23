@@ -9,12 +9,10 @@ import json
 import logging
 import re
 
-from channel_handling import get_channel
 from database import add_raid, add_player_class, assign_player, count_rows, \
     create_connection, create_table, delete_raid_player, delete_row, select, select_one, select_one_player, \
     select_one_slot, select_rows, update_raid
-from initialise import add_emojis, get_role_emojis_dict, initialise
-from role_handling import get_role, role_update
+from role_cog import get_role
 from time_cog import Time, TimeCog
 from utils import alphabet_emojis, get_match
 
@@ -65,7 +63,6 @@ class RaidCog(commands.Cog):
     for bitmask in default_lineup:
         class_names = list(compress(role_names, bitmask))
         slots_class_names.append(class_names)
-    bot_channel_name = config['CHANNELS']['BOT']
     # role post ids
     role_posts = []
     # Load raid (nick)names
@@ -94,8 +91,12 @@ class RaidCog(commands.Cog):
         if not host_guild:
             host_guild = bot.guilds[0]
         logger.info("Using emoji from {0}.".format(host_guild))
-        self.class_emojis_dict = get_role_emojis_dict(host_guild, self.role_names)
-        self.class_emojis = list(self.class_emojis_dict.values())
+        emojis = {}
+        for emoji in host_guild.emojis:
+            if emoji.name in self.role_names:
+                emojis[emoji.name] = str(emoji)
+        self.class_emojis_dict = emojis
+        self.class_emojis = list(emojis.values())
 
         # Run background task
         self.background_task.start()
@@ -111,14 +112,10 @@ class RaidCog(commands.Cog):
         channel = self.bot.get_channel(payload.channel_id)
         if payload.message_id in self.raids:
             await self.raid_update(payload)
-        elif payload.message_id in self.role_posts:
-            await role_update(channel, payload.member, payload.emoji, self.role_names)
-        else:
-            return
-        message = await channel.fetch_message(payload.message_id)
-        await message.remove_reaction(payload.emoji, payload.member)
+            message = await channel.fetch_message(payload.message_id)
+            await message.remove_reaction(payload.emoji, payload.member)
 
-    raid_brief = _("Schedules a raid")
+    raid_brief = _("Schedules a raid.")
     raid_description = _("Schedules a raid. Day/timezone will default to today/server if not specified. Usage:")
     raid_example = _("Examples:\n{0}raid Anvil 2 Friday 4pm server\n{0}raid throne t3 21:00").format(prefix)
 
@@ -132,7 +129,7 @@ class RaidCog(commands.Cog):
         raid_id = await self.raid_command(ctx, name, tier, _("All"), time)
         self.raids.append(raid_id)
 
-    fast_brief = _("Shortcut to schedule a raid")
+    fast_brief = _("Shortcut to schedule a raid (use the aliases).")
     fast_description = _("Schedules a raid with the name of the command, tier from channel name and bosses 'All'. "
                          "Day/timezone will default to today/server if not specified. Usage:")
     fast_example = _("Examples:\n{0}anvil Friday 4pm server\n{0}anvil 21:00 BST").format(prefix)
@@ -187,7 +184,8 @@ class RaidCog(commands.Cog):
         await post.edit(embed=embed)
         emojis = ["\U0001F6E0", "\u26CF", "\u274C", "\u2705"]  # Config, pick, cancel, check
         emojis.extend(self.class_emojis)
-        await add_emojis(emojis, post)
+        for emoji in emojis:
+            await post.add_reaction(emoji)
         await asyncio.sleep(0.25)
         try:
             await post.pin()
@@ -206,7 +204,8 @@ class RaidCog(commands.Cog):
         if str(emoji) in ["\U0001F6E0", "\u26CF"]:
             raid_leader = await get_role(guild, self.raid_leader_name)
             if raid_leader not in user.roles:
-                error_msg = _("You do not have permission to change the raid settings.")
+                error_msg = _("You do not have permission to change the raid settings."
+                              "You need to have the '{0}' role.").format(self.raid_leader_name)
                 logger.info("Putting {0} on the naughty list.".format(user.name))
                 await channel.send(error_msg, delete_after=15)
                 return
@@ -240,8 +239,7 @@ class RaidCog(commands.Cog):
             try:
                 role = await get_role(guild, emoji.name)
                 if role not in user.roles:
-                    bot_channel = await get_channel(guild, self.bot_channel_name)
-                    await role_update(bot_channel, user, emoji, self.role_names)
+                    await user.add_roles(role)
             except discord.Forbidden:
                 await channel.send(_("Error: Missing 'Manage roles' permission to assign the class role."))
         self.conn.commit()
@@ -701,16 +699,6 @@ class RaidCog(commands.Cog):
     @background_task.before_loop
     async def before_background_task(self):
         await self.bot.wait_until_ready()
-        # I suppose we could put this here.
-        for guild in self.bot.guilds:
-            # Initialise the role post in the bot channel.
-            try:
-                bot_channel = await get_channel(guild, self.bot_channel_name)
-                role_post = await initialise(guild.name, bot_channel, self.bot.command_prefix, self.class_emojis)
-            except discord.Forbidden:
-                logger.warning("Missing permissions for {0}".format(guild.name))
-            else:
-                self.role_posts.append(role_post.id)
 
 
 def setup(bot):

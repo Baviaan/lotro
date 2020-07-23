@@ -12,7 +12,6 @@ import requests
 
 from apply_handling import new_app
 from dwarves import show_dwarves
-from role_handling import show_roles
 
 logfile = 'raid_bot.log'
 print("Writing to log at: " + logfile)
@@ -104,6 +103,7 @@ async def on_ready():
         logger.info('Welcome to {0}'.format(guild))
     bot.load_extension('dev_cog')
     bot.load_extension('raid_cog')
+    bot.load_extension('role_cog')
     bot.load_extension('time_cog')
     await bot.change_presence(activity=discord.Game(name=version))
 
@@ -128,18 +128,12 @@ async def globally_block_dms(ctx):
 
 
 @bot.command()
-async def roles(ctx):
-    """Shows the class roles you have"""
-    await show_roles(ctx.channel, ctx.author, role_names)
-
-
-@bot.command()
 async def dwarves(ctx):
     """Shows abilities of dwarves in Anvil"""
     await show_dwarves(ctx.channel)
 
 
-@bot.command()
+@bot.command(hidden=True)
 async def apply(ctx):
     """Apply to the kin"""
     await new_app(bot, ctx.message, channel_names['APPLY'])

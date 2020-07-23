@@ -3,7 +3,6 @@
   "CLASSES": ["Beorning","Burglar","Captain","Champion","Guardian","Hunter","Loremaster","Minstrel","Runekeeper","Warden"],
   "LINEUP": ["0000100001","0010000000","1000000110","1000000110","0000001000","0100000000","0010000000","0101010011","0101010011","0101010011","0101010011","0101010011"],
   "CHANNELS": {
-    "BOT": "bot-commands",
     "APPLY": "applications"
   },
   "LEADER": "Raid Leader",

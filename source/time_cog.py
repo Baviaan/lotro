@@ -9,7 +9,7 @@ from discord.ext import commands
 
 from database import add_display_timezones, add_timezone, add_server_timezone, create_connection, create_table, \
     remove_timezone, select_one
-from role_handling import get_role
+from role_cog import get_role
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -60,7 +60,10 @@ def is_raid_leader():
         raid_leader = await get_role(ctx.guild, TimeCog.raid_leader_name)
         if raid_leader in ctx.author.roles:
             return True
-        error_msg = _("You do not have permission to change the raid settings.")
+        if ctx.invoked_with == 'help':  # Do not ask me why it executes this check for the help command.
+            return False
+        error_msg = _("You do not have permission to change the raid settings. "
+                      "You need to have the '{0}' role.").format(TimeCog.raid_leader_name)
         logger.info("Putting {0} on the naughty list.".format(ctx.author.name))
         await ctx.send(error_msg, delete_after=15)
         return False
