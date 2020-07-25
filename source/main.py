@@ -100,7 +100,7 @@ async def on_ready():
         await bot.close()
         return
     for guild in bot.guilds:
-        logger.info('Welcome to {0}'.format(guild))
+        logger.info('Welcome to {0}.'.format(guild))
     bot.load_extension('dev_cog')
     bot.load_extension('raid_cog')
     bot.load_extension('role_cog')

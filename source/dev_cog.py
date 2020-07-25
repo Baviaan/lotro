@@ -30,6 +30,11 @@ class DevCog(commands.Cog):
         except commands.ExtensionError:
             await ctx.send(_('Extension failed to load.'))
 
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def version(self, ctx, version):
+        await self.bot.change_presence(activity=discord.Game(name=version))
+
     @commands.group(hidden=True)
     @commands.is_owner()
     async def git(self, ctx):
@@ -81,6 +86,12 @@ class DevCog(commands.Cog):
         embed = discord.Embed(title=title, colour=discord.Colour(0x3498db), description=content)
         await ctx.send(embed=embed)
 
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def list(self, ctx):
+        msg = "\n".join(guild.name for guild in self.bot.guilds)
+        await ctx.send(_("**We are in the following {0} guilds:**\n").format(len(self.bot.guilds)) + msg)
+
     @commands.command()
     async def privacy(self, ctx):
         """ Information on data collection. """
@@ -112,6 +123,7 @@ class DevCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
+        logger.info("We have joined {0}.".format(guild))
         channels = guild.text_channels
         channel = find(lambda x: x.name == 'welcome', channels)
         if not channel or not channel.permissions_for(guild.me).send_messages:
