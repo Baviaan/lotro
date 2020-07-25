@@ -12,6 +12,7 @@ import requests
 
 from apply_handling import new_app
 from dwarves import show_dwarves
+from database import add_prefix, create_connection, create_table, select_table, remove_prefix
 
 logfile = 'raid_bot.log'
 print("Writing to log at: " + logfile)
@@ -55,8 +56,9 @@ role_names = config['CLASSES']
 # change to immutable tuple
 role_names = tuple(role_names)
 
-# Get server timezone
+# Get default server timezone and default prefix
 server_tz = config['SERVER_TZ']
+default_prefix = config['PREFIX']
 
 
 if launch_on_boot:
@@ -67,8 +69,31 @@ if launch_on_boot:
     logger.info("Continuing...")
 
 launch_time = datetime.datetime.utcnow()
-prefix = config['PREFIX']
-bot = commands.Bot(command_prefix=prefix, case_insensitive=True, guild_subscriptions=False, fetch_offline_members=False)
+
+conn = create_connection('raid_db')
+if conn:
+    logger.info("main connected to raid database.")
+    create_table(conn, 'prefix')
+    results = select_table(conn, 'prefix')
+    prefixes = dict(results)
+else:
+    logger.error("main could not create database connection!")
+
+
+def prefix_manager(bot, message):
+    """Returns a guild specific prefix if it has been set. Default prefix otherwise."""
+    try:
+        guild_id = message.guild.id
+    except AttributeError:  # If the command is used in dm there is no guild attribute
+        prefix = default_prefix
+    else:
+        prefix = prefixes.get(guild_id, default_prefix)
+    return commands.when_mentioned_or(prefix)(bot, message)
+
+
+launch_time = datetime.datetime.utcnow()
+bot = commands.Bot(command_prefix=prefix_manager, case_insensitive=True, guild_subscriptions=False,
+                   fetch_offline_members=False)
 
 
 def td_format(td_object):
@@ -169,7 +194,7 @@ async def about(ctx):
             _("**[Source code]({0})**").format(repo),
             _("**[Support server]({0})**\n").format(server),
             _("**Hosted by:** {0}").format(host),
-            _("**Command prefix:** {0}").format(prefix),
+            _("**Default command prefix:** {0}").format(default_prefix),
             _("**Uptime:** {0}.\n").format(uptime),
             _("**Using version:** {0}").format(version),
             _("**Latest version:** {0}").format(latest_version)
@@ -178,6 +203,33 @@ async def about(ctx):
     embed = discord.Embed(title=title, colour=discord.Colour(0x3498db), description=content)
     await ctx.send(embed=embed)
 
+
+@bot.command()
+async def prefix(ctx, prefix):
+    """Sets the command prefix to be used in this guild."""
+    if not ctx.author.guild_permissions.administrator:
+        await ctx.send(_("You must be an admin to change the command prefix."))
+        return
+    delete = _("delete")
+    reset = _("reset")
+    default = _("default")
+    if prefix in [delete, reset, default]:
+        res = remove_prefix(conn, ctx.guild.id)
+        if res:
+            conn.commit()
+            prefixes[ctx.guild.id] = default_prefix
+            await ctx.send(_("Command prefix reset to `{0}`.").format(default_prefix))
+        else:
+            await ctx.send(_("An error occurred."))
+        return
+    res = add_prefix(conn, ctx.guild.id, prefix)
+    if res:
+        conn.commit()
+        prefixes[ctx.guild.id] = prefix
+        await ctx.send(_("Command prefix set to `{0}`.").format(prefix))
+    else:
+        await ctx.send(_("An error occurred."))
+    return
 
 bot.run(token)
 logger.info("Shutting down.")

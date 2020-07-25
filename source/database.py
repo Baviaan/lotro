@@ -25,7 +25,8 @@ def create_table(conn, sql, columns=None):
         'player': sql_player_table(columns),
         'assign': sql_assign_table(),
         'timezone': sql_timezone_table(),
-        'timezones': sql_timezones_table()
+        'timezones': sql_timezones_table(),
+        'prefix': sql_prefix_table()
     }
     sql = sql_dict[sql]
     try:
@@ -96,6 +97,15 @@ def sql_timezones_table():
     return sql
 
 
+def sql_prefix_table():
+    sql = """ create table if not exists Prefix (
+            guild_id integer,
+            prefix text,
+            primary key(guild_id)
+            );"""
+    return sql
+
+
 def add_timezone(conn, user_id, timezone):
     """ insert or update user's default timezone into the timezone table """
     sql = """ update Timezone set timezone=? where player_id=?;"""
@@ -116,6 +126,31 @@ def remove_timezone(conn, user_id):
     try:
         c = conn.cursor()
         c.execute(sql, (user_id,))  # This needs a tuple.
+        return True
+    except sqlite3.Error as e:
+        logger.warning(e)
+
+
+def add_prefix(conn, guild_id, prefix):
+    """ insert or update guild's command prefix into the prefix table """
+    sql = """ update Prefix set prefix=? where guild_id=?;"""
+    try:
+        c = conn.cursor()
+        c.execute(sql, (prefix, guild_id))
+        if c.rowcount == 0:
+            sql = """ insert into Prefix(guild_id, prefix) values(?,?); """
+            c.execute(sql, (guild_id, prefix))
+        return True
+    except sqlite3.Error as e:
+        logger.warning(e)
+
+
+def remove_prefix(conn, guild_id):
+    """ Delete user's default timezone in the timezone table """
+    sql = """ delete from Prefix where guild_id=?;"""
+    try:
+        c = conn.cursor()
+        c.execute(sql, (guild_id,))  # This needs a tuple.
         return True
     except sqlite3.Error as e:
         logger.warning(e)
@@ -314,3 +349,16 @@ def delete_raid_player(conn, player_id, raid_id):
         c.execute(sql, (player_id, raid_id))
     except sqlite3.Error as e:
         logger.warning(e)
+
+
+def select_table(conn, table):
+    """ returns database rows with columns from table """
+    sql = "select * from " + table + ";"
+    result = None
+    try:
+        c = conn.cursor()
+        c.execute(sql)
+        result = c.fetchall()
+    except sqlite3.Error as e:
+        logger.warning(e)
+    return result
