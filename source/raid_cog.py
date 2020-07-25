@@ -204,7 +204,7 @@ class RaidCog(commands.Cog):
         if str(emoji) in ["\U0001F6E0", "\u26CF"]:
             raid_leader = await get_role(guild, self.raid_leader_name)
             if raid_leader not in user.roles:
-                error_msg = _("You do not have permission to change the raid settings."
+                error_msg = _("You do not have permission to change the raid settings. "
                               "You need to have the '{0}' role.").format(self.raid_leader_name)
                 logger.info("Putting {0} on the naughty list.".format(user.name))
                 await channel.send(error_msg, delete_after=15)
