@@ -3,6 +3,7 @@ from discord.ext import commands
 from discord.utils import find
 import datetime
 import discord
+import json
 import logging
 import psutil
 
@@ -14,6 +15,11 @@ class DevCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self._last_member = None
+
+        with open('config.json', 'r') as f:
+            config = json.load(f)
+            default_prefix = config['PREFIX']
+        self.default_prefix = default_prefix
 
     @commands.command(hidden=True)
     @commands.is_owner()
@@ -117,7 +123,7 @@ class DevCog(commands.Cog):
                 "Please consider restricting my access to only the channels I need to see. "
                 "Both to protect your privacy and to reduce my computational burden: "
                 "I process every message I can see to check if it contains a command."
-                ).format(ctx.guild.name, self.bot.command_prefix)
+                ).format(ctx.guild.name, self.default_prefix)
         await ctx.send(msg)
         return
 
@@ -144,7 +150,7 @@ class DevCog(commands.Cog):
                     "Please consider restricting my access to only the channels I need to see. "
                     "Both to protect your privacy and to reduce my computational burden: "
                     "I process every message I can see to check if it contains a command."
-                    ).format(guild.name, self.bot.command_prefix)
+                    ).format(guild.name, self.default_prefix)
             await channel.send(msg)
 
 
