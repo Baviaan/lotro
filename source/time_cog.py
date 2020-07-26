@@ -87,7 +87,6 @@ class TimeCog(commands.Cog):
     if conn:
         logger.info("TimeCog connected to raid database.")
         create_table(conn, 'timezone')
-        create_table(conn, 'timezones')
     else:
         logger.error("TimeCog could not create database connection!")
 

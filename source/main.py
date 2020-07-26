@@ -12,7 +12,7 @@ import requests
 
 from apply_handling import new_app
 from dwarves import show_dwarves
-from database import add_prefix, create_connection, create_table, select_table, remove_prefix
+from database import add_prefix, create_connection, create_table, select_two_columns, remove_prefix
 
 logfile = 'raid_bot.log'
 print("Writing to log at: " + logfile)
@@ -73,8 +73,8 @@ launch_time = datetime.datetime.utcnow()
 conn = create_connection('raid_db')
 if conn:
     logger.info("main connected to raid database.")
-    create_table(conn, 'prefix')
-    results = select_table(conn, 'prefix')
+    create_table(conn, 'settings')
+    results = select_two_columns(conn, 'guild_id', 'prefix', 'Settings')
     prefixes = dict(results)
 else:
     logger.error("main could not create database connection!")

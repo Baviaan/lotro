@@ -79,8 +79,6 @@ class RaidCog(commands.Cog):
             create_table(conn, 'raid')
             create_table(conn, 'player', columns=self.role_names)
             create_table(conn, 'assign')
-            create_table(conn, 'timezone')
-            create_table(conn, 'timezones')
         else:
             logger.error("RaidCog could not create database connection!")
         self.conn = conn

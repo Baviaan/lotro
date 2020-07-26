@@ -12,7 +12,6 @@ def create_connection(db_file):
         conn = sqlite3.connect(db_file)
     except sqlite3.Error as e:
         logger.warning(e)
-
     return conn
 
 
@@ -25,8 +24,7 @@ def create_table(conn, sql, columns=None):
         'player': sql_player_table(columns),
         'assign': sql_assign_table(),
         'timezone': sql_timezone_table(),
-        'timezones': sql_timezones_table(),
-        'prefix': sql_prefix_table()
+        'settings': sql_settings_table()
     }
     sql = sql_dict[sql]
     try:
@@ -87,20 +85,13 @@ def sql_timezone_table():
     return sql
 
 
-def sql_timezones_table():
-    sql = """ create table if not exists Timezones (
+def sql_settings_table():
+    sql = """ create table if not exists Settings (
             guild_id integer,
             server text,
             display text[],
-            primary key(guild_id)
-            );"""
-    return sql
-
-
-def sql_prefix_table():
-    sql = """ create table if not exists Prefix (
-            guild_id integer,
             prefix text,
+            raid_leader text,
             primary key(guild_id)
             );"""
     return sql
@@ -133,12 +124,12 @@ def remove_timezone(conn, user_id):
 
 def add_prefix(conn, guild_id, prefix):
     """ insert or update guild's command prefix into the prefix table """
-    sql = """ update Prefix set prefix=? where guild_id=?;"""
+    sql = """ update Settings set prefix=? where guild_id=?;"""
     try:
         c = conn.cursor()
         c.execute(sql, (prefix, guild_id))
         if c.rowcount == 0:
-            sql = """ insert into Prefix(guild_id, prefix) values(?,?); """
+            sql = """ insert into Settings(guild_id, prefix) values(?,?); """
             c.execute(sql, (guild_id, prefix))
         return True
     except sqlite3.Error as e:
@@ -146,8 +137,8 @@ def add_prefix(conn, guild_id, prefix):
 
 
 def remove_prefix(conn, guild_id):
-    """ Delete user's default timezone in the timezone table """
-    sql = """ delete from Prefix where guild_id=?;"""
+    """ Delete server's command prefix """
+    sql = """ update Settings set prefix=NULL where guild_id=?;"""
     try:
         c = conn.cursor()
         c.execute(sql, (guild_id,))  # This needs a tuple.
@@ -157,13 +148,13 @@ def remove_prefix(conn, guild_id):
 
 
 def add_server_timezone(conn, guild_id, timezone):
-    """ insert or update user's default timezone into the timezone table """
-    sql = """ update Timezones set server=? where guild_id=?;"""
+    """ insert or update server timezone """
+    sql = """ update Settings set server=? where guild_id=?;"""
     try:
         c = conn.cursor()
         c.execute(sql, (timezone, guild_id))
         if c.rowcount == 0:
-            sql = """ insert into Timezones(guild_id, server) values(?,?); """
+            sql = """ insert into Settings(guild_id, server) values(?,?); """
             c.execute(sql, (guild_id, timezone))
         return True
     except sqlite3.Error as e:
@@ -171,8 +162,8 @@ def add_server_timezone(conn, guild_id, timezone):
 
 
 def add_display_timezones(conn, guild_id, timezones):
-    """ insert or update user's default timezone into the timezone table """
-    sql = """ update Timezones set display=? where guild_id=?;"""
+    """ insert or update server's displayed timezones """
+    sql = """ update Settings set display=? where guild_id=?;"""
     tzs = ''
     for timezone in timezones:
         tzs = tzs + timezone + ','
@@ -181,7 +172,7 @@ def add_display_timezones(conn, guild_id, timezones):
         c = conn.cursor()
         c.execute(sql, (tzs, guild_id))
         if c.rowcount == 0:
-            sql = """ insert into Timezones(guild_id, display) values(?,?); """
+            sql = """ insert into Settings(guild_id, display) values(?,?); """
             c.execute(sql, (guild_id, tzs))
         return True
     except sqlite3.Error as e:
@@ -351,9 +342,9 @@ def delete_raid_player(conn, player_id, raid_id):
         logger.warning(e)
 
 
-def select_table(conn, table):
+def select_two_columns(conn, column1, column2, table):
     """ returns database rows with columns from table """
-    sql = "select * from " + table + ";"
+    sql = "select " + column1 + ", " + column2 + " from " + table + ";"
     result = None
     try:
         c = conn.cursor()
