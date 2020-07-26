@@ -9,9 +9,9 @@ import json
 import logging
 import re
 
-from database import add_raid, add_player_class, assign_player, count_rows, \
-    create_connection, create_table, delete_raid_player, delete_row, select, select_one, select_one_player, \
-    select_one_slot, select_rows, update_raid
+from database import add_raid, add_player_class, add_setting, assign_player, count_rows, \
+    create_connection, create_table, delete_raid_player, delete_row, remove_setting, select, select_one, \
+    select_one_player, select_one_slot, select_rows, update_raid
 from role_cog import get_role
 from time_cog import Time, TimeCog
 from utils import alphabet_emojis, get_match
@@ -113,6 +113,31 @@ class RaidCog(commands.Cog):
             message = await channel.fetch_message(payload.message_id)
             await message.remove_reaction(payload.emoji, payload.member)
 
+    @commands.command()
+    async def leader(self, ctx, raid_leader):
+        """Sets the role to be used as raid leader in this guild."""
+        if not ctx.author.guild_permissions.administrator:
+            await ctx.send(_("You must be an admin to change the raid leader role."))
+            return
+        delete = _("delete")
+        reset = _("reset")
+        default = _("default")
+        if raid_leader in [delete, reset, default]:
+            res = remove_setting(self.conn, 'raid_leader', ctx.guild.id)
+            if res:
+                self.conn.commit()
+                await ctx.send(_("Raid Leader role reset to `{0}`.").format(self.raid_leader_name))
+            else:
+                await ctx.send(_("An error occurred."))
+            return
+        res = add_setting(self.conn, 'raid_leader', ctx.guild.id, raid_leader)
+        if res:
+            self.conn.commit()
+            await ctx.send(_("Raid Leader role set to `{0}`.").format(raid_leader))
+        else:
+            await ctx.send(_("An error occurred."))
+        return
+
     raid_brief = _("Schedules a raid.")
     raid_description = _("Schedules a raid. Day/timezone will default to today/server if not specified. Usage:")
     raid_example = _("Examples:\n{0}raid Anvil 2 Friday 4pm server\n{0}raid throne t3 21:00").format(prefix)
@@ -200,10 +225,13 @@ class RaidCog(commands.Cog):
         emoji = payload.emoji
 
         if str(emoji) in ["\U0001F6E0", "\u26CF"]:
-            raid_leader = await get_role(guild, self.raid_leader_name)
+            raid_leader_name = select_one(self.conn, 'Settings', 'raid_leader', guild.id, 'guild_id')
+            if not raid_leader_name:
+                raid_leader_name = self.raid_leader_name
+            raid_leader = await get_role(guild, raid_leader_name)
             if raid_leader not in user.roles:
                 error_msg = _("You do not have permission to change the raid settings. "
-                              "You need to have the '{0}' role.").format(self.raid_leader_name)
+                              "You need to have the '{0}' role.").format(raid_leader_name)
                 logger.info("Putting {0} on the naughty list.".format(user.name))
                 await channel.send(error_msg, delete_after=15)
                 return

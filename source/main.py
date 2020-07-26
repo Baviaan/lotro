@@ -12,7 +12,7 @@ import requests
 
 from apply_handling import new_app
 from dwarves import show_dwarves
-from database import add_prefix, create_connection, create_table, select_two_columns, remove_prefix
+from database import add_setting, create_connection, create_table, select_two_columns, remove_setting
 
 logfile = 'raid_bot.log'
 print("Writing to log at: " + logfile)
@@ -88,6 +88,8 @@ def prefix_manager(bot, message):
         prefix = default_prefix
     else:
         prefix = prefixes.get(guild_id, default_prefix)
+        if not prefix:
+            prefix = default_prefix
     return commands.when_mentioned_or(prefix)(bot, message)
 
 
@@ -214,7 +216,7 @@ async def prefix(ctx, prefix):
     reset = _("reset")
     default = _("default")
     if prefix in [delete, reset, default]:
-        res = remove_prefix(conn, ctx.guild.id)
+        res = remove_setting(conn, 'prefix', ctx.guild.id)
         if res:
             conn.commit()
             prefixes[ctx.guild.id] = default_prefix
@@ -222,7 +224,7 @@ async def prefix(ctx, prefix):
         else:
             await ctx.send(_("An error occurred."))
         return
-    res = add_prefix(conn, ctx.guild.id, prefix)
+    res = add_setting(conn, 'prefix', ctx.guild.id, prefix)
     if res:
         conn.commit()
         prefixes[ctx.guild.id] = prefix

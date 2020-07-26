@@ -122,58 +122,26 @@ def remove_timezone(conn, user_id):
         logger.warning(e)
 
 
-def add_prefix(conn, guild_id, prefix):
-    """ insert or update guild's command prefix into the prefix table """
-    sql = """ update Settings set prefix=? where guild_id=?;"""
+def add_setting(conn, column, guild_id, value):
+    """ insert or update guild's setting """
+    sql = " update Settings set " + column + "=? where guild_id=?;"
     try:
         c = conn.cursor()
-        c.execute(sql, (prefix, guild_id))
+        c.execute(sql, (value, guild_id))
         if c.rowcount == 0:
-            sql = """ insert into Settings(guild_id, prefix) values(?,?); """
-            c.execute(sql, (guild_id, prefix))
+            sql = " insert into Settings(guild_id, " + column + ") values(?,?); "
+            c.execute(sql, (guild_id, value))
         return True
     except sqlite3.Error as e:
         logger.warning(e)
 
 
-def remove_prefix(conn, guild_id):
-    """ Delete server's command prefix """
-    sql = """ update Settings set prefix=NULL where guild_id=?;"""
+def remove_setting(conn, column, guild_id):
+    """ Delete guild's setting """
+    sql = "update Settings set " + column + "=NULL where guild_id=?;"
     try:
         c = conn.cursor()
         c.execute(sql, (guild_id,))  # This needs a tuple.
-        return True
-    except sqlite3.Error as e:
-        logger.warning(e)
-
-
-def add_server_timezone(conn, guild_id, timezone):
-    """ insert or update server timezone """
-    sql = """ update Settings set server=? where guild_id=?;"""
-    try:
-        c = conn.cursor()
-        c.execute(sql, (timezone, guild_id))
-        if c.rowcount == 0:
-            sql = """ insert into Settings(guild_id, server) values(?,?); """
-            c.execute(sql, (guild_id, timezone))
-        return True
-    except sqlite3.Error as e:
-        logger.warning(e)
-
-
-def add_display_timezones(conn, guild_id, timezones):
-    """ insert or update server's displayed timezones """
-    sql = """ update Settings set display=? where guild_id=?;"""
-    tzs = ''
-    for timezone in timezones:
-        tzs = tzs + timezone + ','
-    tzs = tzs[:-1]
-    try:
-        c = conn.cursor()
-        c.execute(sql, (tzs, guild_id))
-        if c.rowcount == 0:
-            sql = """ insert into Settings(guild_id, display) values(?,?); """
-            c.execute(sql, (guild_id, tzs))
         return True
     except sqlite3.Error as e:
         logger.warning(e)

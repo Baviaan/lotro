@@ -7,7 +7,7 @@ import pytz
 
 from discord.ext import commands
 
-from database import add_display_timezones, add_timezone, add_server_timezone, create_connection, create_table, \
+from database import add_setting, add_timezone, create_connection, create_table, \
     remove_timezone, select_one
 from role_cog import get_role
 
@@ -55,9 +55,12 @@ class Time(commands.Converter):
         return time
 
 
-def is_raid_leader():
+def is_raid_leader(conn):
     async def predicate(ctx):
-        raid_leader = await get_role(ctx.guild, TimeCog.raid_leader_name)
+        raid_leader_name = select_one(conn, 'Settings', 'raid_leader', ctx.guild.id, 'guild_id')
+        if not raid_leader_name:
+            raid_leader_name = TimeCog.raid_leader_name
+        raid_leader = await get_role(ctx.guild, raid_leader_name)
         if raid_leader in ctx.author.roles:
             return True
         if ctx.invoked_with == 'help':  # Do not ask me why it executes this check for the help command.
@@ -138,7 +141,7 @@ class TimeCog(commands.Cog):
                            "America/New_York").format(prefix)
 
     @commands.command(help=servertime_example, brief=servertime_brief, description=servertime_description)
-    @is_raid_leader()
+    @is_raid_leader(conn)
     async def servertime(self, ctx, timezone):
         """Sets the timezone to be displayed as server time."""
         try:
@@ -147,7 +150,7 @@ class TimeCog(commands.Cog):
             await ctx.send(str(e) + _(" is not a valid timezone!"))
         else:
             tz = str(tz)
-            res = add_server_timezone(self.conn, ctx.guild.id, tz)
+            res = add_setting(self.conn, 'server', ctx.guild.id, tz)
             if res:
                 self.conn.commit()
                 await ctx.send(_("Set server time to {0}.").format(tz))
@@ -164,7 +167,7 @@ class TimeCog(commands.Cog):
                             "{0}displaytimes Europe/London America/New_York America/Los_Angeles").format(prefix)
 
     @commands.command(help=displaytime_example, brief=displaytime_brief, description=displaytime_description)
-    @is_raid_leader()
+    @is_raid_leader(conn)
     async def displaytimes(self, ctx, *timezones):
         """Sets additional timezones to be displayed."""
         tzs = []
@@ -176,7 +179,11 @@ class TimeCog(commands.Cog):
             else:
                 tzs.append(str(tz))
         if tzs:
-            res = add_display_timezones(self.conn, ctx.guild.id, tzs)
+            tz_string = ''
+            for timezone in tzs:
+                tz_string = tz_string + timezone + ','
+            tz_string = tz_string[:-1]
+            res = add_setting(self.conn, 'display', ctx.guild.id, tz_string)
             if res:
                 self.conn.commit()
                 msg_content = _("Set display times to: ")
@@ -199,7 +206,7 @@ class TimeCog(commands.Cog):
 
     @staticmethod
     def get_display_times(guild):
-        result = select_one(TimeCog.conn, 'Timezones', 'display', guild.id, pk_column='guild_id')
+        result = select_one(TimeCog.conn, 'Settings', 'display', guild.id, pk_column='guild_id')
         if result is None:
             result = TimeCog.display_times
         else:
@@ -208,7 +215,7 @@ class TimeCog(commands.Cog):
 
     @staticmethod
     def get_server_time(guild):
-        result = select_one(TimeCog.conn, 'Timezones', 'server', guild.id, pk_column='guild_id')
+        result = select_one(TimeCog.conn, 'Settings', 'server', guild.id, pk_column='guild_id')
         if result is None:
             result = TimeCog.server_tz
         return result
