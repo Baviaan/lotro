@@ -7,7 +7,7 @@ When a user clicks on a class emoji it will update the embed listing the user's 
 Moreover it will add tools, pickaxe, check mark and cross mark emojis.
 A user can sign up with all his (previously used) classes by clicking the green check mark and cancel his sign up by clicking the red cross mark.
 One can reset the classes for the green check mark sign up via the `!roles` command.
-The tools emoji can only be used by raid leaders to update the raid bosses, raid time or roster settings.
+The tools emoji can only be used by raid leaders to update the raid bosses, raid tier, raid time or roster settings.
 The pickaxe emoji can be used by raid leaders to pick people for the raid from available sign ups.
 
 The `!raid` command requires a name (of the raid) and a tier argument, which may get cumbersome.
