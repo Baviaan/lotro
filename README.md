@@ -1,5 +1,33 @@
 This is a discord bot aimed at making it easy to schedule raids in a discord server. It is developed for LotRO but could work for any game if you edit the class names in the config file.
 
+When the `!raid` command is called the bot will create an embed specifying the raid time in server time (New York), Los Angeles', London's and Sydney's time.
+All time zones are configurable.
+The bot will add class emojis to this embed for users to interact with.
+When a user clicks on a class emoji it will update the embed listing the user's discord nickname and available classes.
+Moreover it will add tools, pickaxe, check mark and cross mark emojis.
+A user can sign up with all his (previously used) classes by clicking the green check mark and cancel his sign up by clicking the red cross mark.
+One can reset the classes for the green check mark sign up via the `!roles` command.
+The tools emoji can only be used by raid leaders to update the raid bosses, raid time or roster settings.
+The pickaxe emoji can be used by raid leaders to pick people for the raid from available sign ups.
+
+The `!raid` command requires a name (of the raid) and a tier argument, which may get cumbersome.
+Alternatively you can create a discord channels in your server, say `tier-2-raids` and `tier-3-raids` and use the nickname of the raid directly: `!anvil saturday 6pm`.
+This command will look in the channel name for a number and uses that as tier argument and default to t1 if it cannot find any number.
+It will expand the alias used to invoke the command as name for the raid (in this case Anvil of Winterstith).
+See [list-of-raids](./source/list-of-raids.csv) for all nicknames that can be used to quickly schedule a raid.
+
+![Screenshot](./screenshots/raid.png)
+
+For a detailed explanation how to use the bot's commands please use `!help` once it is running.
+
+If you would like to use the public bot please join our
+[discord server](https://discord.gg/5YqSzuV)
+to find the bot invite link.
+
+If you would like to host your own instance, continue reading below.
+
+------------------------------------
+
 Prerequisites:\
 python >= 3.6\
 Check the requirements.txt file for required libraries.\
@@ -20,30 +48,6 @@ Now you can install the required Python libraries with `python -m pip install -U
 Before you run the bot you will need to edit your configuration file.
 See below for further instructions what to put in the configuration file.
 Once you are done you can run the bot by typing `python main.py` in your terminal.
-
-------------------------------------
-
-When the `!raid` command is called the bot will create an embed specifying the raid time in server time (New York), Los Angeles', London's and Sydney's time.
-All time zones are configurable.
-The bot will add class emojis to this embed for users to interact with.
-When a user clicks on a class emoji it will update the embed listing the user's discord nickname and available classes.
-Moreover it will add tools, pickaxe, check mark and cross mark emojis.
-A user can sign up with all his (previously used) classes by clicking the green check mark and cancel his sign up by clicking the red cross mark.
-One can reset the classes for the green check mark sign up via the `!roles` command.
- The tools emoji can only be used by raid leaders to update the raid bosses, raid time or roster settings.
-The pickaxe emoji can be used by raid leaders to pick people for the raid from available sign ups.
-
-
-The `!raid` command requires a name (of the raid) and a tier argument, which may get cumbersome.
-Alternatively you can create a discord channels in your server, say `tier-2-raids` and `tier-3-raids` and use the nickname of the raid directly: `!anvil saturday 6pm`.
-This command will look in the channel name for a number and uses that as tier argument and default to t1 if it cannot find any number.
-It will expand the alias used to invoke the command as name for the raid (in this case Anvil of Winterstith).
-See [list-of-raids](./source/list-of-raids.csv) for all nicknames that can be used to quickly schedule a raid.
-
-
-![Screenshot](./screenshots/raid.png)
-
-For a detailed explanation how to use the bot's commands please use `!help` once it is running.
 
 ------------------------------------
 
