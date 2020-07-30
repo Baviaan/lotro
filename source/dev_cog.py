@@ -123,7 +123,7 @@ class DevCog(commands.Cog):
                 "Please consider restricting my access to only the channels I need to see. "
                 "Both to protect your privacy and to reduce my computational burden: "
                 "I process every message I can see to check if it contains a command."
-                ).format(ctx.guild.name, self.default_prefix)
+                ).format(ctx.guild.name, ctx.prefix)
         await ctx.send(msg)
         return
 
