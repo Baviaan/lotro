@@ -95,7 +95,7 @@ class DevCog(commands.Cog):
     @commands.command(hidden=True)
     @commands.is_owner()
     async def list(self, ctx):
-        msg = "\n".join(guild.name for guild in self.bot.guilds)
+        msg = "\n".join(guild.name + " (" + str(guild.id) + ")" for guild in self.bot.guilds)
         await ctx.send(_("**We are in the following {0} guilds:**\n").format(len(self.bot.guilds)) + msg)
 
     @commands.command()
