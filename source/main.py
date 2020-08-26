@@ -26,7 +26,7 @@ logger.setLevel(logging.INFO)
 launch_on_boot = False
 
 # log version number.
-version = "v3.7.1"
+version = "v3.8.0"
 logger.info("Running " + version)
 
 # Load config file.
@@ -45,7 +45,7 @@ else:
 localization.install()
 
 # Assign specified config values.
-if "BOT_TOKEN" in os.environ:
+if 'BOT_TOKEN' in os.environ:
     token = os.environ['BOT_TOKEN']    
 else:
     token = config['BOT_TOKEN']
