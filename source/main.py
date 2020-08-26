@@ -9,6 +9,7 @@ import json
 import locale
 import logging
 import requests
+import os
 
 from apply_handling import new_app
 from dwarves import show_dwarves
@@ -44,7 +45,10 @@ else:
 localization.install()
 
 # Assign specified config values.
-token = config['BOT_TOKEN']
+if "BOT_TOKEN" in os.environ:
+    token = os.environ['BOT_TOKEN']    
+else:
+    token = config['BOT_TOKEN']
 
 # Specify names for channels the bot will respond in.
 # These will be automatically created on the server if they do not exist.
