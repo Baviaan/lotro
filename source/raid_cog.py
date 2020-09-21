@@ -207,9 +207,11 @@ class RaidCog(commands.Cog):
         await post.edit(embed=embed)
         emojis = ["\U0001F6E0", "\u26CF", "\u274C", "\u2705"]  # Config, pick, cancel, check
         emojis.extend(self.class_emojis)
-        for emoji in emojis:
-            await post.add_reaction(emoji)
-        await asyncio.sleep(0.25)
+        try:
+            for emoji in emojis:
+                await post.add_reaction(emoji)
+        except discord.Forbidden:
+            await ctx.send(_("Error: Missing 'Add Reactions' permission to add reactions to the raid post."))
         try:
             await post.pin()
         except discord.Forbidden:
