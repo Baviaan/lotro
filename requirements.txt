@@ -1,5 +1,5 @@
 dateparser>=0.7.1
-discord.py>=1.3.4
+discord.py>=1.5
 fuzzywuzzy>=0.17.0
 psutil~=5.7.0
 requests>=2.18.4

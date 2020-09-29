@@ -22,7 +22,7 @@ logging.basicConfig(filename=logfile, level=logging.WARNING, format='%(asctime)s
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-# If testing it will skip 10s delay.
+# If scheduled to launch on system boot set this to True.
 launch_on_boot = False
 
 # log version number.
@@ -97,9 +97,13 @@ def prefix_manager(bot, message):
     return commands.when_mentioned_or(prefix)(bot, message)
 
 
+intents = discord.Intents.none()
+intents.guilds = True
+intents.messages = True
+intents.reactions = True
+
 launch_time = datetime.datetime.utcnow()
-bot = commands.Bot(command_prefix=prefix_manager, case_insensitive=True, guild_subscriptions=False,
-                   fetch_offline_members=False)
+bot = commands.Bot(command_prefix=prefix_manager, case_insensitive=True, intents=intents)
 
 
 def td_format(td_object):
