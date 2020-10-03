@@ -146,8 +146,8 @@ class RaidCog(commands.Cog):
     async def raid(self, ctx, name, tier: Tier, *, time: Time()):
         """Schedules a raid"""
         res = count_rows(self.conn, "Raids", ctx.guild.id)
-        if self.host_id and res > 4:  # host_id will not be set for private bots
-            await ctx.send(_("Due to limited resources you may only post up to 5 concurrent raids."))
+        if self.host_id and res > 9:  # host_id will not be set for private bots
+            await ctx.send(_("Due to limited resources you may only post up to 10 concurrent raids."))
             return
         raid_id = await self.raid_command(ctx, name, tier, _("All"), time)
         self.raids.append(raid_id)
@@ -161,8 +161,8 @@ class RaidCog(commands.Cog):
     async def fastraid(self, ctx, *, time: Time()):
         """Shortcut to schedule a raid"""
         res = count_rows(self.conn, "Raids", ctx.guild.id)
-        if self.host_id and res > 4:  # host_id will not be set for private bots
-            await ctx.send(_("Due to limited resources you may only post up to 5 concurrent raids."))
+        if self.host_id and res > 9:  # host_id will not be set for private bots
+            await ctx.send(_("Due to limited resources you may only post up to 10 concurrent raids."))
             return
         name = ctx.invoked_with
         if name == "fastraid":
