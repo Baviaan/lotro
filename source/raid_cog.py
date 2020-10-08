@@ -439,7 +439,7 @@ class RaidCog(commands.Cog):
                     continue
                 new_classes = []
                 for name in self.role_names:
-                    if name in reply.content:
+                    if name.lower() in reply.content.lower():
                         new_classes.append(name)
                 if new_classes:
                     if len(new_classes) > 3:
