@@ -39,6 +39,7 @@ def sql_raid_table():
         raid_id integer primary key,
         channel_id integer not null,
         guild_id integer not null,
+        organizer_id integer,
         name text not null,
         tier text not null,
         boss text not null,
@@ -149,8 +150,8 @@ def remove_setting(conn, column, guild_id):
 
 def add_raid(conn, raid):
     """ insert new raid into the raids table """
-    sql = """ insert into Raids(raid_id, channel_id, guild_id, name, tier, boss, time, roster)
-              values(?,?,?,?,?,?,?,?); """
+    sql = """ insert into Raids(raid_id, channel_id, guild_id, organizer_id, name, tier, boss, time, roster)
+              values(?,?,?,?,?,?,?,?,?); """
     try:
         c = conn.cursor()
         c.execute(sql, raid)

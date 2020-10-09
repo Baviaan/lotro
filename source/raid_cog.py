@@ -196,7 +196,7 @@ class RaidCog(commands.Cog):
         post = await ctx.send('\u200B')
         raid_id = post.id
         timestamp = int(time.replace(tzinfo=datetime.timezone.utc).timestamp())  # Do not use local tz.
-        raid = (raid_id, ctx.channel.id, ctx.guild.id, name, tier, boss, timestamp, roster)
+        raid = (raid_id, ctx.channel.id, ctx.guild.id, ctx.author.id, name, tier, boss, timestamp, roster)
         add_raid(self.conn, raid)
         available = _("<Available>")
         for i in range(len(self.slots_class_names)):
@@ -227,11 +227,12 @@ class RaidCog(commands.Cog):
         emoji = payload.emoji
 
         if str(emoji) in ["\U0001F6E0", "\u26CF"]:
+            organizer_id = select_one(self.conn, 'Raids', 'organizer_id', raid_id)
             raid_leader_name = select_one(self.conn, 'Settings', 'raid_leader', guild.id, 'guild_id')
             if not raid_leader_name:
                 raid_leader_name = self.raid_leader_name
             raid_leader = await get_role(guild, raid_leader_name)
-            if raid_leader not in user.roles:
+            if raid_leader not in user.roles and organizer_id != user.id:
                 error_msg = _("You do not have permission to change the raid settings. "
                               "You need to have the '{0}' role.").format(raid_leader_name)
                 logger.info("Putting {0} on the naughty list.".format(user.name))
