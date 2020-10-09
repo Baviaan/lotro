@@ -113,6 +113,13 @@ class RaidCog(commands.Cog):
             message = await channel.fetch_message(payload.message_id)
             await message.remove_reaction(payload.emoji, payload.member)
 
+    @commands.Cog.listener()
+    async def on_raw_message_delete(self, payload):
+        raid_id = payload.message_id
+        if raid_id in self.raids:
+            self.cleanup_old_raid(raid_id, "Raid manually deleted.")
+            self.conn.commit()
+
     @commands.command()
     async def leader(self, ctx, raid_leader):
         """Sets the role to be used as raid leader in this guild."""
