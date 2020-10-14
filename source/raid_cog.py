@@ -146,6 +146,20 @@ class RaidCog(commands.Cog):
             await ctx.send(_("An error occurred."))
         return
 
+    meet_brief = _("Schedules a meetup.")
+    meet_description = _("Schedules a meetup. Day/timezone will default to today/server if not specified. Usage:")
+    meet_example = _("Examples:\n{0}meetup scourges Friday 4pm server\n{0}meetup \"kin house\" 21:00").format(prefix)
+
+    @commands.command(aliases=['meet', 'm'], help=meet_example, brief=meet_brief, description=meet_description)
+    async def meetup(self, ctx, name, *, time: Time()):
+        """Schedules a meetup"""
+        res = count_rows(self.conn, "Raids", ctx.guild.id)
+        if self.host_id and res > 9:  # host_id will not be set for private bots
+            await ctx.send(_("Due to limited resources you may only post up to 10 concurrent raids."))
+            return
+        raid_id = await self.raid_command(ctx, name, "", "", time)
+        self.raids.append(raid_id)
+
     raid_brief = _("Schedules a raid.")
     raid_description = _("Schedules a raid. Day/timezone will default to today/server if not specified. Usage:")
     raid_example = _("Examples:\n{0}raid Anvil 2 Friday 4pm server\n{0}raid throne t3 21:00").format(prefix)
@@ -157,11 +171,11 @@ class RaidCog(commands.Cog):
         if self.host_id and res > 9:  # host_id will not be set for private bots
             await ctx.send(_("Due to limited resources you may only post up to 10 concurrent raids."))
             return
-        raid_id = await self.raid_command(ctx, name, tier, _("All"), time)
+        raid_id = await self.raid_command(ctx, name, tier, "", time)
         self.raids.append(raid_id)
 
     fast_brief = _("Shortcut to schedule a raid (use the aliases).")
-    fast_description = _("Schedules a raid with the name of the command, tier from channel name and bosses 'All'. "
+    fast_description = _("Schedules a raid with the name of the command and tier from channel name. "
                          "Day/timezone will default to today/server if not specified. Usage:")
     fast_example = _("Examples:\n{0}anvil Friday 4pm server\n{0}anvil 21:00 BST").format(prefix)
 
@@ -185,7 +199,7 @@ class RaidCog(commands.Cog):
             roster = False
         else:
             roster = True
-        raid_id = await self.raid_command(ctx, name, tier, _("All"), time, roster=roster)
+        raid_id = await self.raid_command(ctx, name, tier, "", time, roster=roster)
         self.raids.append(raid_id)
 
     def get_raid_name(self, name):
@@ -196,7 +210,7 @@ class RaidCog(commands.Cog):
             match = get_match(name, names)
             if match[0]:
                 return match[0]
-        return name
+        return name.capitalize()
 
     async def raid_command(self, ctx, name, tier, boss, time, roster=False):
         name = self.get_raid_name(name)
@@ -592,8 +606,14 @@ class RaidCog(commands.Cog):
         server_tz = TimeCog.get_server_time(guild)
         server_time = TimeCog.local_time(time, server_tz)
         header_time = TimeCog.format_time(server_time) + _(" server time")
-        embed_title = _("{0} {1} at {2}").format(name, tier, header_time)
-        embed_description = _("Bosses: {0}").format(boss)
+
+        embed_title = _("{0} on {1}").format(name, header_time)
+        if tier:
+            embed_title = _("{0} {1} on 2}").format(name, tier, header_time)
+        embed_description = ""
+        if boss:
+            embed_description = _("Bosses: {0}").format(boss)
+
         embed = discord.Embed(title=embed_title, colour=discord.Colour(0x3498db), description=embed_description)
         time_string = self.build_time_string(time, guild)
         embed.add_field(name=_("Time zones:"), value=time_string)
