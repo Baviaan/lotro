@@ -406,8 +406,12 @@ class RaidCog(commands.Cog):
             await response.delete()
         finally:
             await msg.delete()
-        tier = Tier.converter(response.content)
-        update_raid(self.conn, 'raids', 'tier', tier, raid_id)
+        try:
+            tier = Tier.converter(response.content)
+        except commands.BadArgument as e:
+            await channel.send(e)
+        else:
+            update_raid(self.conn, 'raids', 'tier', tier, raid_id)
         return
 
     async def roster_configure(self, author, channel, raid_id):
