@@ -101,7 +101,7 @@ class TimeCog(commands.Cog):
                              "commands issued by them. This setting will only apply to that specific user. Timezone "
                              "is to be provided in the tz database format. See "
                              "https://en.wikipedia.org/wiki/List_of_tz_database_time_zones"
-                             "You can delete your stored timezone information by providing 'delete' as argument.")
+                             "\nYou can delete your stored timezone information by providing 'delete' as argument.")
     timezone_example = _("Examples:\n{0}timezone Australia/Sydney\n{0}timezone Europe/London\n{0}timezone "
                          "America/New_York").format(prefix)
 

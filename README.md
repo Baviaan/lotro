@@ -83,3 +83,37 @@ Please ensure the bot has the correct permissions: 268724304.
 
 Any questions please ask in our discord server:
 https://discord.gg/dGcBzPN
+
+------------------------------------
+
+## Command overview
+
+### Configuration commands
+| Command | Requirement | Example | Notes |
+| ------- |:-----------:| ------- | ----- |
+| **!prefix** \<prefix\> | Admin | !prefix ? | Changes to prefix for all commands. |
+| **!leader** \<role_name \>| Admin | !leader Officer | Set to "Raid Leader" by default. Case sensitive. Raid leaders can edit raids posted by others. |
+| **!servertime** \<timezone\> | Raid Leader | !servertime europe/paris | Set to US Eastern by default. See `!help servertime` for timezone format. This timezone is used in the header of a scheduled raid and is also the default timezone for interpretation of raid commands. |
+| **!displaytimes** \[timezones...\] | Raid Leader | !displaytimes america/chicago america/los_angeles | Set to Sydney, London and Los Angeles by default. See `!help displaytimes` for timezone format. |
+
+### Scheduling commands
+
+| Command | Alias | Example | Notes |
+| ------- |:-----:| ------- | ----- |
+| **!raid** \<name\> \<tier\> \<time\> | **!instance**, **!r** | !raid anvil t3 friday 8pm | Name must be quoted if multiple words. If a timezone is omitted it will default to the user's timezone (which is server time by default). |
+| **!meetup** \<name\> \<time\> | **!meet**, **!m** | !meetup "kin house" friday 8pm | Similar to `!raid` but without a tier argument. |
+| **!fastraid** \<time\> | **!rem**, **!anvil**, etc | !rem  friday 8pm | Faster way to schedule a raid. **Invoke this command with an alias.** Use `!help fastraid` for the full list of aliases. Attempts to parse tier information from the channel name and defaults to t1 otherwise. |
+
+### User specific commands
+| Command | Example | Notes |
+| ------- | ------- | ----- |
+| **!roles** | !roles | Shows the class roles you have and lets you reset them. |
+| **!timezone** \<timezone\> | !timezone europe/london | Set to server time by default. See `!help timezone` for timezone format. This timezone is used to interpret *your* raid commands. |
+
+### Miscellaneous commands
+| Command | Notes |
+| ------- | ----- |
+| **!privacy** | Displays information on data collection and retention. |
+| **!welcome** | Resends the welcome message. |
+| **!about** | Shows some basic information about the bot. |
+| **!help** [command] | The command argument is optional. If omitted it will show the list of all commands. If provided it will show detailed help for that command. |
