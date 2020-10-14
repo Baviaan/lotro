@@ -109,9 +109,10 @@ class RaidCog(commands.Cog):
             return
         channel = self.bot.get_channel(payload.channel_id)
         if payload.message_id in self.raids:
-            await self.raid_update(payload)
-            message = await channel.fetch_message(payload.message_id)
-            await message.remove_reaction(payload.emoji, payload.member)
+            raid_deleted = await self.raid_update(payload)
+            if not raid_deleted:
+                message = await channel.fetch_message(payload.message_id)
+                await message.remove_reaction(payload.emoji, payload.member)
 
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload):
@@ -232,6 +233,7 @@ class RaidCog(commands.Cog):
         user = payload.member
         raid_id = payload.message_id
         emoji = payload.emoji
+        raid_deleted = False
 
         if str(emoji) in ["\U0001F6E0", "\u26CF"]:
             organizer_id = select_one(self.conn, 'Raids', 'organizer_id', raid_id)
@@ -252,7 +254,7 @@ class RaidCog(commands.Cog):
                 await channel.send(_("Enabling roster for this raid."), delete_after=10)
             await self.select_players(user, channel, raid_id)
         elif str(emoji) == "\U0001F6E0":  # Config emoji
-            await self.configure(user, channel, raid_id)
+            raid_deleted = await self.configure(user, channel, raid_id)
         elif str(emoji) == "\u274C":  # Cancel emoji
             assigned_slot = select_one_player(self.conn, 'Assignment', 'slot_id', user.id, raid_id)
             if assigned_slot is not None:
@@ -279,7 +281,13 @@ class RaidCog(commands.Cog):
             except discord.Forbidden:
                 await channel.send(_("Error: Missing 'Manage roles' permission to assign the class role."))
         self.conn.commit()
-        await self.update_raid_post(raid_id, channel)
+        if raid_deleted:
+            post = await channel.fetch_message(raid_id)
+            await post.delete()
+            return True
+        else:
+            await self.update_raid_post(raid_id, channel)
+            return
 
     async def update_raid_post(self, raid_id, channel):
         msg = self.build_raid_players(raid_id)
@@ -301,7 +309,7 @@ class RaidCog(commands.Cog):
             return user == msg.author
 
         text = _("Please respond with 'b(oss)', 'd(ate)', 'r(oster)' or 't(ier)' to indicate which setting you wish to "
-                 "update for this raid.")
+                 "update for this raid.\nType 'cancel' to cancel the raid.")
         msg = await channel.send(text)
         try:
             reply = await bot.wait_for('message', timeout=20, check=check)
@@ -320,6 +328,9 @@ class RaidCog(commands.Cog):
                 await self.boss_configure(user, channel, raid_id)
             elif reply.content.lower().startswith(_("t")):
                 await self.tier_configure(user, channel, raid_id)
+            elif reply.content.lower().startswith(_("cancel")):
+                self.cleanup_old_raid(raid_id, "Raid manually deleted.")
+                return True  # The raid has deleted from database.
         return
 
     async def boss_configure(self, author, channel, raid_id):
