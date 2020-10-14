@@ -609,7 +609,7 @@ class RaidCog(commands.Cog):
 
         embed_title = _("{0} on {1}").format(name, header_time)
         if tier:
-            embed_title = _("{0} {1} on 2}").format(name, tier, header_time)
+            embed_title = _("{0} {1} on {2}").format(name, tier, header_time)
         embed_description = ""
         if boss:
             embed_description = _("Bosses: {0}").format(boss)
