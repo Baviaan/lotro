@@ -94,7 +94,7 @@ class TimeCog(commands.Cog):
         logger.error("TimeCog could not create database connection!")
 
     def cog_unload(self):
-        self.conn.close()
+        pass
 
     timezone_brief = _("Sets the user's default timezone to be used for raid commands.")
     timezone_description = _("This command allows a user to set their default timezone to be used to interpret "
