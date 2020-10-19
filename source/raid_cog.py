@@ -70,6 +70,7 @@ class RaidCog(commands.Cog):
         reader = csv.reader(f)
         raid_lookup = dict(reader)
     nicknames = list(raid_lookup.keys())
+    event_limit = 10
 
     def __init__(self, bot):
         self.bot = bot
@@ -155,8 +156,9 @@ class RaidCog(commands.Cog):
     async def meetup(self, ctx, name, *, time: Time()):
         """Schedules a meetup"""
         res = count_rows(self.conn, "Raids", ctx.guild.id)
-        if self.host_id and res > 9:  # host_id will not be set for private bots
-            await ctx.send(_("Due to limited resources you may only post up to 10 concurrent raids."))
+        if self.host_id and res >= self.event_limit:  # host_id will not be set for private bots
+            msg = _("Due to limited resources you may only post up to {0} concurrent raids.").format(self.event_limit)
+            await ctx.send(msg)
             return
         raid_id = await self.raid_command(ctx, name, "", "", time)
         self.raids.append(raid_id)
@@ -169,8 +171,9 @@ class RaidCog(commands.Cog):
     async def raid(self, ctx, name, tier: Tier, *, time: Time()):
         """Schedules a raid"""
         res = count_rows(self.conn, "Raids", ctx.guild.id)
-        if self.host_id and res > 9:  # host_id will not be set for private bots
-            await ctx.send(_("Due to limited resources you may only post up to 10 concurrent raids."))
+        if self.host_id and res >= self.event_limit:  # host_id will not be set for private bots
+            msg = _("Due to limited resources you may only post up to {0} concurrent raids.").format(self.event_limit)
+            await ctx.send(msg)
             return
         raid_id = await self.raid_command(ctx, name, tier, "", time)
         self.raids.append(raid_id)
@@ -184,8 +187,9 @@ class RaidCog(commands.Cog):
     async def fastraid(self, ctx, *, time: Time()):
         """Shortcut to schedule a raid"""
         res = count_rows(self.conn, "Raids", ctx.guild.id)
-        if self.host_id and res > 9:  # host_id will not be set for private bots
-            await ctx.send(_("Due to limited resources you may only post up to 10 concurrent raids."))
+        if self.host_id and res >= self.event_limit:  # host_id will not be set for private bots
+            msg = _("Due to limited resources you may only post up to {0} concurrent raids.").format(self.event_limit)
+            await ctx.send(msg)
             return
         name = ctx.invoked_with
         if name == "fastraid":
