@@ -209,7 +209,8 @@ class RaidCog(commands.Cog):
 
     def get_raid_name(self, name):
         try:
-            name = self.raid_lookup[name]
+            name = self.raid_lookup[name.lower()]
+            return name
         except KeyError:
             names = list(self.raid_lookup.values())
             match = get_match(name, names)
