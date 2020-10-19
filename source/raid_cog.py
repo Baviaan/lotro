@@ -122,15 +122,16 @@ class RaidCog(commands.Cog):
             self.conn.commit()
 
     @commands.command()
-    async def leader(self, ctx, raid_leader):
+    async def leader(self, ctx, *raid_leader):
         """Sets the role to be used as raid leader in this guild."""
         if not ctx.author.guild_permissions.administrator:
             await ctx.send(_("You must be an admin to change the raid leader role."))
             return
+        raid_leader = " ".join(raid_leader)
         delete = _("delete")
         reset = _("reset")
         default = _("default")
-        if raid_leader in [delete, reset, default]:
+        if raid_leader in [delete, reset, default, ""]:
             res = remove_setting(self.conn, 'raid_leader', ctx.guild.id)
             if res:
                 self.conn.commit()
