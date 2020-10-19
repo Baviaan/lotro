@@ -344,7 +344,7 @@ class RaidCog(commands.Cog):
                 await self.roster_configure(user, channel, raid_id)
             elif reply.content.lower().startswith(_("d")):
                 await self.time_configure(user, channel, raid_id)
-            elif reply.content.lower().startswith(_("b")):
+            elif reply.content.lower().startswith(_("a")):  # Boss renamed to aim in UI
                 await self.boss_configure(user, channel, raid_id)
             elif reply.content.lower().startswith(_("t")):
                 await self.tier_configure(user, channel, raid_id)
@@ -359,7 +359,7 @@ class RaidCog(commands.Cog):
         def check(msg):
             return author == msg.author
 
-        msg = await channel.send(_("Please specify the new raid boss."))
+        msg = await channel.send(_("Please specify the new aim."))
         try:
             response = await bot.wait_for('message', check=check, timeout=30)
         except asyncio.TimeoutError:
@@ -622,7 +622,7 @@ class RaidCog(commands.Cog):
             embed_title = _("{0} {1} on {2}").format(name, tier, header_time)
         embed_description = ""
         if boss:
-            embed_description = _("Bosses: {0}").format(boss)
+            embed_description = _("Aim: {0}").format(boss)
 
         embed = discord.Embed(title=embed_title, colour=discord.Colour(0x3498db), description=embed_description)
         time_string = self.build_time_string(time, guild)
