@@ -333,7 +333,7 @@ class RaidCog(commands.Cog):
         def check(msg):
             return user == msg.author
 
-        text = _("Please respond with 'b(oss)', 'd(ate)', 'r(oster)' or 't(ier)' to indicate which setting you wish to "
+        text = _("Please respond with 'a(im)', 'd(ate)', 'r(oster)' or 't(ier)' to indicate which setting you wish to "
                  "update for this raid.\nType 'cancel' to cancel the raid.")
         msg = await channel.send(text)
         try:
