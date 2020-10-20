@@ -57,6 +57,7 @@ def sql_player_table(role_names):
         raid_id integer not null,
         player_id integer not null,
         byname text not null,
+        unavailable boolean,
         """ + class_columns + """
         primary key(raid_id, player_id),
         foreign key (raid_id) references Raids(raid_id)
@@ -159,18 +160,19 @@ def add_raid(conn, raid):
         logger.warning(e)
 
 
-def add_player_class(conn, raid, player, byname, player_classes):
+def add_player_class(conn, raid, player, byname, player_classes, unavailable=0):
     """ insert or update player into players table """
     sql = "update Players set "
     for player_class in player_classes:
         sql = sql + player_class + "=1, "
-    sql = sql[:-2] + " where raid_id=? and player_id=?;"
+    sql = sql + "unavailable={0}".format(unavailable)
+    sql = sql + " where raid_id=? and player_id=?;"
     try:
         c = conn.cursor()
         c.execute(sql, (raid, player))
         if c.rowcount == 0:
-            sql_columns = "insert into Players (raid_id, player_id, byname"
-            sql_values = "values (?,?,?"
+            sql_columns = "insert into Players (raid_id, player_id, byname, unavailable"
+            sql_values = "values (?,?,?,{0}".format(unavailable)
             for player_class in player_classes:
                 sql_columns = sql_columns + ", " + player_class
                 sql_values = sql_values + ",1"
@@ -191,6 +193,30 @@ def assign_player(conn, raid, slot, player_id, player_name, class_name):
             c.execute(sql, (raid, slot, player_id, player_name, class_name))
     except sqlite3.Error as e:
         logger.warning(e)
+
+def select_players(conn, columns, raid_id, unavailable=0):
+    """ returns database rows with columns from Players """
+    sql = "select " + columns + " from Players where raid_id=? and unavailable=?;"
+    result = None
+    try:
+        c = conn.cursor()
+        c.execute(sql, (raid_id, unavailable))
+        result = c.fetchall()
+    except sqlite3.Error as e:
+        logger.warning(e)
+    return result
+
+def count_players(conn, raid_id, unavailable=0):
+    """ returns number of players """
+    sql = "select count(player_id) from Players where raid_id=? and unavailable=?;"
+    result = None
+    try:
+        c = conn.cursor()
+        c.execute(sql, (raid_id, unavailable))
+        result = c.fetchone()
+    except sqlite3.Error as e:
+        logger.warning(e)
+    return result[0]
 
 
 def select(conn, table, column, where=None):

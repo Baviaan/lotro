@@ -9,9 +9,9 @@ import json
 import logging
 import re
 
-from database import add_raid, add_player_class, add_setting, assign_player, count_rows, \
+from database import add_raid, add_player_class, add_setting, assign_player, count_players, count_rows, \
     create_connection, create_table, delete_raid_player, delete_row, remove_setting, select, select_one, \
-    select_one_player, select_one_slot, select_rows, update_raid
+    select_one_player, select_one_slot, select_players, select_rows, update_raid
 from role_cog import get_role
 from time_cog import Time, TimeCog
 from utils import alphabet_emojis, get_match
@@ -231,7 +231,7 @@ class RaidCog(commands.Cog):
             assign_player(self.conn, raid_id, i, None, available, ','.join(self.slots_class_names[i]))
         self.conn.commit()
         logger.info("Created new raid: {0} at {1}".format(name, time))
-        embed = self.build_raid_message(ctx.guild, raid_id, "\u200B")
+        embed = self.build_raid_message(ctx.guild, raid_id, "\u200B", None)
         await post.edit(embed=embed)
         emojis = ["\U0001F6E0", "\u26CF", "\u274C", "\u2705"]  # Config, pick, cancel, check
         emojis.extend(self.class_emojis)
@@ -272,7 +272,7 @@ class RaidCog(commands.Cog):
             if not roster:
                 update_raid(self.conn, 'raids', 'roster', True, raid_id)
                 await channel.send(_("Enabling roster for this raid."), delete_after=10)
-            await self.select_players(user, channel, raid_id)
+            await self.get_players(user, channel, raid_id)
         elif str(emoji) == "\U0001F6E0":  # Config emoji
             raid_deleted = await self.configure(user, channel, raid_id)
         elif str(emoji) == "\u274C":  # Cancel emoji
@@ -284,7 +284,11 @@ class RaidCog(commands.Cog):
                 await channel.send(error_msg)
                 class_names = ','.join(self.slots_class_names[assigned_slot])
                 assign_player(self.conn, raid_id, assigned_slot, None, _("<Available>"), class_names)
-            delete_raid_player(self.conn, user.id, raid_id)
+            r = select_one_player(self.conn, 'Players', 'byname', user.id, raid_id)
+            if r:
+                delete_raid_player(self.conn, user.id, raid_id)
+            else:
+                add_player_class(self.conn, raid_id, user.id, user.display_name, [], unavailable=1)
         elif str(emoji) == "\u2705":  # Check mark emoji
             role_names = [role.name for role in user.roles if role.name in self.role_names]
             if role_names:
@@ -310,8 +314,9 @@ class RaidCog(commands.Cog):
             return
 
     async def update_raid_post(self, raid_id, channel):
-        msg = self.build_raid_players(raid_id)
-        embed = self.build_raid_message(channel.guild, raid_id, msg)
+        available = self.build_raid_players(raid_id)
+        unavailable = self.build_raid_players(raid_id, available=False)
+        embed = self.build_raid_message(channel.guild, raid_id, available, unavailable)
         post = await channel.fetch_message(raid_id)
         try:
             await post.edit(embed=embed)
@@ -493,7 +498,7 @@ class RaidCog(commands.Cog):
                     await channel.send(_("Classes for slot {0} updated!").format(index), delete_after=10)
         await msg.delete()
 
-    async def select_players(self, author, channel, raid_id):
+    async def get_players(self, author, channel, raid_id):
         bot = self.bot
 
         def check(reaction, user):
@@ -506,7 +511,7 @@ class RaidCog(commands.Cog):
 
         players = select_rows(self.conn, 'Assignment', 'player_id', raid_id)
         assigned_ids = [player[0] for player in players if player[0] is not None]
-        available = select_rows(self.conn, 'Players', 'player_id, byname', raid_id)
+        available = select_players(self.conn, 'player_id, byname', raid_id)
         default_name = _("<Available>")
 
         if not available:
@@ -600,18 +605,14 @@ class RaidCog(commands.Cog):
         await class_msg.delete()
         return
 
-    def build_raid_message(self, guild, raid_id, embed_texts):
+    def build_raid_message(self, guild, raid_id, embed_texts_av, embed_texts_unav):
         timestamp = int(select_one(self.conn, 'Raids', 'time', raid_id))  # Why can't this return an int by itself?
         time = datetime.datetime.utcfromtimestamp(timestamp)
         name = select_one(self.conn, 'Raids', 'name', raid_id)
         tier = select_one(self.conn, 'Raids', 'tier', raid_id)
         boss = select_one(self.conn, 'Raids', 'boss', raid_id)
         roster = select_one(self.conn, 'Raids', 'roster', raid_id)
-        player_ids = select(self.conn, 'Players', 'player_id', raid_id)
-        if player_ids:
-            number_of_players = len(player_ids)
-        else:
-            number_of_players = 0
+        number_of_players = count_players(self.conn, raid_id)
 
         server_tz = TimeCog.get_server_time(guild)
         server_time = TimeCog.local_time(time, server_tz)
@@ -649,23 +650,35 @@ class RaidCog(commands.Cog):
                 embed_text = embed_text + ": " + row[0] + "\n"
             embed.add_field(name=embed_name, value=embed_text)
         # Add a field for each embed text
-        for i in range(len(embed_texts)):
+        for i in range(len(embed_texts_av)):
             if i == 0:
                 embed_name = _("The following {0} players are available:").format(number_of_players)
             else:
                 embed_name = "\u200B"
-            embed.add_field(name=embed_name, value=embed_texts[i])
+            embed.add_field(name=embed_name, value=embed_texts_av[i])
+        if len(embed_texts_av) == 1:
+            embed.add_field(name="\u200B", value="\u200B")
+        if embed_texts_unav:
+            number_of_unav_players = count_players(self.conn, raid_id, unavailable=1)
+            for i in range(len(embed_texts_av)):
+                if i == 0:
+                    embed_name = _("The following {0} players are unavailable:").format(number_of_unav_players)
+                else:
+                    embed_name = "\u200B"
+                embed.add_field(name=embed_name, value=embed_texts_unav[i])
         embed.set_footer(text=_("Raid time in your local time (beta)"))
         embed.timestamp = time
         return embed
 
-    def build_raid_players(self, raid_id, block_size=6):
+    def build_raid_players(self, raid_id, available=True, block_size=6):
         guild_id = select_one(self.conn, 'Raids', 'guild_id', raid_id)
         guild = self.bot.get_guild(guild_id)
         columns = 'raid_id, player_id, byname'
-        for name in self.role_names:
-            columns = columns + ", " + name
-        result = select_rows(self.conn, 'players', columns, raid_id)
+        if available:
+            for name in self.role_names:
+                columns = columns + ", " + name
+        unavailable = (int(available) + 1) % 2
+        result = select_players(self.conn, columns, raid_id, unavailable=unavailable)
         player_strings = []
         if result:
             number_of_players = len(result)
@@ -673,16 +686,21 @@ class RaidCog(commands.Cog):
             # Create the player strings
             for row in result:
                 i = 2
-                player_string = row[i] + " "
-                for name in self.role_names:
-                    i = i + 1
-                    if row[i]:
-                        player_string = player_string + self.class_emojis_dict[name]
+                if available:
+                    player_string = row[i] + " "
+                    for name in self.role_names:
+                        i = i + 1
+                        if row[i]:
+                            player_string = player_string + self.class_emojis_dict[name]
+                else:
+                    player_string = "\u274C " + row[i]
                 player_string = player_string + "\n"
                 player_strings.append(player_string)
             # Sort the strings by length
             player_strings.sort(key=len, reverse=True)
         else:
+            if not available:
+                return None
             number_of_players = 0
             number_of_fields = 1
         # Compute number of fields
