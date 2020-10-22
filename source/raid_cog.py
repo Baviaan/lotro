@@ -8,6 +8,7 @@ from itertools import compress
 import json
 import logging
 import re
+import typing
 
 from database import add_raid, add_player_class, add_setting, assign_player, count_players, count_rows, \
     create_connection, create_table, delete_raid_player, delete_row, remove_setting, select, select_one, \
@@ -22,14 +23,22 @@ logger.setLevel(logging.INFO)
 
 class Tier(commands.Converter):
     async def convert(self, ctx, argument):
-        return self.converter(argument)
+        tier = re.match(r'[tT][1-5]', argument)  # match tier argument
+        if tier:
+            tier = "T{0}".format(tier.group()[1])
+        else:
+            raise commands.BadArgument(_("Failed to parse tier argument: ") + argument)
+        return tier
 
     @staticmethod
-    def converter(argument):
-        tier = re.search(r'\d+', argument)  # Filter out non-numbers
-        if tier is None:
-            raise commands.BadArgument(_("Failed to parse tier argument: ") + argument)
-        tier = "T{0}".format(tier.group())
+    async def channel_converter(channel):
+        tier = re.search(r'\d+', channel.name)  # Filter out non-numbers
+        if tier:
+            tier = "T{0}".format(tier.group())
+        else:
+            msg = _("Channel name does not specify tier.") + "\n" + _("Defaulting to tier 1.")
+            await channel.send(msg, delete_after=10)
+            tier = "T1"
         return tier
 
 
@@ -165,26 +174,28 @@ class RaidCog(commands.Cog):
 
     raid_brief = _("Schedules a raid.")
     raid_description = _("Schedules a raid. Day/timezone will default to today/server if not specified. Usage:")
-    raid_example = _("Examples:\n{0}raid Anvil 2 Friday 4pm server\n{0}raid throne t3 21:00").format(prefix)
+    raid_example = _("Examples:\n{0}raid Anvil Friday 4pm server\n{0}raid throne t3 21:00").format(prefix)
 
     @commands.command(aliases=['instance', 'r'], help=raid_example, brief=raid_brief, description=raid_description)
-    async def raid(self, ctx, name, tier: Tier, *, time: Time()):
+    async def raid(self, ctx, name, tier: typing.Optional[Tier], *, time: Time()):
         """Schedules a raid"""
         res = count_rows(self.conn, "Raids", ctx.guild.id)
         if self.host_id and res >= self.event_limit:  # host_id will not be set for private bots
             msg = _("Due to limited resources you may only post up to {0} concurrent raids.").format(self.event_limit)
             await ctx.send(msg)
             return
+        if tier is None:
+            tier = await Tier.channel_converter(ctx.channel)
         raid_id = await self.raid_command(ctx, name, tier, "", time)
         self.raids.append(raid_id)
 
     fast_brief = _("Shortcut to schedule a raid (use the aliases).")
     fast_description = _("Schedules a raid with the name of the command and tier from channel name. "
                          "Day/timezone will default to today/server if not specified. Usage:")
-    fast_example = _("Examples:\n{0}anvil Friday 4pm server\n{0}anvil 21:00 BST").format(prefix)
+    fast_example = _("Examples:\n{0}anvil Friday 4pm server\n{0}anvil 21:00").format(prefix)
 
     @commands.command(aliases=nicknames, help=fast_example, brief=fast_brief, description=fast_description)
-    async def fastraid(self, ctx, *, time: Time()):
+    async def fastraid(self, ctx, tier: typing.Optional[Tier], *, time: Time()):
         """Shortcut to schedule a raid"""
         res = count_rows(self.conn, "Raids", ctx.guild.id)
         if self.host_id and res >= self.event_limit:  # host_id will not be set for private bots
@@ -194,12 +205,8 @@ class RaidCog(commands.Cog):
         name = ctx.invoked_with
         if name == "fastraid":
             name = _("unknown raid")
-        try:
-            tier = Tier().converter(ctx.channel.name)
-        except commands.BadArgument:
-            msg = _("Channel name does not specify tier.") + "\n" + _("Defaulting to tier 1.")
-            await ctx.send(msg, delete_after=10)
-            tier = 'T1'
+        if tier is None:
+            tier = await Tier.channel_converter(ctx.channel)
         if '1' in tier or '2' in tier:
             roster = False
         else:
