@@ -31,6 +31,15 @@ class Tier(commands.Converter):
         return tier
 
     @staticmethod
+    def converter(argument):
+        tier = re.search(r'\d+', argument)  # Filter out non-numbers
+        if tier:
+            tier = "T{0}".format(tier.group())
+        else:
+            raise commands.BadArgument(_("Failed to parse tier argument: ") + argument)
+        return tier
+
+    @staticmethod
     async def channel_converter(channel):
         tier = re.search(r'\d+', channel.name)  # Filter out non-numbers
         if tier:
