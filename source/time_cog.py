@@ -22,6 +22,7 @@ class Time(commands.Converter):
     @staticmethod
     async def converter(channel, author, argument):
         my_settings = {'PREFER_DATES_FROM': 'future'}
+        argument = argument.lower()
         server = _("server")
         if server in argument:
             # Strip off server (time) and return as server time
