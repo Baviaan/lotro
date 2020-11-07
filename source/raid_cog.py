@@ -676,7 +676,7 @@ class RaidCog(commands.Cog):
             embed.add_field(name="\u200B", value="\u200B")
         if embed_texts_unav:
             number_of_unav_players = count_players(self.conn, raid_id, unavailable=1)
-            for i in range(len(embed_texts_av)):
+            for i in range(len(embed_texts_unav)):
                 if i == 0:
                     embed_name = _("The following {0} players are unavailable:").format(number_of_unav_players)
                 else:
