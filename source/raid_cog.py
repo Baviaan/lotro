@@ -236,7 +236,6 @@ class RaidCog(commands.Cog):
 
     async def raid_command(self, ctx, name, tier, boss, time, roster=False):
         name = self.get_raid_name(name)
-        boss = boss.capitalize()
         post = await ctx.send('\u200B')
         raid_id = post.id
         timestamp = int(time.replace(tzinfo=datetime.timezone.utc).timestamp())  # Do not use local tz.
@@ -389,7 +388,7 @@ class RaidCog(commands.Cog):
             await response.delete()
         finally:
             await msg.delete()
-        boss = response.content.capitalize()
+        boss = response.content
         update_raid(self.conn, 'raids', 'boss', boss, raid_id)
         return
 
