@@ -91,7 +91,7 @@ https://discord.gg/dGcBzPN
 ### Configuration commands
 | Command | Requirement | Example | Notes |
 | ------- |:-----------:| ------- | ----- |
-| **!prefix** \<prefix\> | Admin | !prefix ? | Changes to prefix for all commands. |
+| **!prefix** \<prefix\> | Admin | !prefix ? | Changes the prefix for all commands. |
 | **!leader** \<role_name \>| Admin | !leader Officer | Set to "Raid Leader" by default. Case sensitive. Raid leaders can edit raids posted by others. |
 | **!servertime** \<timezone\> | Raid Leader | !servertime europe/paris | Set to US Eastern by default. See `!help servertime` for timezone format. This timezone is used in the header of a scheduled raid and is also the default timezone for interpretation of raid commands. |
 | **!displaytimes** \[timezones...\] | Raid Leader | !displaytimes america/chicago america/los_angeles | Set to Sydney, London and Los Angeles by default. See `!help displaytimes` for timezone format. |
@@ -100,9 +100,9 @@ https://discord.gg/dGcBzPN
 
 | Command | Alias | Example | Notes |
 | ------- |:-----:| ------- | ----- |
-| **!raid** \<name\> \<tier\> \<time\> | **!instance**, **!r** | !raid anvil t3 friday 8pm | Name must be quoted if multiple words. If a timezone is omitted it will default to the user's timezone (which is server time by default). |
+| **!raid** \<name\> \[tier\] \<time\> | **!instance**, **!r** | !raid anvil t3 friday 8pm | Schedules a custom raid. Name must be quoted if multiple words. Tier argument is optional. If omitted, it attempts to parse tier information from the channel name and defaults to t1 otherwise. If a timezone is omitted it will default to the user's preferred timezone (which is server time by default). |
+| **!fastraid** \[tier\] \<time\> | **!rem**, **!ad**, etc | !rem  friday 8pm, !ad t3 friday 8pm | Faster way to schedule a raid. **Invoke this command with an alias.** Use `!help fastraid` for the full list of aliases.
 | **!meetup** \<name\> \<time\> | **!meet**, **!m** | !meetup "kin house" friday 8pm | Similar to `!raid` but without a tier argument. |
-| **!fastraid** \<time\> | **!rem**, **!anvil**, etc | !rem  friday 8pm | Faster way to schedule a raid. **Invoke this command with an alias.** Use `!help fastraid` for the full list of aliases. Attempts to parse tier information from the channel name and defaults to t1 otherwise. |
 
 ### User specific commands
 | Command | Example | Notes |
