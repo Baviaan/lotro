@@ -44,6 +44,10 @@ class CalendarCog(commands.Cog):
                 guild=ctx.guild.id, channel=raid[0], msg=raid[1], name=raid[2], tier=raid[3])
             embed.add_field(name=time_string, value=msg, inline=False)
         await ctx.send(embed=embed)
+        try:
+            await ctx.message.delete()
+        except discord.Forbidden as e:
+            logger.warning(e)
 
 
 def setup(bot):
