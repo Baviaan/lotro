@@ -58,7 +58,7 @@ class CalendarCog(commands.Cog):
             return
         embed = self.calendar_embed(guild_id)
         await msg.edit(embed=embed)
-        await chn.send(_("A new run has been posted!"))
+        await chn.send(_("A new run has been posted!"), delete_after=3600)
 
 
     def calendar_embed(self, guild_id):
