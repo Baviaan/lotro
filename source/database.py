@@ -94,6 +94,7 @@ def sql_settings_table():
             display text[],
             prefix text,
             raid_leader text,
+            calendar text,
             primary key(guild_id)
             );"""
     return sql

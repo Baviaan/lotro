@@ -197,6 +197,7 @@ class RaidCog(commands.Cog):
             tier = await Tier.channel_converter(ctx.channel)
         raid_id = await self.raid_command(ctx, name, tier, "", time)
         self.raids.append(raid_id)
+        await self.bot.get_cog('CalendarCog').update_calendar(ctx.guild.id)
 
     fast_brief = _("Shortcut to schedule a raid (use the aliases).")
     fast_description = _("Schedules a raid with the name of the command and tier from channel name. "
