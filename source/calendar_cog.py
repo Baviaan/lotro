@@ -58,6 +58,7 @@ class CalendarCog(commands.Cog):
             return
         embed = self.calendar_embed(guild_id)
         await msg.edit(embed=embed)
+        await chn.send(_("A new run has been posted!"))
 
 
     def calendar_embed(self, guild_id):
@@ -77,6 +78,9 @@ class CalendarCog(commands.Cog):
             msg = "[{name} {tier}](<https://discord.com/channels/{guild}/{channel}/{msg}>)\n".format(
                 guild=guild_id, channel=raid[0], msg=raid[1], name=raid[2], tier=raid[3])
             embed.add_field(name=time_string, value=msg, inline=False)
+        time = datetime.utcnow()
+        embed.set_footer(text=_("Last updated"))
+        embed.timestamp = time
         return embed
 
 

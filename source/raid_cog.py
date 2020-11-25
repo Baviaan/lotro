@@ -180,6 +180,7 @@ class RaidCog(commands.Cog):
             return
         raid_id = await self.raid_command(ctx, name, "", "", time)
         self.raids.append(raid_id)
+        await self.bot.get_cog('CalendarCog').update_calendar(ctx.guild.id)
 
     raid_brief = _("Schedules a raid.")
     raid_description = _("Schedules a raid. Day/timezone will default to today/server if not specified. Usage:")
@@ -223,6 +224,7 @@ class RaidCog(commands.Cog):
             roster = True
         raid_id = await self.raid_command(ctx, name, tier, "", time, roster=roster)
         self.raids.append(raid_id)
+        await self.bot.get_cog('CalendarCog').update_calendar(ctx.guild.id)
 
     def get_raid_name(self, name):
         try:
