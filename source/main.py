@@ -26,7 +26,7 @@ logger.setLevel(logging.INFO)
 launch_on_boot = False
 
 # log version number.
-version = "3.9.3"
+version = "3.10.0"
 logger.info("Running " + version)
 
 # Load config file.
@@ -140,6 +140,7 @@ async def on_ready():
     bot.load_extension('raid_cog')
     bot.load_extension('role_cog')
     bot.load_extension('time_cog')
+    bot.load_extension('calendar_cog')
     await bot.change_presence(activity=discord.Game(name=version))
 
 

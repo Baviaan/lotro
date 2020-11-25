@@ -629,7 +629,7 @@ class RaidCog(commands.Cog):
         roster = select_one(self.conn, 'Raids', 'roster', raid_id)
         number_of_players = count_players(self.conn, raid_id)
 
-        server_tz = TimeCog.get_server_time(guild)
+        server_tz = TimeCog.get_server_time(guild.id)
         server_time = TimeCog.local_time(time, server_tz)
         header_time = TimeCog.format_time(server_time) + _(" server time")
 

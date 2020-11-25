@@ -348,3 +348,16 @@ def select_two_columns(conn, column1, column2, table):
     except sqlite3.Error as e:
         logger.warning(e)
     return result
+
+
+def select_raids(conn, columns, guild_id):
+    """ returns columns from raid table for guild """
+    sql = "select " + columns + " from Raids where guild_id=? order by time;"
+    result = None
+    try:
+        c = conn.cursor()
+        c.execute(sql, (guild_id,))
+        result = c.fetchall()
+    except sqlite3.Error as e:
+        logger.warning(e)
+    return result

@@ -215,8 +215,8 @@ class TimeCog(commands.Cog):
         return result
 
     @staticmethod
-    def get_server_time(guild):
-        result = select_one(TimeCog.conn, 'Settings', 'server', guild.id, pk_column='guild_id')
+    def get_server_time(guild_id):
+        result = select_one(TimeCog.conn, 'Settings', 'server', guild_id, pk_column='guild_id')
         if result is None:
             result = TimeCog.server_tz
         return result
@@ -227,6 +227,14 @@ class TimeCog(commands.Cog):
             time_string = time.strftime(_("%A %#I:%M %p"))
         else:
             time_string = time.strftime(_("%A %-I:%M %p"))
+        return time_string
+
+    @staticmethod
+    def calendar_time(time):
+        if os.name == "nt":  # Windows uses '#' instead of '-'.
+            time_string = time.strftime(_("%b %d, %A %#I:%M %p"))
+        else:
+            time_string = time.strftime(_("%b %d, %A %-I:%M %p"))
         return time_string
 
     @staticmethod
