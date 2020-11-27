@@ -155,6 +155,14 @@ async def on_command_error(ctx, error):
             logger.warning(error)
 
 
+@bot.event
+async def on_command(ctx):
+    timestamp = int(datetime.datetime.utcnow().timestamp())
+    res = add_setting(conn, 'last_command', ctx.guild.id, timestamp)
+    if res:
+        conn.commit()
+
+
 @bot.check
 async def globally_block_dms(ctx):
     if ctx.guild is None:
