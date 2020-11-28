@@ -363,3 +363,16 @@ def select_raids(conn, columns, guild_id):
     except sqlite3.Error as e:
         logger.warning(e)
     return result
+
+
+def select_upcoming_raids(conn, timestamp):
+    """ returns raid_id, channel_id, time, roster from raid table for time < timestamp """
+    sql = "select raid_id, channel_id, time, roster from Raids where time<?;"
+    result = None
+    try:
+        c = conn.cursor()
+        c.execute(sql, (timestamp,))
+        result = c.fetchall()
+    except sqlite3.Error as e:
+        logger.warning(e)
+    return result

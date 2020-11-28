@@ -12,7 +12,7 @@ import typing
 
 from database import add_raid, add_player_class, add_setting, assign_player, count_players, count_rows, \
     create_connection, create_table, delete_raid_player, delete_row, remove_setting, select, select_one, \
-    select_one_player, select_one_slot, select_players, select_rows, update_raid
+    select_one_player, select_one_slot, select_players, select_rows, select_upcoming_raids, update_raid
 from role_cog import get_role
 from time_cog import Time, TimeCog
 from utils import alphabet_emojis, get_match
@@ -759,43 +759,41 @@ class RaidCog(commands.Cog):
     @tasks.loop(seconds=300)
     async def background_task(self):
         bot = self.bot
-        raids = self.raids
-        expiry_time = datetime.timedelta(seconds=7200)  # Delete raids after 2 hours.
-        notify_seconds = 300  # Notify raiders 5 minutes before.
-        notify_time = datetime.timedelta(seconds=notify_seconds)
-        current_time = datetime.datetime.utcnow()  # Raid time is stored in UTC.
-        # Copy the list to iterate over.
-        for raid_id in raids[:]:
-            timestamp = int(select_one(self.conn, 'Raids', 'time', raid_id))
-            time = datetime.datetime.utcfromtimestamp(timestamp)
-            if current_time >= time - notify_time * 2:
-                channel_id = select_one(self.conn, 'Raids', 'channel_id', raid_id)
-                channel = bot.get_channel(channel_id)
-                if not channel:
-                    self.cleanup_old_raid(raid_id, "Raid channel has been deleted.")
-                    continue
-                try:
-                    post = await channel.fetch_message(raid_id)
-                except discord.NotFound:
-                    self.cleanup_old_raid(raid_id, "Raid post already deleted.")
-                except discord.Forbidden:
-                    self.cleanup_old_raid(raid_id, "We are missing required permissions to see raid post.")
-                else:
-                    if current_time > time + expiry_time:
-                        await post.delete()
-                        self.cleanup_old_raid(raid_id, "Deleted expired raid post.")
-                    elif current_time < time - notify_time:
-                        roster = select_one(self.conn, 'Raids', 'roster', raid_id)
-                        if roster:
-                            raid_start_msg = _("Gondor calls for aid! ")
-                            players = select_rows(self.conn, 'Assignment', 'player_id', raid_id)
-                            for player in players:
-                                player_id = player[0]
-                                if player_id:
-                                    raid_start_msg = raid_start_msg + "<@{0}> ".format(player_id)
-                            raid_start_msg = raid_start_msg + _(
-                                "will you answer the call? We are forming for the raid now.")
-                            await channel.send(raid_start_msg, delete_after=notify_seconds * 2)
+        expiry_time = 7200  # Delete raids after 2 hours.
+        notify_time = 300  # Notify raiders 5 minutes before.
+        current_time = datetime.datetime.utcnow().timestamp()  # Raid time is stored in UTC.
+
+        cutoff = current_time + 2 * notify_time
+        raids = select_upcoming_raids(self.conn, cutoff)
+        for raid in raids:
+            raid_id = int(raid[0])
+            channel_id = int(raid[1])
+            timestamp = int(raid[2])
+            roster = int(raid[3])
+            channel = bot.get_channel(channel_id)
+            if not channel:
+                self.cleanup_old_raid(raid_id, "Raid channel has been deleted.")
+                continue
+            try:
+                post = await channel.fetch_message(raid_id)
+            except discord.NotFound:
+                self.cleanup_old_raid(raid_id, "Raid post already deleted.")
+            except discord.Forbidden:
+                self.cleanup_old_raid(raid_id, "We are missing required permissions to see raid post.")
+            else:
+                if current_time > timestamp + expiry_time:
+                    await post.delete()
+                    self.cleanup_old_raid(raid_id, "Deleted expired raid post.")
+                elif current_time < timestamp - notify_time:
+                    raid_start_msg = _("Gondor calls for aid! Will you answer the call")
+                    if roster:
+                        players = select_rows(self.conn, 'Assignment', 'player_id', raid_id)
+                        for player in players:
+                            player_id = player[0]
+                            if player_id:
+                                raid_start_msg = raid_start_msg + " <@{0}>".format(player_id)
+                    raid_start_msg = raid_start_msg + _("? We are forming for the raid now.")
+                    await channel.send(raid_start_msg, delete_after=notify_time * 2)
         self.conn.commit()
 
     def cleanup_old_raid(self, raid_id, message):
