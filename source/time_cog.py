@@ -58,6 +58,8 @@ class Time(commands.Converter):
 
 def is_raid_leader(conn):
     async def predicate(ctx):
+        if ctx.author.guild_permissions.administrator:
+            return True
         raid_leader_name = select_one(conn, 'Settings', 'raid_leader', ctx.guild.id, 'guild_id')
         if not raid_leader_name:
             raid_leader_name = TimeCog.raid_leader_name
