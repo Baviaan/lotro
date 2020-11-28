@@ -168,7 +168,7 @@ class RaidCog(commands.Cog):
 
     meet_brief = _("Schedules a meetup.")
     meet_description = _("Schedules a meetup. Day/timezone will default to today/server if not specified. Usage:")
-    meet_example = _("Examples:\n{0}meetup scourges Friday 4pm server\n{0}meetup \"kin house\" 21:00").format(prefix)
+    meet_example = _("Examples:\n{0}meetup scourges Friday 4pm\n{0}meetup \"kin house\" 21:00 UTC").format(prefix)
 
     @commands.command(aliases=['meet', 'm'], help=meet_example, brief=meet_brief, description=meet_description)
     async def meetup(self, ctx, name, *, time: Time()):
@@ -184,7 +184,7 @@ class RaidCog(commands.Cog):
 
     raid_brief = _("Schedules a raid.")
     raid_description = _("Schedules a raid. Day/timezone will default to today/server if not specified. Usage:")
-    raid_example = _("Examples:\n{0}raid Anvil Friday 4pm server\n{0}raid throne t3 21:00").format(prefix)
+    raid_example = _("Examples:\n{0}raid Anvil Friday 4pm\n{0}raid throne t3 21:00 UTC").format(prefix)
 
     @commands.command(aliases=['instance', 'r'], help=raid_example, brief=raid_brief, description=raid_description)
     async def raid(self, ctx, name, tier: typing.Optional[Tier], *, time: Time()):
@@ -203,7 +203,7 @@ class RaidCog(commands.Cog):
     fast_brief = _("Shortcut to schedule a raid (use the aliases).")
     fast_description = _("Schedules a raid with the name of the command and tier from channel name. "
                          "Day/timezone will default to today/server if not specified. Usage:")
-    fast_example = _("Examples:\n{0}anvil Friday 4pm server\n{0}anvil 21:00").format(prefix)
+    fast_example = _("Examples:\n{0}anvil Friday 4pm\n{0}anvil 21:00 UTC").format(prefix)
 
     @commands.command(aliases=nicknames, help=fast_example, brief=fast_brief, description=fast_description)
     async def fastraid(self, ctx, tier: typing.Optional[Tier], *, time: Time()):
