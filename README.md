@@ -100,8 +100,9 @@ https://discord.gg/dGcBzPN
 
 | Command | Alias | Example | Notes |
 | ------- |:-----:| ------- | ----- |
+| **!calendar** | | !calendar | Provides an overview of all scheduled runs for the upcoming week, with direct links to the raid posts. This command will only have to be run once as the calendar will automatically populate with new runs. |
 | **!raid** \<name\> \[tier\] \<time\> | **!instance**, **!r** | !raid anvil t3 friday 8pm | Schedules a custom raid. Name must be quoted if multiple words. Tier argument is optional. If omitted, it attempts to parse tier information from the channel name and defaults to t1 otherwise. If a timezone is omitted it will default to the user's preferred timezone (which is server time by default). |
-| **!fastraid** \[tier\] \<time\> | **!rem**, **!ad**, etc | !rem  friday 8pm, !ad t3 friday 8pm | Faster way to schedule a raid. **Invoke this command with an alias.** Use `!help fastraid` for the full list of aliases.
+| **!fastraid** \[tier\] \<time\> | **!rem**, **!ad**, etc | !rem  friday 8pm, !ad t3 friday 8pm | Faster way to schedule a raid. **Invoke this command with an alias.** Use `!help fastraid` for the full list of aliases. |
 | **!meetup** \<name\> \<time\> | **!meet**, **!m** | !meetup "kin house" friday 8pm | Similar to `!raid` but without a tier argument. |
 
 ### User specific commands
