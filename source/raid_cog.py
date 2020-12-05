@@ -137,7 +137,7 @@ class RaidCog(commands.Cog):
     async def on_raw_message_delete(self, payload):
         raid_id = payload.message_id
         if raid_id in self.raids:
-            self.cleanup_old_raid(raid_id, "Raid manually deleted.")
+            await self.cleanup_old_raid(raid_id, "Raid manually deleted.")
             self.conn.commit()
 
     @commands.command()
@@ -372,7 +372,7 @@ class RaidCog(commands.Cog):
             elif reply.content.lower().startswith(_("t")):
                 await self.tier_configure(user, channel, raid_id)
             elif reply.content.lower().startswith(_("cancel")):
-                self.cleanup_old_raid(raid_id, "Raid manually deleted.")
+                await self.cleanup_old_raid(raid_id, "Raid manually deleted.")
                 return True  # The raid has deleted from database.
         return
 
@@ -772,18 +772,18 @@ class RaidCog(commands.Cog):
             roster = int(raid[3])
             channel = bot.get_channel(channel_id)
             if not channel:
-                self.cleanup_old_raid(raid_id, "Raid channel has been deleted.")
+                await self.cleanup_old_raid(raid_id, "Raid channel has been deleted.")
                 continue
             try:
                 post = await channel.fetch_message(raid_id)
             except discord.NotFound:
-                self.cleanup_old_raid(raid_id, "Raid post already deleted.")
+                await self.cleanup_old_raid(raid_id, "Raid post already deleted.")
             except discord.Forbidden:
-                self.cleanup_old_raid(raid_id, "We are missing required permissions to see raid post.")
+                await self.cleanup_old_raid(raid_id, "We are missing required permissions to see raid post.")
             else:
                 if current_time > timestamp + expiry_time:
                     await post.delete()
-                    self.cleanup_old_raid(raid_id, "Deleted expired raid post.")
+                    await self.cleanup_old_raid(raid_id, "Deleted expired raid post.")
                 elif current_time < timestamp - notify_time:
                     raid_start_msg = _("Gondor calls for aid! Will you answer the call")
                     if roster:
@@ -796,12 +796,14 @@ class RaidCog(commands.Cog):
                     await channel.send(raid_start_msg, delete_after=notify_time * 2)
         self.conn.commit()
 
-    def cleanup_old_raid(self, raid_id, message):
+    async def cleanup_old_raid(self, raid_id, message):
         logger.info(message)
+        guild_id = select_one(self.conn, 'Raids', 'guild_id', raid_id)
         delete_row(self.conn, 'Raids', raid_id)
         delete_row(self.conn, 'Players', raid_id)
         delete_row(self.conn, 'Assignment', raid_id)
         logger.info("Deleted old raid from database.")
+        await self.bot.get_cog('CalendarCog').update_calendar(guild_id, new_run=False)
         try:
             self.raids.remove(raid_id)
         except ValueError:

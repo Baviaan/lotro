@@ -41,7 +41,7 @@ class CalendarCog(commands.Cog):
             await ctx.send(_("An error occurred."))
         return
 
-    async def update_calendar(self, guild_id):
+    async def update_calendar(self, guild_id, new_run=True):
         res = select_one(self.conn, 'Settings', 'calendar', guild_id, 'guild_id')
         if not res:
             return
@@ -58,7 +58,8 @@ class CalendarCog(commands.Cog):
             return
         embed = self.calendar_embed(guild_id)
         await msg.edit(embed=embed)
-        await chn.send(_("A new run has been posted!"), delete_after=3600)
+        if new_run:
+            await chn.send(_("A new run has been posted!"), delete_after=3600)
 
 
     def calendar_embed(self, guild_id):
