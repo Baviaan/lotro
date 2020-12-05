@@ -782,8 +782,8 @@ class RaidCog(commands.Cog):
                 await self.cleanup_old_raid(raid_id, "We are missing required permissions to see raid post.")
             else:
                 if current_time > timestamp + expiry_time:
-                    await post.delete()
                     await self.cleanup_old_raid(raid_id, "Deleted expired raid post.")
+                    await post.delete()
                 elif current_time < timestamp - notify_time:
                     raid_start_msg = _("Gondor calls for aid! Will you answer the call")
                     if roster:
