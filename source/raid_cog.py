@@ -235,7 +235,7 @@ class RaidCog(commands.Cog):
             match = get_match(name, names)
             if match[0]:
                 return match[0]
-        return name.capitalize()
+        return name
 
     async def raid_command(self, ctx, name, tier, boss, time, roster=False):
         name = self.get_raid_name(name)
