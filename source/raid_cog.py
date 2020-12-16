@@ -794,6 +794,7 @@ class RaidCog(commands.Cog):
                                 raid_start_msg = raid_start_msg + " <@{0}>".format(player_id)
                     raid_start_msg = raid_start_msg + _("? We are forming for the raid now.")
                     await channel.send(raid_start_msg, delete_after=notify_time * 2)
+        logger.info("Completed background task.")
 
     async def cleanup_old_raid(self, raid_id, message):
         logger.info(message)
