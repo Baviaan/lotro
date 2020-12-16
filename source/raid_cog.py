@@ -227,28 +227,34 @@ class RaidCog(commands.Cog):
         await self.bot.get_cog('CalendarCog').update_calendar(ctx.guild.id)
 
     def get_raid_name(self, name):
+        custom = False
         try:
             name = self.raid_lookup[name.lower()]
-            return name
+            return name, custom
         except KeyError:
+            custom = True
             names = list(self.raid_lookup.values())
             match = get_match(name, names)
             if match[0]:
-                return match[0]
-        return name
+                return match[0], custom
+        return name, custom
 
     async def raid_command(self, ctx, name, tier, boss, time, roster=False):
-        name = self.get_raid_name(name)
+        full_name, custom = self.get_raid_name(name)
+        command = ctx.invoked_with
+        if command in ['raid', 'r,', 'instance'] and not custom:
+            tip = _("Consider using `{prefix}{name} ...` instead of `{prefix}{command} {name} ...`.").format(prefix=ctx.prefix, name=name, command=command)
+            await ctx.send(tip, delete_after=30)
         post = await ctx.send('\u200B')
         raid_id = post.id
         timestamp = int(time.replace(tzinfo=datetime.timezone.utc).timestamp())  # Do not use local tz.
-        raid = (raid_id, ctx.channel.id, ctx.guild.id, ctx.author.id, name, tier, boss, timestamp, roster)
+        raid = (raid_id, ctx.channel.id, ctx.guild.id, ctx.author.id, full_name, tier, boss, timestamp, roster)
         add_raid(self.conn, raid)
         available = _("<Available>")
         for i in range(len(self.slots_class_names)):
             assign_player(self.conn, raid_id, i, None, available, ','.join(self.slots_class_names[i]))
         self.conn.commit()
-        logger.info("Created new raid: {0} at {1}".format(name, time))
+        logger.info("Created new raid: {0} at {1}".format(full_name, time))
         embed = self.build_raid_message(ctx.guild, raid_id, "\u200B", None)
         await post.edit(embed=embed)
         emojis = ["\U0001F6E0", "\u26CF", "\u274C", "\u2705"]  # Config, pick, cancel, check
