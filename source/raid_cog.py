@@ -250,7 +250,7 @@ class RaidCog(commands.Cog):
         timestamp = int(time.replace(tzinfo=datetime.timezone.utc).timestamp())  # Do not use local tz.
         raid = (raid_id, ctx.channel.id, ctx.guild.id, ctx.author.id, full_name, tier, boss, timestamp, roster)
         add_raid(self.conn, raid)
-        available = _("<Available>")
+        available = _("Available")
         for i in range(len(self.slots_class_names)):
             assign_player(self.conn, raid_id, i, None, available, ','.join(self.slots_class_names[i]))
         self.conn.commit()
