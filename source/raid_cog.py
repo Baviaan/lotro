@@ -307,7 +307,7 @@ class RaidCog(commands.Cog):
                               "Please note they were assigned to {1} in the raid.").format(user.mention, class_name)
                 await channel.send(error_msg)
                 class_names = ','.join(self.slots_class_names[assigned_slot])
-                assign_player(self.conn, raid_id, assigned_slot, None, _("<Available>"), class_names)
+                assign_player(self.conn, raid_id, assigned_slot, None, _("Available"), class_names)
             r = select_one_player(self.conn, 'Players', 'byname', user.id, raid_id)
             if r:
                 delete_raid_player(self.conn, user.id, raid_id)
@@ -517,7 +517,7 @@ class RaidCog(commands.Cog):
                     if len(new_classes) > 3:
                         await channel.send(_("You may only provide up to 3 classes per slot."), delete_after=10)
                         continue  # allow maximum of 4 classes
-                    available = _("<Available>")
+                    available = _("Available")
                     assign_player(self.conn, raid_id, index - 1, None, available, ','.join(new_classes))
                     await channel.send(_("Classes for slot {0} updated!").format(index), delete_after=10)
         await msg.delete()
@@ -536,7 +536,7 @@ class RaidCog(commands.Cog):
         players = select_rows(self.conn, 'Assignment', 'player_id', raid_id)
         assigned_ids = [player[0] for player in players if player[0] is not None]
         available = select_players(self.conn, 'player_id, byname', raid_id)
-        default_name = _("<Available>")
+        default_name = _("Available")
 
         if not available:
             await channel.send(_("There are no players to assign for this raid!"), delete_after=10)
