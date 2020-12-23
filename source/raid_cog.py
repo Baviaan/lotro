@@ -767,7 +767,7 @@ class RaidCog(commands.Cog):
         bot = self.bot
         expiry_time = 7200  # Delete raids after 2 hours.
         notify_time = 300  # Notify raiders 5 minutes before.
-        current_time = datetime.datetime.utcnow().timestamp()  # Raid time is stored in UTC.
+        current_time = datetime.datetime.now().timestamp()  # timestamp assumes local time.
 
         cutoff = current_time + 2 * notify_time
         raids = select_upcoming_raids(self.conn, cutoff)
