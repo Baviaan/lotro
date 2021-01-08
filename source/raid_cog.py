@@ -130,7 +130,7 @@ class RaidCog(commands.Cog):
         if payload.message_id in self.raids:
             raid_deleted = await self.raid_update(payload)
             if not raid_deleted:
-                message = await channel.fetch_message(payload.message_id)
+                message = channel.get_partial_message(payload.message_id)
                 await message.remove_reaction(payload.emoji, payload.member)
 
     @commands.Cog.listener()
@@ -330,7 +330,7 @@ class RaidCog(commands.Cog):
                 await channel.send(_("Error: Missing 'Manage roles' permission to assign the class role."))
         self.conn.commit()
         if raid_deleted:
-            post = await channel.fetch_message(raid_id)
+            post = channel.get_partial_message(raid_id)
             await post.delete()
             return True
         else:
@@ -341,7 +341,7 @@ class RaidCog(commands.Cog):
         available = self.build_raid_players(raid_id)
         unavailable = self.build_raid_players(raid_id, available=False)
         embed = self.build_raid_message(channel.guild, raid_id, available, unavailable)
-        post = await channel.fetch_message(raid_id)
+        post = channel.get_partial_message(raid_id)
         try:
             await post.edit(embed=embed)
         except discord.HTTPException:

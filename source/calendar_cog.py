@@ -50,14 +50,17 @@ class CalendarCog(commands.Cog):
         msg_id = int(result[1])
         chn = self.bot.get_channel(chn_id)
         try:
-            msg = await chn.fetch_message(msg_id)
+            msg = chn.get_partial_message(msg_id)
         except (AttributeError, discord.NotFound):
             logger.warning("Calendar post not found.")
             res = remove_setting(self.conn, 'calendar', guild_id)
             self.conn.commit()
             return
         embed = self.calendar_embed(guild_id)
-        await msg.edit(embed=embed)
+        try:
+            await msg.edit(embed=embed)
+        except discord.HTTPException:
+            await chn.send(_("Failed to update the calendar."))
         if new_run:
             await chn.send(_("A new run has been posted!"), delete_after=3600)
 
