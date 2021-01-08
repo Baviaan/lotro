@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2021-01-08 17:05+GMT\n"
+"POT-Creation-Date: 2021-01-08 17:18+GMT\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: FRENCH <LL@li.org>\n"
@@ -408,8 +408,8 @@ msgid ""
 msgstr ""
 
 #: raid_cog.py:253 raid_cog.py:310 raid_cog.py:520 raid_cog.py:539
-msgid "Available"
-msgstr "Disponible"
+msgid "<Open>"
+msgstr "<Disponible>"
 
 #: raid_cog.py:266
 msgid ""
