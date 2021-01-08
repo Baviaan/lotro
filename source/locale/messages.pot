@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2020-12-23 02:21+GMT\n"
+"POT-Creation-Date: 2021-01-08 16:44+GMT\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -55,14 +55,40 @@ msgstr ""
 msgid "User's response to '{0}':"
 msgstr ""
 
-#: apply_handling.py:42 main.py:242 main.py:250 raid_cog.py:159
-#: raid_cog.py:166 time_cog.py:123 time_cog.py:136 time_cog.py:161
-#: time_cog.py:198
+#: apply_handling.py:42 calendar_cog.py:41 main.py:242 main.py:250
+#: raid_cog.py:159 raid_cog.py:166 time_cog.py:123 time_cog.py:136
+#: time_cog.py:161 time_cog.py:198
 msgid "An error occurred."
 msgstr ""
 
 #: apply_handling.py:44
 msgid "Your application has been successfully submitted. An officer will be in touch soon!"
+msgstr ""
+
+#: calendar_cog.py:39
+msgid "The Calendar will be updated in this channel."
+msgstr ""
+
+#: calendar_cog.py:63
+msgid "Failed to update the calendar."
+msgstr ""
+
+#: calendar_cog.py:65
+msgid "A new run has been posted!"
+msgstr ""
+
+#: calendar_cog.py:72
+msgid "Scheduled runs:"
+msgstr ""
+
+#: calendar_cog.py:73
+msgid ""
+"For the upcoming week (in server time).\n"
+"Click the link to sign up!"
+msgstr ""
+
+#: calendar_cog.py:86
+msgid "Last updated"
 msgstr ""
 
 #: dev_cog.py:30
