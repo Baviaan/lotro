@@ -70,13 +70,11 @@ class CalendarCog(commands.Cog):
         raids = select_raids(self.conn, 'channel_id, raid_id, name, tier, time', guild_id)
 
         title = _("Scheduled runs:")
-        desc = _("For the upcoming week (in server time).\nClick the link to sign up!")
+        desc = _("Time displayed in server time.\nClick the link to sign up!")
         embed = discord.Embed(title=title, description=desc, colour=discord.Colour(0x3498db))
-        for raid in raids:
+        for raid in raids[:20]:
             timestamp = int(raid[4])
             time = datetime.utcfromtimestamp(timestamp)
-            if datetime.utcnow() + timedelta(days=7) < time:  # Only show upcoming week
-                break
             server_time = TimeCog.local_time(time, server_tz)
             time_string = TimeCog.calendar_time(server_time)
             msg = "[{name} {tier}](<https://discord.com/channels/{guild}/{channel}/{msg}>)\n".format(
