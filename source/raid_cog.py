@@ -424,6 +424,7 @@ class RaidCog(commands.Cog):
             await response.delete()
         timestamp = int(time.replace(tzinfo=datetime.timezone.utc).timestamp())  # Do not use local tz.
         update_raid(self.conn, 'raids', 'time', timestamp, raid_id)
+        await bot.get_cog('CalendarCog').update_calendar(channel.guild.id, new_run=False)
         return
 
     async def tier_configure(self, author, channel, raid_id):
