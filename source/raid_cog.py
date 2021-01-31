@@ -380,6 +380,8 @@ class RaidCog(commands.Cog):
             elif reply.content.lower().startswith(_("cancel")):
                 await self.cleanup_old_raid(raid_id, "Raid manually deleted.")
                 return True  # The raid has deleted from database.
+        self.conn.commit()
+        await bot.get_cog('CalendarCog').update_calendar(channel.guild.id, new_run=False)
         return
 
     async def boss_configure(self, author, channel, raid_id):
@@ -424,7 +426,6 @@ class RaidCog(commands.Cog):
             await response.delete()
         timestamp = int(time.replace(tzinfo=datetime.timezone.utc).timestamp())  # Do not use local tz.
         update_raid(self.conn, 'raids', 'time', timestamp, raid_id)
-        await bot.get_cog('CalendarCog').update_calendar(channel.guild.id, new_run=False)
         return
 
     async def tier_configure(self, author, channel, raid_id):
@@ -448,7 +449,6 @@ class RaidCog(commands.Cog):
             await channel.send(e)
         else:
             update_raid(self.conn, 'raids', 'tier', tier, raid_id)
-            await bot.get_cog('CalendarCog').update_calendar(channel.guild.id, new_run=False)
         return
 
     async def roster_configure(self, author, channel, raid_id):
