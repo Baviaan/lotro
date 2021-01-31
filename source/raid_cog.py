@@ -448,6 +448,7 @@ class RaidCog(commands.Cog):
             await channel.send(e)
         else:
             update_raid(self.conn, 'raids', 'tier', tier, raid_id)
+            await bot.get_cog('CalendarCog').update_calendar(channel.guild.id, new_run=False)
         return
 
     async def roster_configure(self, author, channel, raid_id):
