@@ -642,7 +642,7 @@ class RaidCog(commands.Cog):
 
         server_tz = TimeCog.get_server_time(guild.id)
         server_time = TimeCog.local_time(time, server_tz)
-        header_time = TimeCog.format_time(server_time) + _(" server time")
+        header_time = TimeCog.format_time(server_time, guild.id) + _(" server time")
 
         embed_title = _("{0} on {1}").format(name, header_time)
         if tier:
@@ -756,12 +756,12 @@ class RaidCog(commands.Cog):
     @staticmethod
     def build_time_string(time, guild):
         time_string = ''
-        display_times = TimeCog.get_display_times(guild)
+        display_times = TimeCog.get_display_times(guild.id)
         for timezone in display_times:
             local_time = TimeCog.local_time(time, timezone)
             _, _, city = timezone.partition('/')
             city = city.replace('_', ' ')
-            time_string = time_string + city + ": " + TimeCog.format_time(local_time) + '\n'
+            time_string = time_string + city + ": " + TimeCog.format_time(local_time, guild.id) + '\n'
         return time_string
 
     @tasks.loop(seconds=300)

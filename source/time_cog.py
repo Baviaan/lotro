@@ -200,6 +200,28 @@ class TimeCog(commands.Cog):
             await ctx.send(_("Please provide a time zone argument!"))
         return
 
+    fmt_brief = _("Set time to 12h or 24h format.")
+    fmt_description = _("Specifies whether the bot displays time in 12h or 24h format.")
+    fmt_example = _("Examples:\n{0}format 12\n{0}format 24").format(prefix)
+
+    @commands.command(help=fmt_example, brief=fmt_brief, description=fmt_description)
+    @is_raid_leader(conn)
+    async def format(self, ctx, fmt):
+        """Sets time to 12h or 24h format for the guild"""
+        if fmt in ['24', '24h']:
+            fmt_24hr = True
+        elif fmt in ['12', '12h']:
+            fmt_24hr = False
+        else:
+            await ctx.send(_("Please specify '12' or '24' when using this command."))
+            return
+        res = add_setting(self.conn, 'fmt_24hr', ctx.guild.id, fmt_24hr)
+        if res:
+            self.conn.commit()
+            await ctx.send(_("Set server to use {0}h time format.").format(fmt[0:2]))
+        else:
+            await ctx.send(_("An error occurred."))
+
     @staticmethod
     def get_user_timezone(author):
         result = select_one(TimeCog.conn, 'Timezone', 'timezone', author.id, pk_column='player_id')
@@ -208,8 +230,8 @@ class TimeCog(commands.Cog):
         return result
 
     @staticmethod
-    def get_display_times(guild):
-        result = select_one(TimeCog.conn, 'Settings', 'display', guild.id, pk_column='guild_id')
+    def get_display_times(guild_id):
+        result = select_one(TimeCog.conn, 'Settings', 'display', guild_id, pk_column='guild_id')
         if result is None:
             result = TimeCog.display_times
         else:
@@ -224,19 +246,27 @@ class TimeCog(commands.Cog):
         return result
 
     @staticmethod
-    def format_time(time):
-        if os.name == "nt":  # Windows uses '#' instead of '-'.
-            time_string = time.strftime(_("%A %#I:%M %p"))
+    def format_time(time, guild_id):
+        fmt_24hr = select_one(TimeCog.conn, 'Settings', 'fmt_24hr', guild_id, pk_column='guild_id')
+        if fmt_24hr:
+            time_string = time.strftime("%A %H:%M")
         else:
-            time_string = time.strftime(_("%A %-I:%M %p"))
+            if os.name == "nt":  # Windows uses '#' instead of '-'.
+                time_string = time.strftime("%A %#I:%M %p")
+            else:
+                time_string = time.strftime("%A %-I:%M %p")
         return time_string
 
     @staticmethod
-    def calendar_time(time):
-        if os.name == "nt":  # Windows uses '#' instead of '-'.
-            time_string = time.strftime(_("%b %d, %A %#I:%M %p"))
+    def calendar_time(time, guild_id):
+        fmt_24hr = select_one(TimeCog.conn, 'Settings', 'fmt_24hr', guild_id, pk_column='guild_id')
+        if fmt_24hr:
+            time_string = time.strftime("%b %d, %A %H:%M")
         else:
-            time_string = time.strftime(_("%b %d, %A %-I:%M %p"))
+            if os.name == "nt":  # Windows uses '#' instead of '-'.
+                time_string = time.strftime(_("%b %d, %A %#I:%M %p"))
+            else:
+                time_string = time.strftime(_("%b %d, %A %-I:%M %p"))
         return time_string
 
     @staticmethod

@@ -26,7 +26,7 @@ logger.setLevel(logging.INFO)
 launch_on_boot = False
 
 # log version number.
-version = "3.11.1"
+version = "3.12.0"
 logger.info("Running " + version)
 
 # Load config file.

@@ -76,7 +76,7 @@ class CalendarCog(commands.Cog):
             timestamp = int(raid[4])
             time = datetime.utcfromtimestamp(timestamp)
             server_time = TimeCog.local_time(time, server_tz)
-            time_string = TimeCog.calendar_time(server_time)
+            time_string = TimeCog.calendar_time(server_time, guild_id)
             msg = "[{name} {tier}](<https://discord.com/channels/{guild}/{channel}/{msg}>)\n".format(
                 guild=guild_id, channel=raid[0], msg=raid[1], name=raid[2], tier=raid[3])
             embed.add_field(name=time_string, value=msg, inline=False)
