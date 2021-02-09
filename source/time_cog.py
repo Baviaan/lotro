@@ -27,7 +27,7 @@ class Time(commands.Converter):
         if server in argument:
             # Strip off server (time) and return as server time
             argument = argument.partition(server)[0]
-            my_settings['TIMEZONE'] = TimeCog.server_tz
+            my_settings['TIMEZONE'] = TimeCog.get_server_time(author.guild.id)
             my_settings['RETURN_AS_TIMEZONE_AWARE'] = True
         time = dateparser.parse(argument, settings=my_settings)
         if time is None:
@@ -226,7 +226,7 @@ class TimeCog(commands.Cog):
     def get_user_timezone(author):
         result = select_one(TimeCog.conn, 'Timezone', 'timezone', author.id, pk_column='player_id')
         if result is None:
-            result = TimeCog.server_tz
+            result = TimeCog.get_server_time(author.guild.id)
         return result
 
     @staticmethod
