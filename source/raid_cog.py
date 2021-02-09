@@ -285,7 +285,15 @@ class RaidCog(commands.Cog):
             if not raid_leader_name:
                 raid_leader_name = self.raid_leader_name
             raid_leader = await get_role(guild, raid_leader_name)
-            if raid_leader not in user.roles and organizer_id != user.id:
+
+            operation_allowed = False
+            if organizer_id == user.id:
+                operation_allowed = True
+            elif raid_leader in user.roles:
+                operation_allowed = True
+            elif user.guild_permissions.administrator:
+                operation_allowed = True
+            if not operation_allowed:
                 error_msg = _("You do not have permission to change the raid settings. "
                               "You need to have the '{0}' role.").format(raid_leader_name)
                 logger.info("Putting {0} on the naughty list.".format(user.name))
