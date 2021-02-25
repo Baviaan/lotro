@@ -95,6 +95,7 @@ https://discord.gg/dGcBzPN
 | **!leader** \<role_name \>| Admin | !leader Officer | Set to "Raid Leader" by default. Case sensitive. Raid leaders can edit raids posted by others. |
 | **!servertime** \<timezone\> | Raid Leader | !servertime europe/paris | Set to US Eastern by default. See `!help servertime` for timezone format. This timezone is used in the header of a scheduled raid and is also the default timezone for interpretation of raid commands. |
 | **!displaytimes** \[timezones...\] | Raid Leader | !displaytimes america/chicago america/los_angeles | Set to Sydney, London and Los Angeles by default. See `!help displaytimes` for timezone format. |
+|  **!format** \<format\> | Raid Leader | !format 12, !format 24 | Switches to 12h or 24h time format for your server. |
 
 ### Scheduling commands
 
