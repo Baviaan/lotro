@@ -261,7 +261,7 @@ class TimeCog(commands.Cog):
     def calendar_time(time, guild_id):
         fmt_24hr = select_one(TimeCog.conn, 'Settings', 'fmt_24hr', guild_id, pk_column='guild_id')
         if fmt_24hr:
-            time_string = time.strftime("%b %d, %A %H:%M")
+            time_string = time.strftime(_("%b %d, %A %H:%M"))
         else:
             if os.name == "nt":  # Windows uses '#' instead of '-'.
                 time_string = time.strftime(_("%b %d, %A %#I:%M %p"))
