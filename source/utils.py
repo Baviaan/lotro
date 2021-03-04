@@ -54,5 +54,5 @@ def get_match(word: str, word_list: list, score_cutoff: int = 80):
     result = process.extractOne(
             word, word_list, scorer=fp_ratio, score_cutoff=score_cutoff)
     if not result:
-        return (None, None)
+        return None, None
     return result

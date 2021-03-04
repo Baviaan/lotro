@@ -1,13 +1,10 @@
 {
   "BOT_TOKEN": "Token goes here",
-  "CLASSES": ["Beorning","Burglar","Captain","Champion","Guardian","Hunter","Loremaster","Minstrel","Runekeeper","Warden"],
-  "LINEUP": ["1000000110","1000000110","0000001000","0100000000","0010100000","1011100001","0010000000","0101010011","0101010011","0101010011","0101010011","1111111111"],
-  "CHANNELS": {
-    "APPLY": "applications"
-  },
+  "CLASSES": ["Beorning","Brawler","Burglar","Captain","Champion","Guardian","Hunter","Loremaster","Minstrel","Runekeeper","Warden"],
+  "LANGUAGE": "en",
   "LEADER": "Raid Leader",
-  "SERVER_TZ": "America/New_York",
-  "TIMEZONES": ["America/Los_Angeles", "Europe/London", "Australia/Sydney"],
+  "LINEUP": ["10000000110","10000000110","00000001000","00100000000","00010100000","10011100001","00010000000","00101010011","00101010011","00101010011","00101010011","10111111111"],
   "PREFIX": "!",
-  "LANGUAGE": "en"
+  "SERVER_TZ": "America/New_York",
+  "TIMEZONES": ["America/Los_Angeles", "Europe/London", "Australia/Sydney"]
 }
