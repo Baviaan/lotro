@@ -149,14 +149,18 @@ def select(conn, table, columns, where_columns=None, where_values=None):
         logger.warning(e)
 
 
-def select_one(conn, table, columns, eq_columns=None, eq_values=None, like_columns=None, like_values=None):
+def select_one(conn, table, columns, eq_columns=None, eq_values=None, none_columns=None, like_columns=None, like_values=None):
     selects = ["select", ", ".join(columns), "from {0}".format(table)]
-    if eq_columns or like_columns:
+    if eq_columns or none_columns or like_columns:
         selects.append("where")
         if eq_columns:
             assert len(eq_columns) == len(eq_values)
             selects.append(" and ".join(["=".join([column, "?"]) for column in eq_columns]))
-        if eq_columns and like_columns:
+        if eq_columns and none_columns:
+            selects.append("and")
+        if none_columns:
+            selects.append(" and ".join([column + " is null" for column in none_columns]))
+        if (eq_columns or none_columns) and like_columns:
             selects.append("and")
         if like_columns:
             assert len(like_columns) == len(like_values)

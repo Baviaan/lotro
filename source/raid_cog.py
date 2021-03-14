@@ -333,11 +333,10 @@ class RaidCog(commands.Cog):
         post = channel.get_partial_message(raid_id)
         try:
             await post.edit(embed=embed)
-        except discord.HTTPException:
-            logger.warning("An error occurred sending the following messages as embed.")
-            logger.warning(embed.title)
-            logger.warning(embed.description)
-            logger.warning(embed.fields)
+        except discord.HTTPException as e:
+            logger.warning(e)
+            msg = "\n".join(["The above error occurred sending the following messages as embed:", embed.title, embed.description, str(embed.fields)])
+            logger.warning(msg)
             await channel.send(_("That's an error. Check the logs."))
 
     async def configure(self, user, channel, raid_id):
@@ -618,7 +617,7 @@ class RaidCog(commands.Cog):
                     continue
             # Check for free slot
             search = '%' + reaction.emoji.name + '%'
-            slot_id = select_one(self.conn, 'Assignment', ['slot_id'], ['raid_id'], [raid_id], ['class_name'], [search])
+            slot_id = select_one(self.conn, 'Assignment', ['slot_id'], ['raid_id'], [raid_id], ['player_id'], ['class_name'], [search])
             if slot_id is None:
                 await channel.send(_("There are no slots available for the selected class."), delete_after=10)
             else:
