@@ -45,7 +45,10 @@ class RoleCog(commands.Cog):
                 await ctx.send(_("Missing permissions to manage the class roles!"), delete_after=30)
             else:
                 await ctx.send(_("Removed all class roles for {0}.").format(author.mention), delete_after=30)
-        await message.delete()
+        try:
+            await message.delete()
+        except discord.NotFound:
+            pass
 
 
 async def get_role(guild, role_name):
