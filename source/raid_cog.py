@@ -287,9 +287,9 @@ class RaidCog(commands.Cog):
                               "Please note they were assigned to {1} in the raid.").format(user.mention, class_name)
                 await channel.send(error_msg)
                 class_names = ','.join(self.slots_class_names[assigned_slot])
-                player_columns = ['player_id', 'byname', 'class_name']
-                player_values = [None, _("<Open>"), class_names]
-                upsert(self.conn, 'Players', player_columns, player_values, ['raid_id', 'slot_id'],
+                assign_columns = ['player_id', 'byname', 'class_name']
+                assign_values = [None, _("<Open>"), class_names]
+                upsert(self.conn, 'Assignment', assign_columns, assign_values, ['raid_id', 'slot_id'],
                        [raid_id, assigned_slot])
             r = select_one(self.conn, 'Players', ['byname'], ['player_id', 'raid_id'], [user.id, raid_id])
             if r:
