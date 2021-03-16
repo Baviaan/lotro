@@ -5,6 +5,8 @@ import discord
 import logging
 import psutil
 
+from database import delete, select
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
@@ -12,6 +14,7 @@ logger.setLevel(logging.INFO)
 class DevCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.conn = bot.conn
 
     @commands.command(hidden=True)
     @commands.is_owner()
@@ -90,6 +93,27 @@ class DevCog(commands.Cog):
     async def list(self, ctx):
         msg = "\n".join(guild.name + " (" + str(guild.id) + ")" for guild in self.bot.guilds)
         await ctx.send(_("**We are in the following {0} guilds:**\n").format(len(self.bot.guilds)) + msg)
+
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def cleanup(self, ctx):
+        res = select(self.conn, 'Settings', ['guild_id'])
+        active = 0
+        inactive = 0
+        for row in res:
+            guild_id = row[0]
+            guild = self.bot.get_guild(guild_id)
+            if guild:
+                active += 1
+            else:
+                logger.info('We are no longer in {0}'.format(guild_id))
+                delete(self.conn, 'Settings', ['guild_id'], [guild_id])
+                inactive += 1
+        self.conn.commit()
+        logger.info('Active guild count: {0}'.format(active))
+        logger.info('Inactive guild count: {0}'.format(inactive))
+        await ctx.send('Active guild count: {0}'.format(active))
+        await ctx.send('Inactive guild count: {0}'.format(inactive))
 
 
 def setup(bot):
