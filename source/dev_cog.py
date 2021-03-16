@@ -6,6 +6,7 @@ import logging
 import psutil
 
 from database import delete, select
+from utils import chunks
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -91,8 +92,10 @@ class DevCog(commands.Cog):
     @commands.command(hidden=True)
     @commands.is_owner()
     async def list(self, ctx):
-        msg = "\n".join(guild.name + " (" + str(guild.id) + ")" for guild in self.bot.guilds)
-        await ctx.send(_("**We are in the following {0} guilds:**\n").format(len(self.bot.guilds)) + msg)
+        await ctx.send(_("**We are in the following {0} guilds:**\n").format(len(self.bot.guilds)))
+        for chunk in chunks(self.bot.guilds, 40):
+            msg = "\n".join("{0} ({1})".format(guild.name, guild.id) for guild in chunk)
+            await ctx.send(msg)
 
     @commands.command(hidden=True)
     @commands.is_owner()

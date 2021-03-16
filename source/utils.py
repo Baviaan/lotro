@@ -11,6 +11,12 @@ def alphabet_emojis():
     return alphabet
 
 
+def chunks(lst, n):
+    """Yield successive n-sized chunks from lst."""
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
+
+
 def fp_ratio(s1, s2, force_ascii=True, full_process=True):
     """
     Return a measure of the sequences' similarity between 0 and 100, using fuzz.ratio and fuzz.partial_ratio.
