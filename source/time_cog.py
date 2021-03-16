@@ -8,7 +8,6 @@ import pytz
 from discord.ext import commands
 
 from database import create_table, delete, select_one, upsert
-from role_cog import get_role
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -98,15 +97,10 @@ class TimeCog(commands.Cog):
         conn = self.bot.conn
         if ctx.author.guild_permissions.administrator:
             return True
-        raid_leader_name = select_one(conn, 'Settings', ['raid_leader'], ['guild_id'], [ctx.guild.id])
-        if not raid_leader_name:
-            raid_leader_name = self.bot.raid_leader_name
-        raid_leader = await get_role(ctx.guild, raid_leader_name)
-        if raid_leader in ctx.author.roles:
+        raid_leader_id = select_one(conn, 'Settings', ['raid_leader'], ['guild_id'], [ctx.guild.id])
+        if raid_leader_id in [role.id for role in ctx.author.roles]:
             return True
-        error_msg = _("You do not have permission to change the settings. "
-                      "You need to have the '{0}' role.").format(raid_leader_name)
-        logger.info("Putting {0} on the naughty list.".format(ctx.author.name))
+        error_msg = _("You do not have permission to change the settings.")
         await ctx.send(error_msg, delete_after=15)
         return False
 

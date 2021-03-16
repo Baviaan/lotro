@@ -124,18 +124,17 @@ class RaidCog(commands.Cog):
             await ctx.send(_("You must be an admin to change the raid leader role."))
             return
         raid_leader = " ".join(raid_leader)
-        if raid_leader in [_("delete"), _("reset"), _("default"), ""]:
-            raid_leader = None
-        res = upsert(self.conn, 'Settings', ['raid_leader'], [raid_leader], ['guild_id'], [ctx.guild.id])
-        if res:
-            self.conn.commit()
-            if raid_leader:
-                await ctx.send(_("Raid Leader role set to `{0}`.").format(raid_leader))
-            else:
-                await ctx.send(_("Raid Leader role reset to `{0}`.").format(self.bot.raid_leader_name))
+        leader_role = discord.utils.get(ctx.guild.roles, name=raid_leader)
+        if leader_role:
+            res = upsert(self.conn, 'Settings', ['raid_leader'], [leader_role.id], ['guild_id'], [ctx.guild.id])
+            await ctx.send(_("Raid Leader role set to `{0}`.").format(leader_role))
         else:
-            await ctx.send(_("An error occurred."))
-        return
+            if raid_leader:
+                await ctx.send(_("No role `{0}` found.").format(raid_leader))
+            else:
+                res = upsert(self.conn, 'Settings', ['raid_leader'], [None], ['guild_id'], [ctx.guild.id])
+                await ctx.send(_("Raid leader role deleted."))
+        self.conn.commit()
 
     async def check_event_limit(self, channel):
         res = count(self.conn, 'Raids', 'raid_id', ['guild_id'], [channel.guild.id])
@@ -252,10 +251,11 @@ class RaidCog(commands.Cog):
 
         if str(emoji) in ["\U0001F6E0", "\u26CF"]:
             organizer_id = select_one(self.conn, 'Raids', ['organizer_id'], ['raid_id'], [raid_id])
-            raid_leader_name = select_one(self.conn, 'Settings', ['raid_leader'], ['guild_id'], [guild.id])
-            if not raid_leader_name:
-                raid_leader_name = self.bot.raid_leader_name
-            raid_leader = await get_role(guild, raid_leader_name)
+            raid_leader_id = select_one(self.conn, 'Settings', ['raid_leader'], ['guild_id'], [guild.id])
+            if raid_leader_id:
+                raid_leader = guild.get_role(raid_leader_id)
+            else:
+                raid_leader = None
 
             operation_allowed = False
             if organizer_id == user.id:

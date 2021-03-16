@@ -29,7 +29,6 @@ class Bot(commands.Bot):
         self.default_prefix = config['PREFIX']
         role_names = config['CLASSES']
         self.role_names = tuple(role_names)
-        self.raid_leader_name = config['LEADER']
 
         # Get id for discord server hosting custom emoji.
         try:
