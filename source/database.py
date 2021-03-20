@@ -114,6 +114,7 @@ def upsert(conn, table, columns, values, where_columns=None, where_values=None):
         return True
     except sqlite3.Error as e:
         logger.exception(e)
+        logger.info(sql_update)
 
 
 def delete(conn, table, where_columns, where_values):
@@ -127,6 +128,7 @@ def delete(conn, table, where_columns, where_values):
         return True
     except sqlite3.Error as e:
         logger.exception(e)
+        logger.info(sql_delete)
 
 
 def select(conn, table, columns, where_columns=None, where_values=None):
@@ -147,6 +149,7 @@ def select(conn, table, columns, where_columns=None, where_values=None):
         return result
     except sqlite3.Error as e:
         logger.exception(e)
+        logger.info(sql_select)
 
 
 def select_one(conn, table, columns, eq_columns=None, eq_values=None, none_columns=None, like_columns=None, like_values=None):
@@ -185,6 +188,7 @@ def select_one(conn, table, columns, eq_columns=None, eq_values=None, none_colum
         return result
     except sqlite3.Error as e:
         logger.exception(e)
+        logger.info(sql_select)
 
 
 def select_order(conn, table, columns, order, where_columns=None, where_values=None):
@@ -205,6 +209,7 @@ def select_order(conn, table, columns, order, where_columns=None, where_values=N
         return result
     except sqlite3.Error as e:
         logger.exception(e)
+        logger.info(sql_select)
 
 
 def select_le(conn, table, columns, where_columns=None, where_values=None):
@@ -225,6 +230,7 @@ def select_le(conn, table, columns, where_columns=None, where_values=None):
         return result
     except sqlite3.Error as e:
         logger.exception(e)
+        logger.info(sql_select)
 
 
 def count(conn, table, column, where_columns=None, where_values=None):
@@ -245,3 +251,4 @@ def count(conn, table, column, where_columns=None, where_values=None):
         return result[0]
     except sqlite3.Error as e:
         logger.exception(e)
+        logger.info(sql_count)
