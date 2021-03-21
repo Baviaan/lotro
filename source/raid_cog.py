@@ -527,9 +527,8 @@ class RaidCog(commands.Cog):
             return user == author
 
         timeout = 60
-        reaction_limit = 20
         reactions = alphabet_emojis()
-        reactions = reactions[:reaction_limit]
+        reaction_limit = len(reactions)
 
         players = select(self.conn, 'Assignment', ['player_id'], ['raid_id'], [raid_id])
         assigned_ids = [player[0] for player in players if player[0] is not None]
@@ -540,7 +539,7 @@ class RaidCog(commands.Cog):
             await channel.send(_("There are no players to assign for this raid!"), delete_after=10)
             return
         if len(available) > reaction_limit:
-            available = available[:reaction_limit]  # This only works for the first 20 players.
+            available = available[:reaction_limit]  # This only works for the first 36 players.
             await channel.send(_("**Warning**: Excluding some noobs from available players!"), delete_after=15)
         msg_content = _("Please select the player you want to assign a spot in the raid from the list below using the "
                         "corresponding reaction. Assignment will finish after {0}s of no interaction.").format(timeout)
@@ -548,8 +547,13 @@ class RaidCog(commands.Cog):
 
         msg_content = _("Available players:\n*Please wait... Loading*")
         player_msg = await channel.send(msg_content)
-        for reaction in reactions[:len(available)]:
+        number_of_choices = min(len(available), 20)
+        for reaction in reactions[:number_of_choices]:
             await player_msg.add_reaction(reaction)
+        if len(available) > 20:
+            extra_msg = await channel.send("\u200b")
+            for reaction in reactions[number_of_choices:len(available)]:
+                await extra_msg.add_reaction(reaction)
         class_msg_content = _("Select the class for this player.")
         class_msg = await channel.send(class_msg_content)
         for reaction in self.class_emojis:
@@ -580,7 +584,10 @@ class RaidCog(commands.Cog):
                     await channel.send(_("Please select a player first!"), delete_after=10)
                     continue
                 else:
-                    await player_msg.remove_reaction(reaction, user)
+                    if index < 20:
+                        await player_msg.remove_reaction(reaction, user)
+                    else:
+                        await extra_msg.remove_reaction(reaction, user)
                     selected_player = available[index]
                     slot = select_one(self.conn, 'Assignment', ['slot_id'], ['player_id', 'raid_id'],
                                       [selected_player[0], raid_id])
@@ -634,6 +641,8 @@ class RaidCog(commands.Cog):
         await info_msg.delete()
         await player_msg.delete()
         await class_msg.delete()
+        if len(available) > 20:
+            await extra_msg.delete()
         return
 
     def build_raid_message(self, guild_id, raid_id, embed_texts_av, embed_texts_unav):
