@@ -14,9 +14,22 @@ class CalendarCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    async def is_raid_leader(self, ctx):
+        conn = self.bot.conn
+        if ctx.author.guild_permissions.administrator:
+            return True
+        raid_leader_id = select_one(conn, 'Settings', ['raid_leader'], ['guild_id'], [ctx.guild.id])
+        if raid_leader_id in [role.id for role in ctx.author.roles]:
+            return True
+        error_msg = _("You do not have permission to change the settings.")
+        await ctx.send(error_msg, delete_after=15)
+        return False
+
     @commands.command()
     async def calendar(self, ctx):
         """ Sets the channel to post the calendar in. """
+        if not await self.is_raid_leader(ctx):
+            return
         conn = self.bot.conn
         try:
             await ctx.message.delete()

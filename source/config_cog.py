@@ -56,6 +56,10 @@ class ConfigCog(commands.Cog):
     @commands.command()
     async def about(self, ctx):
         """Shows info about the bot."""
+        embed = await self.about_embed()
+        await ctx.send(embed=embed)
+
+    async def about_embed(self):
         dev = "Baviaan#4862"
         repo = "https://github.com/Baviaan/lotro"
         server = "https://discord.gg/dGcBzPN"
@@ -97,7 +101,7 @@ class ConfigCog(commands.Cog):
 
         content = "\n".join(about)
         embed = discord.Embed(title=title, colour=discord.Colour(0x3498db), description=content)
-        await ctx.send(embed=embed)
+        return embed
 
     @commands.command()
     async def privacy(self, ctx):
