@@ -707,7 +707,7 @@ class RaidCog(commands.Cog):
                 else:
                     embed_name = "\u200B"
                 embed.add_field(name=embed_name, value=embed_texts_unav[i])
-        embed.set_footer(text=_("Raid in your local time (broken on Android)"))
+        embed.set_footer(text=_("Raid in your local time"))
         embed.timestamp = time
         return embed
 
