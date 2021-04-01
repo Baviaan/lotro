@@ -108,6 +108,8 @@ class Bot(commands.Bot):
             # Load after time cog
             self.load_extension('calendar_cog')
             self.load_extension('raid_cog')
+            # Load custom cog
+            self.load_extension('custom_cog')
         except commands.ExtensionAlreadyLoaded:
             pass
 
