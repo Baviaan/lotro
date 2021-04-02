@@ -126,13 +126,13 @@ class RaidCog(commands.Cog):
         raid_leader = " ".join(raid_leader)
         leader_role = discord.utils.get(ctx.guild.roles, name=raid_leader)
         if leader_role:
-            res = upsert(self.conn, 'Settings', ['raid_leader'], [leader_role.id], ['guild_id'], [ctx.guild.id])
+            upsert(self.conn, 'Settings', ['raid_leader'], [leader_role.id], ['guild_id'], [ctx.guild.id])
             await ctx.send(_("Raid Leader role set to `{0}`.").format(leader_role))
         else:
             if raid_leader:
                 await ctx.send(_("No role `{0}` found.").format(raid_leader))
             else:
-                res = upsert(self.conn, 'Settings', ['raid_leader'], [None], ['guild_id'], [ctx.guild.id])
+                upsert(self.conn, 'Settings', ['raid_leader'], [None], ['guild_id'], [ctx.guild.id])
                 await ctx.send(_("Raid leader role deleted."))
         self.conn.commit()
 
@@ -265,8 +265,7 @@ class RaidCog(commands.Cog):
             elif user.guild_permissions.administrator:
                 operation_allowed = True
             if not operation_allowed:
-                error_msg = _("You do not have permission to change the raid settings. "
-                              "You need to have the '{0}' role.").format(raid_leader_name)
+                error_msg = _("You do not have permission to change the raid settings.")
                 await channel.send(error_msg, delete_after=15)
                 return
         if str(emoji) == "\u26CF":  # Pick emoji
@@ -335,8 +334,9 @@ class RaidCog(commands.Cog):
             await post.edit(embed=embed)
         except discord.HTTPException as e:
             logger.warning(e)
-            msg = "\n".join(["The above error occurred sending the following messages as embed:", embed.title, embed.description, str(embed.fields)])
-            logger.warning(msg)
+            msg = "The above error occurred sending the following messages as embed:"
+            error_msg = "\n".join([msg, embed.title, embed.description, str(embed.fields)])
+            logger.warning(error_msg)
             await channel.send(_("That's an error. Check the logs."))
 
     async def configure(self, user, channel, raid_id):

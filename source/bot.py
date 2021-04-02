@@ -37,7 +37,8 @@ class Bot(commands.Bot):
             self.host_id = None
 
         logfile = 'raid_bot.log'
-        logging.basicConfig(filename=logfile, level=logging.WARNING, format='%(asctime)s %(levelname)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+        logging.basicConfig(filename=logfile, level=logging.WARNING, format='%(asctime)s %(levelname)s: %(message)s',
+                            datefmt='%Y-%m-%d %H:%M:%S')
         logger = logging.getLogger(__name__)
         logger.setLevel(logging.INFO)
         self.logger = logger
@@ -70,7 +71,8 @@ class Bot(commands.Bot):
         intents.messages = True
         intents.reactions = True
 
-        super().__init__(command_prefix=self.prefix_manager, case_insensitive=True, intents=intents, activity=discord.Game(name=self.version))
+        super().__init__(command_prefix=self.prefix_manager, case_insensitive=True, intents=intents,
+                         activity=discord.Game(name=self.version))
 
         def globally_block_dms(ctx):
             if ctx.guild is None:
@@ -108,6 +110,9 @@ class Bot(commands.Bot):
             # Load after time cog
             self.load_extension('calendar_cog')
             self.load_extension('raid_cog')
+            # Load slash cog
+            self.load_extension('slash_cog')
+            self.load_extension('register_cog')
             # Load custom cog
             self.load_extension('custom_cog')
         except commands.ExtensionAlreadyLoaded:

@@ -75,7 +75,8 @@ class CalendarCog(commands.Cog):
         time_cog = self.bot.get_cog('TimeCog')
         conn = self.bot.conn
         server_tz = time_cog.get_server_time(guild_id)
-        raids = select_order(conn, 'Raids', ['channel_id', 'raid_id', 'name', 'tier', 'time'], 'time', ['guild_id'], [guild_id])
+        raids = select_order(conn, 'Raids', ['channel_id', 'raid_id', 'name', 'tier', 'time'], 'time', ['guild_id'],
+                             [guild_id])
 
         title = _("Scheduled runs:")
         desc = _("Time displayed in server time.\nClick the link to sign up!")
