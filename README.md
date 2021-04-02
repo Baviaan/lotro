@@ -1,24 +1,16 @@
 This is a discord bot aimed at making it easy to schedule raids in a discord server. It is developed for LotRO but could work for any game if you edit the class names in the config file.
 
-When the `!raid` command is called the bot will create an embed specifying the raid time in server time (New York), Los Angeles', London's and Sydney's time.
+When a raid command is called the bot will create an embed specifying the raid time in server time (New York), Los Angeles', London's and Sydney's time.
 All time zones are configurable.
 The bot will add class emojis to this embed for users to interact with.
 When a user clicks on a class emoji it will update the embed listing the user's discord nickname and available classes.
 Moreover it will add tools, pickaxe, check mark and cross mark emojis.
 A user can sign up with all his (previously used) classes by clicking the green check mark and cancel his sign up by clicking the red cross mark.
-One can reset the classes for the green check mark sign up via the `!roles` command.
+One can reset the classes for the green check mark sign up via the `/roles` command.
 The tools emoji can only be used by raid leaders to update the raid bosses, raid tier, raid time or roster settings.
 The pickaxe emoji can be used by raid leaders to pick people for the raid from available sign ups.
 
-The `!raid` command requires a name (of the raid) and a tier argument, which may get cumbersome.
-Alternatively you can create a discord channels in your server, say `tier-2-raids` and `tier-3-raids` and use the nickname of the raid directly: `!anvil saturday 6pm`.
-This command will look in the channel name for a number and uses that as tier argument and default to t1 if it cannot find any number.
-It will expand the alias used to invoke the command as name for the raid (in this case Anvil of Winterstith).
-See [list-of-raids](./source/list-of-raids.csv) for all nicknames that can be used to quickly schedule a raid.
-
 ![Screenshot](./screenshots/raid.png)
-
-For a detailed explanation how to use the bot's commands please use `!help` once it is running.
 
 If you would like to use the public bot please join our
 [discord server](https://discord.gg/5YqSzuV)
@@ -37,13 +29,13 @@ See details further below how to specify your configuration file and then simply
 
 ------------------------------------
 **Instructions for Windows.**\
-Python does not come pre-installed on Windows so you will need to install it yourself. Go to https://www.python.org/downloads/ and click the big yellow button to download Python 3.8. Simply run the downloaded file to install Python. Now to save yourself a world of pain, BEFORE you click the 'Install Now' button, make sure you check the box **'Add Python 3.8 to PATH'**. This will allow you to use the python command in your terminal (command prompt).
+Python does not come pre-installed on Windows so you will need to install it yourself. Go to https://www.python.org/downloads/ and click the big yellow button to download Python 3.9. Simply run the downloaded file to install Python. Now to save yourself a world of pain, BEFORE you click the 'Install Now' button, make sure you check the box **'Add Python 3.9 to PATH'**. This will allow you to use the python command in your terminal (command prompt).
 
-To check installation was successful open a terminal and type `python --version`, it will return (as of writing) Python 3.8.2, assuming you do not have Python 2 installed.
+To check installation was successful open a terminal and type `python --version`, it will return (as of writing) Python 3.9.2, assuming you do not have Python 2 installed.
 (Search for cmd and press enter to open a terminal.)
 Download the latest release from https://github.com/Baviaan/lotro/releases/latest by clicking on the zip version and extract the folder on your computer.
 In your terminal change directory to wherever you extracted the files.
-(For example type `cd Desktop\lotro-3.7.0` if you downloaded version 3.7.0 and extracted the folder to your desktop.)
+(For example type `cd Desktop\lotro-4.0.0` if you downloaded version 4.0.0 and extracted the folder to your desktop.)
 Now you can install the required Python libraries with `python -m pip install -U -r requirements.txt`.
 Before you run the bot you will need to edit your configuration file.
 See below for further instructions what to put in the configuration file.
@@ -58,13 +50,11 @@ See below for a guide how to create a discord bot.
 Config file values:\
 BOT_TOKEN: Your discord's bot token (this is not the client secret).\
 CLASSES: The classes in your game. Note your discord server must have custom emojis named exactly the same. Emojis for LotRO are included, you can upload these to your discord server.\
+LANGUAGE: The language of the bot. Currently only English "en" and French "fr" are supported.\
 LINEUP: A sequence of zeroes and ones indicating for each slot whether the class should be present, in the order as specified under CLASSES. This will **ABSOLUTELY BREAK THE UI** if you specify too many ones. Please contain yourself.\
-CHANNELS: Any incoming applications will be posted to the APPLY channel, so this should be officer only.\
-LEADER: Name of the discord role that will be allowed to update bosses and times for raid post.\
 SERVER_TZ: The raid time in the header of the embed will be posted in this time zone. (Requires TZ database name.)\
 TIMEZONES: The raid time will be displayed in these time zones additionally to server time. (Requires canonical TZ database names.)\
-PREFIX: The prefix that will be used to start a command.\
-LANGUAGE: The language of the bot. Currently only English "en" and French "fr" are supported.
+PREFIX: The prefix that will be used to start a command. (legacy)
 
 See [es/messages.po](./source/locale/es/LC_MESSAGES/messages.po) if you wish to help translate to Spanish.
 An example config file has been included for English and French.
@@ -86,7 +76,9 @@ https://discord.gg/dGcBzPN
 
 ------------------------------------
 
-## Command overview
+## Legacy Command overview
+
+These commands have all been replaced by an equivalent slash command.
 
 ### Configuration commands
 | Command | Requirement | Example | Notes |
