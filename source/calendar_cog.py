@@ -1,11 +1,10 @@
 import discord
 import logging
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from discord.ext import commands
 
-from database import add_setting, create_connection, remove_setting, select_one, select_raids
-from time_cog import TimeCog
+from database import select_one, select_order, upsert
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -14,35 +13,42 @@ logger.setLevel(logging.INFO)
 class CalendarCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        conn = create_connection('raid_db')
-        if conn:
-            logger.info("CalendarCog connected to raid database.")
-        else:
-            logger.error("CalendarCog could not create database connection!")
-        self.conn = conn
 
-    def cog_unload(self):
-        self.conn.close()
+    async def is_raid_leader(self, ctx):
+        conn = self.bot.conn
+        if ctx.author.guild_permissions.administrator:
+            return True
+        raid_leader_id = select_one(conn, 'Settings', ['raid_leader'], ['guild_id'], [ctx.guild.id])
+        if raid_leader_id in [role.id for role in ctx.author.roles]:
+            return True
+        error_msg = _("You do not have permission to change the settings.")
+        await ctx.send(error_msg, delete_after=15)
+        return False
 
     @commands.command()
     async def calendar(self, ctx):
+        """ Sets the channel to post the calendar in. """
+        if not await self.is_raid_leader(ctx):
+            return
+        conn = self.bot.conn
         try:
             await ctx.message.delete()
         except discord.Forbidden as e:
-            logger.warning(e)
+            logger.info(e)
         embed = self.calendar_embed(ctx.guild.id)
         msg = await ctx.send(embed=embed)
-        ids = "{chn_id}/{msg_id}".format(chn_id=ctx.channel.id, msg_id=msg.id)
-        res = add_setting(self.conn, 'calendar', ctx.guild.id, ids)
+        ids = "{0}/{1}".format(ctx.channel.id, msg.id)
+        res = upsert(conn, 'Settings', ['calendar'], [ids], ['guild_id'], [ctx.guild.id])
         if res:
-            self.conn.commit()
+            conn.commit()
             await ctx.send(_("The Calendar will be updated in this channel."), delete_after=20)
         else:
             await ctx.send(_("An error occurred."))
         return
 
     async def update_calendar(self, guild_id, new_run=True):
-        res = select_one(self.conn, 'Settings', 'calendar', guild_id, 'guild_id')
+        conn = self.bot.conn
+        res = select_one(conn, 'Settings', ['calendar'], ['guild_id'], [guild_id])
         if not res:
             return
         result = res.split("/")
@@ -53,8 +59,9 @@ class CalendarCog(commands.Cog):
             msg = chn.get_partial_message(msg_id)
         except (AttributeError, discord.NotFound):
             logger.warning("Calendar post not found.")
-            res = remove_setting(self.conn, 'calendar', guild_id)
-            self.conn.commit()
+            res = upsert(conn, 'Settings', ['calendar'], [None], ['guild_id'], [guild_id])
+            if res:
+                conn.commit()
             return
         embed = self.calendar_embed(guild_id)
         try:
@@ -64,19 +71,22 @@ class CalendarCog(commands.Cog):
         if new_run:
             await chn.send(_("A new run has been posted!"), delete_after=3600)
 
-
     def calendar_embed(self, guild_id):
-        server_tz = TimeCog.get_server_time(guild_id)
-        raids = select_raids(self.conn, 'channel_id, raid_id, name, tier, time', guild_id)
+        time_cog = self.bot.get_cog('TimeCog')
+        conn = self.bot.conn
+        server_tz = time_cog.get_server_time(guild_id)
+        raids = select_order(conn, 'Raids', ['channel_id', 'raid_id', 'name', 'tier', 'time'], 'time', ['guild_id'],
+                             [guild_id])
 
         title = _("Scheduled runs:")
         desc = _("Time displayed in server time.\nClick the link to sign up!")
         embed = discord.Embed(title=title, description=desc, colour=discord.Colour(0x3498db))
+        fmt_24hr = time_cog.get_24hr_fmt(guild_id)
         for raid in raids[:20]:
             timestamp = int(raid[4])
             time = datetime.utcfromtimestamp(timestamp)
-            server_time = TimeCog.local_time(time, server_tz)
-            time_string = TimeCog.calendar_time(server_time, guild_id)
+            server_time = time_cog.local_time(time, server_tz)
+            time_string = time_cog.calendar_time(server_time, fmt_24hr)
             msg = "[{name} {tier}](<https://discord.com/channels/{guild}/{channel}/{msg}>)\n".format(
                 guild=guild_id, channel=raid[0], msg=raid[1], name=raid[2], tier=raid[3])
             embed.add_field(name=time_string, value=msg, inline=False)

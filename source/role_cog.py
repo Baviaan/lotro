@@ -1,6 +1,5 @@
 import asyncio
 import discord
-import json
 import logging
 
 from discord.ext import commands
@@ -10,15 +9,6 @@ logger.setLevel(logging.INFO)
 
 
 class RoleCog(commands.Cog):
-    # Load config file.
-    with open('config.json', 'r') as f:
-        config = json.load(f)
-
-    # Specify names for class roles.
-    # These will be automatically created on the server if they do not exist.
-    role_names = config['CLASSES']
-    # change to immutable tuple
-    role_names = tuple(role_names)
 
     def __init__(self, bot):
         self.bot = bot
@@ -28,19 +18,18 @@ class RoleCog(commands.Cog):
         """Shows the class roles you have and lets you remove them."""
         # Sends each role in roles_names the user has.
         author = ctx.author
-        msg = _("{0} currently has the following roles: ").format(author.mention)
-        has_role = False
-        # Build string to send.
-        for role_name in self.role_names:
-            if role_name in [role.name for role in author.roles]:
-                msg = msg + role_name + ", "
-                has_role = True
-        msg = msg[:-2]
-        msg = msg + ".\nClick \u274C to delete your roles."
-        if not has_role:
+        partial_msg = [
+                _("{0} currently has the following roles: ").format(author.mention),
+                ", ".join([role.name for role in author.roles if role.name in self.bot.role_names]),
+                ".\n",
+                _("Click \u274C to delete your roles.")
+              ]
+        if partial_msg[1]:
+            msg = "".join(partial_msg)
+        else:
             msg = _("{0} does not have any roles assigned.").format(author.mention)
         message = await ctx.send(msg)
-        if has_role:
+        if partial_msg[1]:
             await message.add_reaction("\u274C")
 
         def check(reaction, user):
@@ -50,11 +39,16 @@ class RoleCog(commands.Cog):
         except asyncio.TimeoutError:
             pass
         else:
-            for role in author.roles:
-                if role.name in self.role_names:
-                    await author.remove_roles(role)
-            await ctx.send(_("Removed all class roles for {0}.").format(author.mention), delete_after=30)
-        await message.delete()
+            try:
+                await author.remove_roles(*[role for role in author.roles if role.name in self.bot.role_names])
+            except discord.Forbidden:
+                await ctx.send(_("Missing permissions to manage the class roles!"), delete_after=30)
+            else:
+                await ctx.send(_("Removed all class roles for {0}.").format(author.mention), delete_after=30)
+        try:
+            await message.delete()
+        except discord.NotFound:
+            pass
 
 
 async def get_role(guild, role_name):
@@ -68,4 +62,4 @@ async def get_role(guild, role_name):
 
 def setup(bot):
     bot.add_cog(RoleCog(bot))
-    logger.info("Loaded Dev Cog.")
+    logger.info("Loaded Role Cog.")
