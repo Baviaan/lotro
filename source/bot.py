@@ -132,3 +132,4 @@ class Bot(commands.Bot):
         res = upsert(self.conn, 'Settings', ['last_command'], [timestamp], ['guild_id'], [ctx.guild.id])
         if res:
             self.conn.commit()
+        await ctx.send(_("**DEPRECATED**: Consider using the new / command."), delete_after=60)
