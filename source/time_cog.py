@@ -15,12 +15,11 @@ logger.setLevel(logging.INFO)
 
 class Time(commands.Converter):
     async def convert(self, ctx, argument):
-        return await self.converter(ctx.bot, ctx.channel, ctx.author.id, argument)
+        return await self.converter(ctx.bot, ctx.guild.id, ctx.author.id, argument)
 
     @staticmethod
-    async def converter(bot, channel, author_id, argument):
+    async def converter(bot, guild_id, author_id, argument):
         time_cog = bot.get_cog('TimeCog')
-        guild_id = channel.guild.id
         my_settings = {'PREFER_DATES_FROM': 'future'}
         argument_lower = argument.lower()
         server = _("server")
@@ -46,13 +45,6 @@ class Time(commands.Converter):
 
         time = TimeCog.local_time(time, 'Etc/UTC')
         time = time.replace(tzinfo=None)  # Strip tz info
-        # Check if time is in near future. Otherwise parsed date was likely unintended.
-        current_time = datetime.datetime.utcnow()
-        delta_time = datetime.timedelta(days=7)
-        if current_time + delta_time < time:
-            error_message = _("Please check the date <@{0}>. You are posting a raid for: ").format(author_id) \
-                            + str(time) + " UTC"
-            await channel.send(error_message, delete_after=30)
         return time
 
 

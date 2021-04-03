@@ -209,6 +209,13 @@ class RaidCog(commands.Cog):
             tip = _("Consider using `{prefix}{name} ...` instead of `{prefix}{command} {name} ...`.").format(
                 prefix=ctx.prefix, name=name, command=command)
             await ctx.send(tip, delete_after=30)
+        # Check if time is in near future. Otherwise parsed date was likely unintended.
+        current_time = datetime.datetime.utcnow()
+        delta_time = datetime.timedelta(days=7)
+        if current_time + delta_time < time:
+            error_message = _("Please check the date <@{0}>. You are posting a raid for: {1} UTC.").format(
+                ctx.author.id, time)
+            await ctx.send(error_message, delete_after=30)
         post = await ctx.send('\u200B')
         raid_id = post.id
         timestamp = int(time.replace(tzinfo=datetime.timezone.utc).timestamp())  # Do not use local tz.
@@ -411,7 +418,7 @@ class RaidCog(commands.Cog):
         finally:
             await msg.delete()
         try:
-            time = await Time().converter(bot, channel, author.id, response.content)
+            time = await Time().converter(bot, channel.guild.id, author.id, response.content)
         except commands.BadArgument:
             error_msg = _("Failed to parse time argument: ") + response.content
             await channel.send(error_msg, delete_after=20)
@@ -624,7 +631,8 @@ class RaidCog(commands.Cog):
                     continue
             # Check for free slot
             search = '%' + reaction.emoji.name + '%'
-            slot_id = select_one(self.conn, 'Assignment', ['slot_id'], ['raid_id'], [raid_id], ['player_id'], ['class_name'], [search])
+            slot_id = select_one(self.conn, 'Assignment', ['slot_id'], ['raid_id'], [raid_id], ['player_id'],
+                                 ['class_name'], [search])
             if slot_id is None:
                 await channel.send(_("There are no slots available for the selected class."), delete_after=10)
             else:

@@ -49,7 +49,7 @@ class SlashCog(commands.Cog):
 
         post_new_raid = False
         if name in self.raid_cog.nicknames or name == 'custom':
-            time = await self.parse_raid_slash_command(channel, author_id, options)
+            time = await self.parse_raid_slash_command(guild_id, author_id, options)
             if time:
                 content = _("Posting a new raid!")
                 post_new_raid = True
@@ -180,10 +180,10 @@ class SlashCog(commands.Cog):
         content = _("Successfully updated the raid leader role!")
         return content
 
-    async def parse_raid_slash_command(self, channel, author_id, options):
+    async def parse_raid_slash_command(self, guild_id, author_id, options):
         time_arg = options['time']
         try:
-            time = await Time().converter(self.bot, channel, author_id, time_arg)
+            time = await Time().converter(self.bot, guild_id, author_id, time_arg)
         except commands.BadArgument:
             return
         else:
@@ -206,7 +206,14 @@ class SlashCog(commands.Cog):
             boss = options['aim']
         except KeyError:
             boss = ""
-        full_name, _ = self.raid_cog.get_raid_name(name)
+        full_name = self.raid_cog.get_raid_name(name)[0]
+        # Check if time is in near future. Otherwise parsed date was likely unintended.
+        current_time = datetime.datetime.utcnow()
+        delta_time = datetime.timedelta(days=7)
+        if current_time + delta_time < time:
+            error_message = _("Please check the date <@{0}>. You are posting a raid for: {1} UTC.").format(author_id,
+                                                                                                           time)
+            await channel.send(error_message, delete_after=30)
         post = await channel.send('\u200B')
         raid_id = post.id
         timestamp = int(time.replace(tzinfo=datetime.timezone.utc).timestamp())  # Do not use local tz.
