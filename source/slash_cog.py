@@ -28,6 +28,7 @@ class SlashCog(commands.Cog):
         if msg['t'] != "INTERACTION_CREATE":
             return
         d = msg['d']
+        token = d['token']
         name = d['data']['name']
         try:
             if d['data']['options'][0]['type'] == 1:
@@ -38,9 +39,6 @@ class SlashCog(commands.Cog):
         except KeyError:
             options = None
         guild_id = int(d['guild_id'])
-        channel = self.bot.get_channel(d['channel_id'])
-        if not channel:
-            channel = await self.bot.fetch_channel(d['channel_id'])
         author_id = int(d['member']['user']['id'])
         author_perms = int(d['member']['permissions'])
         author_roles = [int(i) for i in d['member']['roles']]
@@ -48,25 +46,48 @@ class SlashCog(commands.Cog):
         embeds = False
 
         post_new_raid = False
+        post_new_calendar = False
+        update_roles = False
+        guild = self.bot.get_guild(guild_id)
+        channel_required_commands = self.raid_cog.nicknames
+        channel_required_commands.extend(['custom', 'calendar'])
+        if name in channel_required_commands:
+            channel = self.bot.get_channel(d['channel_id'])
+            if not channel:
+                try:
+                    channel = await self.bot.fetch_channel(d['channel_id'])
+                except discord.Forbidden:
+                    channel = None
+                else:
+                    if not channel.permissions_for(guild.me).send_messages:
+                        channel = None
+
         if name in self.raid_cog.nicknames or name == 'custom':
-            time = await self.parse_raid_slash_command(guild_id, author_id, options)
-            if time:
-                content = _("Posting a new raid!")
-                post_new_raid = True
+            if not channel:
+                content = _("Missing permissions to access this channel.")
             else:
-                content = _("Failed to parse your time argument.")
+                time = await self.parse_raid_slash_command(guild_id, author_id, options)
+                if time:
+                    content = _("Posting a new raid!")
+                    post_new_raid = True
+                else:
+                    content = _("Failed to parse your time argument.")
         elif name == 'calendar':
-            allowed = self.is_raid_leader(author_perms, author_roles, guild_id)
-            if allowed:
-                content = _("The calendar will be updated in this channel.")
+            if not channel:
+                content = _("Missing permissions to access this channel.")
             else:
-                content = _("You must be a raid leader to set the calendar.")
+                allowed = self.is_raid_leader(author_perms, author_roles, guild_id)
+                if allowed:
+                    content = _("The calendar will be updated in this channel.")
+                    post_new_calendar = True
+                else:
+                    content = _("You must be a raid leader to set the calendar.")
         elif name == 'leader':
             ephemeral = False
             content = self.parse_leader_slash_command(guild_id, author_perms, options)
         elif name == 'remove_roles':
-            content = _("All your class roles will be deleted.")
-            await self.process_roles_command(author_id, channel)
+            content = _("Removing your class roles...")
+            update_roles = True
         elif name == 'format':
             ephemeral = False
             fmt = options['format']
@@ -110,7 +131,7 @@ class SlashCog(commands.Cog):
                         "It is recommended you use a separate discord channel to display the calendar in.\n"
                         "Use `/time_zones` and `/format` to change the default time settings and "
                         "you can designate a raid leader role with `/leader`, which allows non-admins to edit raids."
-                        ).format(channel.guild.name)
+                        ).format(guild.name)
         else:
             content = _("Slash command not yet supported.")
 
@@ -125,13 +146,15 @@ class SlashCog(commands.Cog):
         if embeds:
             json['data']['embeds'] = [embed]
 
-        url = self.api + "interactions/{0}/{1}/callback".format(d['id'], d['token'])
+        url = self.api + "interactions/{0}/{1}/callback".format(d['id'], token)
         r = requests.post(url, json=json)
 
         if post_new_raid:
             await self.post_raid(name, guild_id, channel, author_id, time, options)
-        elif name == 'calendar' and allowed:
+        elif post_new_calendar:
             await self.post_calendar(guild_id, channel)
+        elif update_roles:
+            await self.process_roles_command(guild, author_id, token)
 
         timestamp = int(datetime.datetime.utcnow().timestamp())
         res = upsert(self.conn, 'Settings', ['last_command'], [timestamp], ['guild_id'], [guild_id])
@@ -147,16 +170,21 @@ class SlashCog(commands.Cog):
             return True
         return False
 
-    async def process_roles_command(self, author_id, channel):
-        guild = channel.guild
+    async def process_roles_command(self, guild, author_id, token):
         member = guild.get_member(author_id)
         if not member:
             member = await guild.fetch_member(author_id)
 
         try:
             await member.remove_roles(*[role for role in member.roles if role.name in self.bot.role_names])
+            content = _("Successfully removed your class roles.")
         except discord.Forbidden:
-            await channel.send(_("Missing permissions to manage the class roles!"), delete_after=30)
+            content = _("Missing permissions to manage the class roles!")
+        endpoint = self.api + "webhooks/{0}/{1}/messages/@original".format(self.bot.user.id, token)
+        json = {
+            'content': content
+        }
+        requests.patch(endpoint, json=json)
 
     async def post_calendar(self, guild_id, channel):
         embed = self.calendar_cog.calendar_embed(guild_id)
