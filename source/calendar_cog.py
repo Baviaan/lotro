@@ -58,18 +58,27 @@ class CalendarCog(commands.Cog):
         try:
             msg = chn.get_partial_message(msg_id)
         except (AttributeError, discord.NotFound):
-            logger.warning("Calendar post not found.")
+            logger.warning("Calendar post not found for guild {0}.".format(guild_id))
             res = upsert(conn, 'Settings', ['calendar'], [None], ['guild_id'], [guild_id])
             if res:
                 conn.commit()
             return
+
         embed = self.calendar_embed(guild_id)
         try:
             await msg.edit(embed=embed)
         except discord.HTTPException:
-            await chn.send(_("Failed to update the calendar."))
+            logger.warning("Failed to update calendar for guild {0}.".format(guild_id))
+            return
+        except discord.Forbidden:
+            logger.warning("Calendar access restricted for guild {0}.".format(guild_id))
+            return
         if new_run:
-            await chn.send(_("A new run has been posted!"), delete_after=3600)
+            try:
+                await chn.send(_("A new run has been posted!"), delete_after=3600)
+            except discord.Forbidden:
+                logger.warning("No write access to calendar channel for guild {0}.".format(guild_id))
+
 
     def calendar_embed(self, guild_id):
         time_cog = self.bot.get_cog('TimeCog')
