@@ -78,7 +78,9 @@ def table_sqls(table):
                         "raid_leader integer, "
                         "calendar text, "
                         "fmt_24hr boolean, "
-                        "last_command integer"
+                        "last_command integer, "
+                        "command_count integer, "
+                        "slash_count integer"
                         ");"
     }
     return sql_dict[table]
@@ -115,6 +117,26 @@ def upsert(conn, table, columns, values, where_columns=None, where_values=None):
     except sqlite3.Error as e:
         logger.exception(e)
         logger.info(sql_update)
+
+def increment(conn, table, column, where_columns=None, where_values=None):
+    """ increment column value by 1 """
+    increments = ["update {0} set {1} = ifnull({1}, 0) + 1".format(table, column)]
+    if where_columns:
+        assert len(where_columns) == len(where_values)
+        increments.append("where")
+        increments.append(" and ".join(["=".join([column, "?"]) for column in where_columns]))
+    increments.append(";")
+    sql_increment = " ".join(increments)
+    try:
+        c = conn.cursor()
+        if where_values:
+            c.execute(sql_increment, where_values)
+        else:
+            c.execute(sql_increment)
+        return True
+    except sqlite3.Error as e:
+        logger.exception(e)
+        logger.info(sql_increment)
 
 
 def delete(conn, table, where_columns, where_values):

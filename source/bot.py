@@ -7,7 +7,7 @@ import locale
 import logging
 import re
 
-from database import create_connection, create_table, select, upsert
+from database import create_connection, create_table, increment, select, upsert
 
 
 class Bot(commands.Bot):
@@ -129,6 +129,7 @@ class Bot(commands.Bot):
 
     async def on_command_completion(self, ctx):
         timestamp = int(datetime.utcnow().timestamp())
+        increment(self.conn, 'Settings', 'command_count', ['guild_id'], [ctx.guild.id])
         res = upsert(self.conn, 'Settings', ['last_command'], [timestamp], ['guild_id'], [ctx.guild.id])
         if res:
             self.conn.commit()

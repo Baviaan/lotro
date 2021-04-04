@@ -5,7 +5,7 @@ import logging
 import pytz
 import requests
 
-from database import select_one, upsert
+from database import increment, select_one, upsert
 from time_cog import Time
 
 logger = logging.getLogger(__name__)
@@ -157,6 +157,7 @@ class SlashCog(commands.Cog):
             await self.process_roles_command(guild, author_id, token)
 
         timestamp = int(datetime.datetime.utcnow().timestamp())
+        increment(self.conn, 'Settings', 'slash_count', ['guild_id'], [guild_id])
         res = upsert(self.conn, 'Settings', ['last_command'], [timestamp], ['guild_id'], [guild_id])
         if res:
             self.conn.commit()
