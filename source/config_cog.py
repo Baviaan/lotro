@@ -147,7 +147,7 @@ class ConfigCog(commands.Cog):
         # Otherwise pick the first channel the bot can send a message in.
         if not channel or not channel.permissions_for(guild.me).send_messages:
             for ch in channels:
-                if ch.permissions_for(guild.me):
+                if ch.permissions_for(guild.me).send_messages:
                     channel = ch
                     break
         if channel and channel.permissions_for(guild.me).send_messages:
