@@ -66,12 +66,14 @@ class SlashCog(commands.Cog):
             if not channel:
                 content = _("Missing permissions to access this channel.")
             else:
-                time = await self.parse_raid_slash_command(guild_id, author_id, options)
-                if time:
+                time_arg = options['time']
+                try:
+                    time = await Time().converter(self.bot, guild_id, author_id, time_arg)
+                except commands.BadArgument as e:
+                    content = str(e)
+                else:
                     content = _("Posting a new raid!")
                     post_new_raid = True
-                else:
-                    content = _("Failed to parse your time argument.")
         elif name == 'calendar':
             if not channel:
                 content = _("Missing permissions to access this channel.")
@@ -208,15 +210,6 @@ class SlashCog(commands.Cog):
         self.conn.commit()
         content = _("Successfully updated the raid leader role!")
         return content
-
-    async def parse_raid_slash_command(self, guild_id, author_id, options):
-        time_arg = options['time']
-        try:
-            time = await Time().converter(self.bot, guild_id, author_id, time_arg)
-        except commands.BadArgument:
-            return
-        else:
-            return time
 
     async def post_raid(self, name, guild_id, channel, author_id, time, options):
         roster = False
