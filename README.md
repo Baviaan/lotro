@@ -3,7 +3,7 @@ This is a discord bot aimed at making it easy to schedule raids in a discord ser
 When a raid command is called the bot will create an embed specifying the raid time in server time (New York), Los Angeles', London's and Sydney's time.
 All time zones are configurable.
 The bot will add class emojis to this embed for users to interact with.
-When a user clicks on a class emoji it will update the embed listing the user's discord nickname and available classes.
+When a user clicks on a class emoji it will update the embed, listing the user's discord nickname and available classes.
 Moreover it will add tools, pickaxe, check mark and cross mark emojis.
 A user can sign up with all his (previously used) classes by clicking the green check mark and cancel his sign up by clicking the red cross mark.
 One can reset the classes for the green check mark sign up via the `/roles` command.
@@ -68,6 +68,8 @@ https://discordpy.readthedocs.io/en/latest/discord.html#
 Please ensure the bot has the correct permissions: 268724304.
 
 (Manage roles, manage channels, send messages, manage messages, embed links, use external emoji, add reactions.)
+
+Please note the bot will automatically shut down if it is not in any discord servers.
 
 ------------------------------------
 
