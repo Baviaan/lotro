@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2021-04-03 22:51+BST\n"
+"POT-Creation-Date: 2021-04-05 01:44+BST\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: FRENCH <LL@li.org>\n"
@@ -19,7 +19,7 @@ msgstr ""
 msgid "Please use this command in a server."
 msgstr "Veuillez utiliser cette commande sur un serveur."
 
-#: bot.py:135
+#: bot.py:136
 msgid "**DEPRECATED**: Consider using the new / command."
 msgstr ""
 
@@ -31,30 +31,26 @@ msgstr "Vous n'avez pas la permission de changer les paramètres"
 msgid "The Calendar will be updated in this channel."
 msgstr ""
 
-#: calendar_cog.py:46 config_cog.py:32 slash_cog.py:277 time_cog.py:109
+#: calendar_cog.py:46 config_cog.py:32 slash_cog.py:271 time_cog.py:109
 #: time_cog.py:122 time_cog.py:142 time_cog.py:167 time_cog.py:190
 msgid "An error occurred."
 msgstr "Une erreur est survenue."
 
-#: calendar_cog.py:70
-msgid "Failed to update the calendar."
-msgstr ""
-
-#: calendar_cog.py:72
+#: calendar_cog.py:78
 msgid "A new run has been posted!"
 msgstr ""
 
-#: calendar_cog.py:81
+#: calendar_cog.py:90
 msgid "Scheduled runs:"
 msgstr ""
 
-#: calendar_cog.py:82
+#: calendar_cog.py:91
 msgid ""
 "Time displayed in server time.\n"
 "Click the link to sign up!"
 msgstr ""
 
-#: calendar_cog.py:94
+#: calendar_cog.py:103
 msgid "Last updated"
 msgstr ""
 
@@ -118,7 +114,7 @@ msgid ""
 "provided in your commands in your preferred time zone."
 msgstr ""
 
-#: config_cog.py:121 slash_cog.py:125
+#: config_cog.py:121 slash_cog.py:127
 msgid ""
 "Greetings {0}! I am confined to Orthanc and here to spend my days doing your "
 "raid admin.\n"
@@ -189,7 +185,7 @@ msgstr ""
 "Le nom du canal ne spécifie pas de niveau.\n"
 "Défaillant à niveau 1."
 
-#: raid_cog.py:124 slash_cog.py:203
+#: raid_cog.py:124 slash_cog.py:206
 msgid "You must be an admin to change the raid leader role."
 msgstr ""
 
@@ -282,7 +278,7 @@ msgid ""
 "`."
 msgstr ""
 
-#: raid_cog.py:216 slash_cog.py:242
+#: raid_cog.py:216 slash_cog.py:236
 msgid "Please check the date <@{0}>. You are posting a raid for: {1} UTC."
 msgstr "<@{0}> veuillez vérifier que la date est correcte: {1} UTC."
 
@@ -642,7 +638,7 @@ msgstr ""
 msgid "{0} does not have any roles assigned."
 msgstr "{0} n'a aucun rôle assigné."
 
-#: role_cog.py:45 slash_cog.py:182
+#: role_cog.py:45 slash_cog.py:185
 msgid "Missing permissions to manage the class roles!"
 msgstr ""
 
@@ -650,35 +646,31 @@ msgstr ""
 msgid "Removed all class roles for {0}."
 msgstr ""
 
-#: slash_cog.py:67 slash_cog.py:77
+#: slash_cog.py:67 slash_cog.py:79
 msgid "Missing permissions to access this channel."
 msgstr ""
 
-#: slash_cog.py:71
+#: slash_cog.py:75
 msgid "Posting a new raid!"
 msgstr ""
 
-#: slash_cog.py:74
-msgid "Failed to parse your time argument."
-msgstr "Échec de l'analyse de l'argument de l'heure."
-
-#: slash_cog.py:81
+#: slash_cog.py:83
 msgid "The calendar will be updated in this channel."
 msgstr ""
 
-#: slash_cog.py:84
+#: slash_cog.py:86
 msgid "You must be a raid leader to set the calendar."
 msgstr ""
 
-#: slash_cog.py:89
+#: slash_cog.py:91
 msgid "Removing your class roles..."
 msgstr ""
 
-#: slash_cog.py:96
+#: slash_cog.py:98
 msgid "Successfully set this server's time format!"
 msgstr ""
 
-#: slash_cog.py:116
+#: slash_cog.py:118
 msgid ""
 "**PII:**\n"
 "When you sign up for a raid the bot stores your discord id, discord nickname "
@@ -690,39 +682,39 @@ msgid ""
 "provided in your commands in your preferred time zone."
 msgstr ""
 
-#: slash_cog.py:136
+#: slash_cog.py:138
 msgid "Slash command not yet supported."
 msgstr ""
 
-#: slash_cog.py:180
+#: slash_cog.py:183
 msgid "Successfully removed your class roles."
 msgstr ""
 
-#: slash_cog.py:208
+#: slash_cog.py:211
 msgid "Successfully updated the raid leader role!"
 msgstr ""
 
-#: slash_cog.py:269 slash_cog.py:292 slash_cog.py:312
+#: slash_cog.py:263 slash_cog.py:286 slash_cog.py:306
 msgid "{0} is not a valid time zone!"
 msgstr ""
 
-#: slash_cog.py:275 slash_cog.py:297
+#: slash_cog.py:269 slash_cog.py:291
 msgid "Set default time zone to {0}."
 msgstr ""
 
-#: slash_cog.py:282
+#: slash_cog.py:276
 msgid "You must be a raid leader to change the server time zone."
 msgstr ""
 
-#: slash_cog.py:302 slash_cog.py:327
+#: slash_cog.py:296 slash_cog.py:321
 msgid "You must be a raid leader to change the time zone display."
 msgstr ""
 
-#: slash_cog.py:322
+#: slash_cog.py:316
 msgid "Added {0} to be displayed."
 msgstr ""
 
-#: slash_cog.py:332
+#: slash_cog.py:326
 msgid "Reset time zone display to default."
 msgstr ""
 
