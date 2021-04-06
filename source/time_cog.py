@@ -231,7 +231,7 @@ class TimeCog(commands.Cog):
     @staticmethod
     def calendar_time(time, fmt_24hr):
         if fmt_24hr:
-            time_string = time.strftime(_("%b %d, %A %H:%M"))
+            time_string = time.strftime(_("%d %b, %A %H:%M"))
         else:
             if os.name == "nt":  # Windows uses '#' instead of '-'.
                 time_string = time.strftime(_("%b %d, %A %#I:%M %p"))
