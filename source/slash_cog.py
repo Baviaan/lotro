@@ -48,6 +48,7 @@ class SlashCog(commands.Cog):
         post_new_raid = False
         post_new_calendar = False
         update_roles = False
+        post_events = False
         guild = self.bot.get_guild(guild_id)
         channel_required_commands = self.raid_cog.nicknames
         channel_required_commands.extend(['custom', 'calendar'])
@@ -84,6 +85,10 @@ class SlashCog(commands.Cog):
                     post_new_calendar = True
                 else:
                     content = _("You must be a raid leader to set the calendar.")
+        elif name == 'events':
+            ephemeral = False
+            content = _("Waiting for lotro.com to respond...")
+            post_events = True
         elif name == 'leader':
             ephemeral = False
             content = self.parse_leader_slash_command(guild_id, author_perms, options)
@@ -110,7 +115,7 @@ class SlashCog(commands.Cog):
         elif name == 'about':
             ephemeral = False
             embeds = True
-            embed = await self.parse_about_slash_command()
+            embed = await self.config_cog.about_embed()
             embed = embed.to_dict()
             content = ''
         elif name == 'privacy':
@@ -157,6 +162,8 @@ class SlashCog(commands.Cog):
             await self.post_calendar(guild_id, channel)
         elif update_roles:
             await self.process_roles_command(guild, author_id, token)
+        elif post_events:
+            self.process_events_command(author_id, guild_id, token)
 
         timestamp = int(datetime.datetime.utcnow().timestamp())
         increment(self.conn, 'Settings', 'slash_count', ['guild_id'], [guild_id])
@@ -196,9 +203,16 @@ class SlashCog(commands.Cog):
         res = upsert(self.conn, 'Settings', ['calendar'], [ids], ['guild_id'], [guild_id])
         self.conn.commit()
 
-    async def parse_about_slash_command(self):
-        embed = await self.config_cog.about_embed()
-        return embed
+    def process_events_command(self, author_id, guild_id, token):
+        embed = self.calendar_cog.events_embed(author_id, guild_id)
+        embed = embed.to_dict()
+        endpoint = self.api + "webhooks/{0}/{1}/messages/@original".format(self.bot.user.id, token)
+        json = {
+            'content': '',
+            'embeds': [embed]
+        }
+        requests.patch(endpoint, json=json)
+
 
     def parse_leader_slash_command(self, guild_id, author_perms, options):
         admin_permission = 0x00000008
