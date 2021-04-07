@@ -17,6 +17,9 @@ class RegisterCog(commands.Cog):
         self.guild_command_url = self.api + "applications/{0}/guilds/{1}/commands".format(bot.user.id, bot.host_id)
         # self.command_url = self.guild_command_url
         self.command_url = self.api + "applications/{0}/commands".format(bot.user.id)
+        self.headers = {
+            "Authorization": "Bot {0}".format(bot.token)
+        }
         self.raid_cog = bot.get_cog('RaidCog')
 
         with open('common_timezones.txt', 'r') as f:
@@ -29,12 +32,7 @@ class RegisterCog(commands.Cog):
             "options": self.format_timezone_subcommands()
         }
         
-        auth = "Bot " + self.bot.token
-        headers = {
-            "Authorization": auth
-        }
-
-        r = requests.post(self.command_url, headers=headers, json=json)
+        r = requests.post(self.command_url, headers=self.headers, json=json)
 
     def format_timezone_subcommands(self):
         timezone_options = self.format_timezone_options()
@@ -119,12 +117,7 @@ class RegisterCog(commands.Cog):
             ]
         }
 
-        auth = "Bot " + self.bot.token
-        headers = {
-            "Authorization": auth
-        }
-
-        r = requests.post(self.command_url, headers=headers, json=json)
+        r = requests.post(self.command_url, headers=self.headers, json=json)
 
     def add_custom_raid_slash_command(self):
         json = {
@@ -159,12 +152,7 @@ class RegisterCog(commands.Cog):
             ]
         }
 
-        auth = "Bot " + self.bot.token
-        headers = {
-            "Authorization": auth
-        }
-
-        r = requests.post(self.command_url, headers=headers, json=json)
+        r = requests.post(self.command_url, headers=self.headers, json=json)
 
     @staticmethod
     def format_tier_choices():
@@ -210,12 +198,7 @@ class RegisterCog(commands.Cog):
             ]
         }
 
-        auth = "Bot " + self.bot.token
-        headers = {
-            "Authorization": auth
-        }
-
-        r = requests.post(self.command_url, headers=headers, json=json)
+        r = requests.post(self.command_url, headers=self.headers, json=json)
 
     def add_roles_slash_command(self):
         json = {
@@ -223,12 +206,7 @@ class RegisterCog(commands.Cog):
             "description": _("Deletes your class roles (used when signing up)."),
         }
 
-        auth = "Bot " + self.bot.token
-        headers = {
-            "Authorization": auth
-        }
-
-        r = requests.post(self.command_url, headers=headers, json=json)
+        r = requests.post(self.command_url, headers=self.headers, json=json)
 
     def add_calendar_slash_command(self):
         json = {
@@ -236,12 +214,15 @@ class RegisterCog(commands.Cog):
             "description": _("Post and update the calendar in this channel."),
         }
 
-        auth = "Bot " + self.bot.token
-        headers = {
-            "Authorization": auth
+        r = requests.post(self.command_url, headers=self.headers, json=json)
+
+    def add_events_slash_command(self):
+        json = {
+            "name": 'events',
+            "description": _("Shows upcoming official LotRO events in your local time."),
         }
 
-        r = requests.post(self.command_url, headers=headers, json=json)
+        r = requests.post(self.command_url, headers=self.headers, json=json)
 
     def add_format_slash_command(self):
         json = {
@@ -267,12 +248,7 @@ class RegisterCog(commands.Cog):
             ]
         }
 
-        auth = "Bot " + self.bot.token
-        headers = {
-            "Authorization": auth
-        }
-
-        r = requests.post(self.command_url, headers=headers, json=json)
+        r = requests.post(self.command_url, headers=self.headers, json=json)
 
     def add_about_slash_command(self):
         json = {
@@ -280,12 +256,7 @@ class RegisterCog(commands.Cog):
             "description": _("Show information about this bot."),
         }
 
-        auth = "Bot " + self.bot.token
-        headers = {
-            "Authorization": auth
-        }
-
-        r = requests.post(self.command_url, headers=headers, json=json)
+        r = requests.post(self.command_url, headers=self.headers, json=json)
 
     def add_privacy_slash_command(self):
         json = {
@@ -293,12 +264,7 @@ class RegisterCog(commands.Cog):
             "description": _("Show information on data collection."),
         }
 
-        auth = "Bot " + self.bot.token
-        headers = {
-            "Authorization": auth
-        }
-
-        r = requests.post(self.command_url, headers=headers, json=json)
+        r = requests.post(self.command_url, headers=self.headers, json=json)
 
     def add_welcome_slash_command(self):
         json = {
@@ -306,12 +272,7 @@ class RegisterCog(commands.Cog):
             "description": _("Resend the welcome message."),
         }
 
-        auth = "Bot " + self.bot.token
-        headers = {
-            "Authorization": auth
-        }
-
-        r = requests.post(self.command_url, headers=headers, json=json)
+        r = requests.post(self.command_url, headers=self.headers, json=json)
 
     @commands.command()
     @commands.is_owner()
@@ -334,6 +295,9 @@ class RegisterCog(commands.Cog):
         await asyncio.sleep(5)  # Avoid rate limits
         self.add_calendar_slash_command()
         logger.info("Registered calendar slash command.")
+        await asyncio.sleep(5)  # Avoid rate limits
+        self.add_events_slash_command()
+        logger.info("Registered events slash command.")
         await asyncio.sleep(5)  # Avoid rate limits
         self.add_format_slash_command()
         logger.info("Registered format slash command.")
