@@ -299,7 +299,8 @@ class RegisterCog(commands.Cog):
                 func_dict[command]()
             except KeyError:
                 await ctx.send("Command not found.")
-            logger.info("Registered {0} slash command.".format(command))
+            else:
+                logger.info("Registered {0} slash command.".format(command))
 
 
 def setup(bot):
