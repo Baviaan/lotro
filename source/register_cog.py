@@ -276,41 +276,30 @@ class RegisterCog(commands.Cog):
 
     @commands.command()
     @commands.is_owner()
-    async def register(self, ctx):
-        self.add_timezone_slash_commands()
-        logger.info("Registered timezone slash command.")
-        await asyncio.sleep(5)  # Avoid rate limits
-        for key, name in self.raid_cog.raid_lookup.items():
-            self.add_raid_slash_command(key, name)
-            logger.info("Registered {0} slash command.".format(key))
-            await asyncio.sleep(5)  # Avoid rate limits
-        self.add_custom_raid_slash_command()
-        logger.info("Registered custom raid slash command.")
-        await asyncio.sleep(5)  # Avoid rate limits
-        self.add_leader_slash_command()
-        logger.info("Registered leader slash command.")
-        await asyncio.sleep(5)  # Avoid rate limits
-        self.add_roles_slash_command()
-        logger.info("Registered roles slash command.")
-        await asyncio.sleep(5)  # Avoid rate limits
-        self.add_calendar_slash_command()
-        logger.info("Registered calendar slash command.")
-        await asyncio.sleep(5)  # Avoid rate limits
-        self.add_events_slash_command()
-        logger.info("Registered events slash command.")
-        await asyncio.sleep(5)  # Avoid rate limits
-        self.add_format_slash_command()
-        logger.info("Registered format slash command.")
-        await asyncio.sleep(5)  # Avoid rate limits
-        self.add_about_slash_command()
-        logger.info("Registered about slash command.")
-        await asyncio.sleep(5)  # Avoid rate limits
-        self.add_privacy_slash_command()
-        logger.info("Registered privacy slash command.")
-        await asyncio.sleep(5)  # Avoid rate limits
-        self.add_welcome_slash_command()
-        logger.info("Registered welcome slash command.")
-        await asyncio.sleep(5)  # Avoid rate limits
+    async def register(self, ctx, command):
+        if command == 'raid':
+            for key, name in self.raid_cog.raid_lookup.items():
+                self.add_raid_slash_command(key, name)
+                logger.info("Registered {0} slash command.".format(key))
+                await asyncio.sleep(5)  # Avoid rate limits
+        else:
+            func_dict = {
+                    'timezone': self.add_timezone_slash_commands,
+                    'custom': self.add_custom_raid_slash_command,
+                    'leader': self.add_leader_slash_command,
+                    'roles': self.add_roles_slash_command,
+                    'calendar': self.add_calendar_slash_command,
+                    'events': self.add_events_slash_command,
+                    'format': self.add_format_slash_command,
+                    'about': self.add_about_slash_command,
+                    'privacy': self.add_privacy_slash_command,
+                    'welcome': self.add_welcome_slash_command
+                }
+            try:
+                func_dict[command]()
+            except KeyError:
+                await ctx.send("Command not found.")
+            logger.info("Registered {0} slash command.".format(command))
 
 
 def setup(bot):
