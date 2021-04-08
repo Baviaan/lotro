@@ -50,7 +50,7 @@ class SlashCog(commands.Cog):
         update_roles = False
         post_events = False
         guild = self.bot.get_guild(guild_id)
-        channel_required_commands = self.raid_cog.nicknames
+        channel_required_commands = self.raid_cog.nicknames[:]
         channel_required_commands.extend(['custom', 'calendar'])
         if name in channel_required_commands:
             channel = self.bot.get_channel(d['channel_id'])
