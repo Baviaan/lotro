@@ -15,6 +15,7 @@ logger.setLevel(logging.INFO)
 class ConfigCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.conn = self.bot.conn
 
     @commands.command()
     async def prefix(self, ctx, prefix):
@@ -140,6 +141,9 @@ class ConfigCog(commands.Cog):
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
         logger.info("We have joined {0}.".format(guild))
+        timestamp = int(datetime.datetime.now().timestamp())
+        upsert(self.conn, 'Settings', ['last_command'], [timestamp], ['guild_id'], [guild.id])
+        self.conn.commit()
         channels = guild.text_channels
         channel = find(lambda x: x.name == 'welcome', channels)
         if not channel or not channel.permissions_for(guild.me).send_messages:
