@@ -165,7 +165,7 @@ class SlashCog(commands.Cog):
         elif post_events:
             self.process_events_command(author_id, guild_id, token)
 
-        timestamp = int(datetime.datetime.utcnow().timestamp())
+        timestamp = int(datetime.datetime.now().timestamp())
         increment(self.conn, 'Settings', 'slash_count', ['guild_id'], [guild_id])
         res = upsert(self.conn, 'Settings', ['last_command'], [timestamp], ['guild_id'], [guild_id])
         if res:

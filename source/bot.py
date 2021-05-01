@@ -128,7 +128,7 @@ class Bot(commands.Bot):
                 self.logger.warning(error)
 
     async def on_command_completion(self, ctx):
-        timestamp = int(datetime.utcnow().timestamp())
+        timestamp = int(datetime.now().timestamp())
         increment(self.conn, 'Settings', 'command_count', ['guild_id'], [ctx.guild.id])
         res = upsert(self.conn, 'Settings', ['last_command'], [timestamp], ['guild_id'], [ctx.guild.id])
         if res:

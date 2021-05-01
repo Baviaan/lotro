@@ -108,7 +108,7 @@ class CalendarCog(commands.Cog):
             msg = "[{name} {tier}](<https://discord.com/channels/{guild}/{channel}/{msg}>)\n".format(
                 guild=guild_id, channel=raid[0], msg=raid[1], name=raid[2], tier=raid[3])
             embed.add_field(name=time_string, value=msg, inline=False)
-        time = datetime.utcnow()
+        time = datetime.now()
         embed.set_footer(text=_("Last updated"))
         embed.timestamp = time
         return embed
