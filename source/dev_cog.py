@@ -100,23 +100,33 @@ class DevCog(commands.Cog):
     @commands.command(hidden=True)
     @commands.is_owner()
     async def cleanup(self, ctx):
-        res = select(self.conn, 'Settings', ['guild_id'])
+        res = select(self.conn, 'Settings', ['guild_id', 'last_command'])
+        current_time = datetime.datetime.now().timestamp()
+        cutoff = 3600 * 24 * 90
+        cutoff_time = current_time - cutoff
         active = 0
         inactive = 0
+        removed = 0
         for row in res:
             guild_id = row[0]
+            last_command = row[1]
             guild = self.bot.get_guild(guild_id)
             if guild:
-                active += 1
+                if last_command and last_command > cutoff_time:
+                    active += 1
+                else:
+                    inactive += 1
             else:
                 logger.info('We are no longer in {0}'.format(guild_id))
                 delete(self.conn, 'Settings', ['guild_id'], [guild_id])
-                inactive += 1
+                removed += 1
         self.conn.commit()
         logger.info('Active guild count: {0}'.format(active))
         logger.info('Inactive guild count: {0}'.format(inactive))
+        logger.info('Removed from guild count: {0}'.format(removed))
         await ctx.send('Active guild count: {0}'.format(active))
         await ctx.send('Inactive guild count: {0}'.format(inactive))
+        await ctx.send('Removed from guild count: {0}'.format(removed))
 
 
 def setup(bot):
