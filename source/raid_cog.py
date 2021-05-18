@@ -173,7 +173,7 @@ class RaidCog(commands.Cog):
                          "Day/timezone will default to today/server if not specified. Usage:")
     fast_example = _("Examples:\n{0}anvil Friday 4pm\n{0}anvil 21:00 UTC").format(prefix)
 
-    @commands.command(aliases=nicknames, help=fast_example, brief=fast_brief, description=fast_description)
+    @commands.command(aliases=nicknames[:-1], help=fast_example, brief=fast_brief, description=fast_description)
     async def aliasraid(self, ctx, tier: typing.Optional[Tier], *, time: Time()):
         """Shortcut to schedule a raid"""
         if not await self.check_event_limit(ctx.channel):
