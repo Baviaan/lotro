@@ -106,7 +106,7 @@ class DevCog(commands.Cog):
         cutoff_time = current_time - cutoff
         active = 0
         inactive = 0
-        removed = 0
+        deleted = 0
         for row in res:
             guild_id = row[0]
             last_command = row[1]
@@ -116,17 +116,20 @@ class DevCog(commands.Cog):
                     active += 1
                 else:
                     inactive += 1
+                    logger.info("Leaving guild {0}...".format(guild.name))
+                    await guild.leave()
+                    ## Don't immediately delete settings in case they rejoin.
             else:
-                logger.info('We are no longer in {0}'.format(guild_id))
+                logger.info("We are no longer in {0}".format(guild_id))
                 delete(self.conn, 'Settings', ['guild_id'], [guild_id])
-                removed += 1
+                deleted += 1
         self.conn.commit()
-        logger.info('Active guild count: {0}'.format(active))
-        logger.info('Inactive guild count: {0}'.format(inactive))
-        logger.info('Removed from guild count: {0}'.format(removed))
-        await ctx.send('Active guild count: {0}'.format(active))
-        await ctx.send('Inactive guild count: {0}'.format(inactive))
-        await ctx.send('Removed from guild count: {0}'.format(removed))
+        logger.info("Active guild count: {0}".format(active))
+        logger.info("Inactive guild count: {0}".format(inactive))
+        logger.info("Deleted guild count: {0}".format(deleted))
+        await ctx.send("Active guild count: {0}".format(active))
+        await ctx.send("Inactive guild count: {0}".format(inactive))
+        await ctx.send("Deleted guild count: {0}".format(deleted))
 
 
 def setup(bot):
