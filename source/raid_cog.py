@@ -108,7 +108,10 @@ class RaidCog(commands.Cog):
             raid_deleted = await self.raid_update(payload)
             if not raid_deleted:
                 message = channel.get_partial_message(payload.message_id)
-                await message.remove_reaction(payload.emoji, payload.member)
+                try:
+                    await message.remove_reaction(payload.emoji, payload.member)
+                except discord.NotFound:
+                    pass
 
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload):
@@ -336,6 +339,8 @@ class RaidCog(commands.Cog):
         available = self.build_raid_players(raid_id)
         unavailable = self.build_raid_players(raid_id, available=False)
         embed = self.build_raid_message(channel.guild.id, raid_id, available, unavailable)
+        if not embed:
+            return
         post = channel.get_partial_message(raid_id)
         try:
             await post.edit(embed=embed)
@@ -646,15 +651,22 @@ class RaidCog(commands.Cog):
                 await channel.send(msg_content, delete_after=10)
                 await self.update_raid_post(raid_id, channel)
 
-        await info_msg.delete()
-        await player_msg.delete()
-        await class_msg.delete()
+        try:
+            await info_msg.delete()
+            await player_msg.delete()
+            await class_msg.delete()
+        except discord.NotFound:
+            pass
         if len(available) > 20:
             await extra_msg.delete()
         return
 
     def build_raid_message(self, guild_id, raid_id, embed_texts_av, embed_texts_unav):
-        timestamp = int(select_one(self.conn, 'Raids', ['time'], ['raid_id'], [raid_id]))
+        try:
+            timestamp = int(select_one(self.conn, 'Raids', ['time'], ['raid_id'], [raid_id]))
+        except TypeError:
+            logger.info("The raid has been deleted during editing.")
+            return
         time = datetime.datetime.utcfromtimestamp(timestamp)
         name, tier, boss, roster = select_one(self.conn, 'Raids', ['name', 'tier', 'boss', 'roster'], ['raid_id'],
                                               [raid_id])
