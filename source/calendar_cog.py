@@ -76,11 +76,11 @@ class CalendarCog(commands.Cog):
         embed = self.calendar_embed(guild_id)
         try:
             await msg.edit(embed=embed)
-        except discord.HTTPException:
-            logger.warning("Failed to update calendar for guild {0}.".format(guild_id))
-            return
         except discord.Forbidden:
             logger.warning("Calendar access restricted for guild {0}.".format(guild_id))
+            return
+        except discord.HTTPException:
+            logger.warning("Failed to update calendar for guild {0}.".format(guild_id))
             return
         if new_run:
             try:
