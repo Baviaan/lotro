@@ -5,7 +5,7 @@ import logging
 import pytz
 import requests
 
-from database import increment, select_one, upsert
+from database import increment, select_one, select_order, upsert
 from time_cog import Time
 
 logger = logging.getLogger(__name__)
@@ -142,6 +142,12 @@ class SlashCog(commands.Cog):
                         ).format(guild.name)
         elif name == 'server_time':
             content = self.process_server_time(guild_id)
+        elif name == 'list_players':
+            ephemeral = False
+            embeds = True
+            embed = self.process_list_players(author_perms, author_roles, guild_id, options)
+            embed = embed.to_dict()
+            content = ''
         else:
             content = _("Slash command not yet supported.")
 
@@ -352,6 +358,68 @@ class SlashCog(commands.Cog):
         formatted_time = self.time_cog.format_time(server_time, fmt_24hr)
         content = _("Current server time: {0}").format(formatted_time)
         return content
+
+    def process_list_players(self, author_perms, author_roles, guild_id, options):
+        if not self.is_raid_leader(author_perms, author_roles, guild_id):
+            return _("You must be a raid leader to list players.")
+        raid_number = 1
+        cutoff = 24
+        if options:
+            try:
+                raid_number = options['raid_number']
+            except KeyError:
+                pass
+            try:
+                cutoff = options['cut-off']
+            except KeyError:
+                pass
+        conn = self.conn
+        raids = select_order(conn, 'Raids', ['raid_id', 'name', 'time'], 'time', ['guild_id'], [guild_id])
+        if raid_number > len(raids):
+            return _("Cannot list raid {0}: only {1} raids exist.").format(raid_number, len(raids))
+        elif raid_number < 1:
+            return _("Please provide a positive integer.")
+        raid_id, raid_name, raid_time = raids[raid_number-1]
+        player_data = select_order(conn, 'Players', ['byname', 'timestamp'], 'timestamp', ['raid_id', 'unavailable'], [raid_id, False])
+
+        time_cog = self.time_cog
+        raid_time = datetime.datetime.utcfromtimestamp(raid_time)
+        cutoff_time = raid_time - datetime.timedelta(hours=cutoff)
+        server_tz = time_cog.get_server_time(guild_id)
+        server_time = time_cog.local_time(raid_time, server_tz)
+        fmt_24hr = time_cog.get_24hr_fmt(guild_id)
+        formatted_time = time_cog.format_time(server_time, fmt_24hr)
+
+        embed_title = _("**Sign up list for {0} on {1}**").format(raid_name, formatted_time)
+        embed = discord.Embed(title=embed_title, colour=discord.Colour(0x3498db))
+        players_on = ["\u200b"]
+        players_off = ["\u200b"]
+        times_on = ["\u200b"]
+        times_off = ["\u200b"]
+        for row in player_data:
+            if row[1]:
+                time = datetime.datetime.utcfromtimestamp(row[1])
+                formatted_time = time_cog.format_time(time, fmt_24hr)
+                if time < cutoff_time:
+                    players_on.append(row[0])
+                    times_on.append(formatted_time)
+                else:
+                    players_off.append(row[0])
+                    times_off.append(formatted_time)
+            else:
+                players_on.append(row[0])
+                times_on.append("\u200b")
+        players_on = "\n".join(players_on)
+        players_off = "\n".join(players_off)
+        times_on = "\n".join(times_on)
+        times_off = "\n".join(times_off)
+        embed.add_field(name=_("Players:"), value=players_on)
+        embed.add_field(name=_("Sign up time:"), value=times_on)
+        embed.add_field(name="\u200b", value="\u200b")
+        embed.add_field(name=_("Late players:"), value=players_off)
+        embed.add_field(name=_("Sign up time:"), value=times_off)
+        embed.add_field(name="\u200b", value="\u200b")
+        return embed
 
 def setup(bot):
     bot.add_cog(SlashCog(bot))
