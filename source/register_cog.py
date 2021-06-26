@@ -274,6 +274,15 @@ class RegisterCog(commands.Cog):
 
         r = requests.post(self.command_url, headers=self.headers, json=json)
 
+    def add_server_time_command(self):
+        json = {
+            "name": 'server_time',
+            "description": _("Shows the current server time."),
+        }
+
+        r = requests.post(self.command_url, headers=self.headers, json=json)
+
+
     @commands.command()
     @commands.is_owner()
     async def register(self, ctx, command):
@@ -293,7 +302,8 @@ class RegisterCog(commands.Cog):
                     'format': self.add_format_slash_command,
                     'about': self.add_about_slash_command,
                     'privacy': self.add_privacy_slash_command,
-                    'welcome': self.add_welcome_slash_command
+                    'welcome': self.add_welcome_slash_command,
+                    'server_time': self.add_server_time_command
                 }
             try:
                 func_dict[command]()

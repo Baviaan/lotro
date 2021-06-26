@@ -23,6 +23,7 @@ class SlashCog(commands.Cog):
         self.raid_cog = bot.get_cog('RaidCog')
         self.config_cog = bot.get_cog('ConfigCog')
         self.calendar_cog = bot.get_cog('CalendarCog')
+        self.time_cog = bot.get_cog('TimeCog')
 
     async def on_socket_response(self, msg):
         if msg['t'] != "INTERACTION_CREATE":
@@ -139,6 +140,8 @@ class SlashCog(commands.Cog):
                         "Use `/time_zones` and `/format` to change the default time settings and "
                         "you can designate a raid leader role with `/leader`, which allows non-admins to edit raids."
                         ).format(guild.name)
+        elif name == 'server_time':
+            content = self.process_server_time(guild_id)
         else:
             content = _("Slash command not yet supported.")
 
@@ -340,6 +343,15 @@ class SlashCog(commands.Cog):
         content = _("Reset time zone display to default.")
         return content
 
+    def process_server_time(self, guild_id):
+        time = datetime.datetime.utcnow()
+        server_tz = self.time_cog.get_server_time(guild_id)
+        server_time = self.time_cog.local_time(time, server_tz)
+
+        fmt_24hr = self.time_cog.get_24hr_fmt(guild_id)
+        formatted_time = self.time_cog.format_time(server_time, fmt_24hr)
+        content = _("Current server time: {0}").format(formatted_time)
+        return content
 
 def setup(bot):
     bot.add_cog(SlashCog(bot))
