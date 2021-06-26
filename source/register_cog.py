@@ -33,6 +33,7 @@ class RegisterCog(commands.Cog):
         }
         
         r = requests.post(self.command_url, headers=self.headers, json=json)
+        return r.status_code == requests.codes.ok
 
     def format_timezone_subcommands(self):
         timezone_options = self.format_timezone_options()
@@ -118,6 +119,7 @@ class RegisterCog(commands.Cog):
         }
 
         r = requests.post(self.command_url, headers=self.headers, json=json)
+        return r.status_code == requests.codes.ok
 
     def add_custom_raid_slash_command(self):
         json = {
@@ -153,6 +155,7 @@ class RegisterCog(commands.Cog):
         }
 
         r = requests.post(self.command_url, headers=self.headers, json=json)
+        return r.status_code == requests.codes.ok
 
     @staticmethod
     def format_tier_choices():
@@ -199,6 +202,7 @@ class RegisterCog(commands.Cog):
         }
 
         r = requests.post(self.command_url, headers=self.headers, json=json)
+        return r.status_code == requests.codes.ok
 
     def add_roles_slash_command(self):
         json = {
@@ -207,6 +211,7 @@ class RegisterCog(commands.Cog):
         }
 
         r = requests.post(self.command_url, headers=self.headers, json=json)
+        return r.status_code == requests.codes.ok
 
     def add_calendar_slash_command(self):
         json = {
@@ -215,6 +220,7 @@ class RegisterCog(commands.Cog):
         }
 
         r = requests.post(self.command_url, headers=self.headers, json=json)
+        return r.status_code == requests.codes.ok
 
     def add_events_slash_command(self):
         json = {
@@ -223,6 +229,7 @@ class RegisterCog(commands.Cog):
         }
 
         r = requests.post(self.command_url, headers=self.headers, json=json)
+        return r.status_code == requests.codes.ok
 
     def add_format_slash_command(self):
         json = {
@@ -249,6 +256,7 @@ class RegisterCog(commands.Cog):
         }
 
         r = requests.post(self.command_url, headers=self.headers, json=json)
+        return r.status_code == requests.codes.ok
 
     def add_about_slash_command(self):
         json = {
@@ -257,6 +265,7 @@ class RegisterCog(commands.Cog):
         }
 
         r = requests.post(self.command_url, headers=self.headers, json=json)
+        return r.status_code == requests.codes.ok
 
     def add_privacy_slash_command(self):
         json = {
@@ -265,6 +274,7 @@ class RegisterCog(commands.Cog):
         }
 
         r = requests.post(self.command_url, headers=self.headers, json=json)
+        return r.status_code == requests.codes.ok
 
     def add_welcome_slash_command(self):
         json = {
@@ -273,6 +283,7 @@ class RegisterCog(commands.Cog):
         }
 
         r = requests.post(self.command_url, headers=self.headers, json=json)
+        return r.status_code == requests.codes.ok
 
     def add_server_time_command(self):
         json = {
@@ -281,6 +292,30 @@ class RegisterCog(commands.Cog):
         }
 
         r = requests.post(self.command_url, headers=self.headers, json=json)
+        return r.status_code == requests.codes.ok
+
+    def add_list_players_command(self):
+        json = {
+            "name": "list_players",
+            "description": _("List the signed up players for a raid in order of sign up time."),
+            "options": [
+                {
+                    "name": "raid_number",
+                    "description": _("Specify the raid to list, e.g. 2 for the second upcoming raid. This defaults to 1 if omitted."),
+                    "type": 4,
+                    "required": False
+                },
+                {
+                    "name": "cut-off",
+                    "description": _("Specify cut-off time in hours before raid time. This defaults to 24 hours if omitted."),
+                    "type": 4,
+                    "required": False
+                }
+            ]
+        }
+
+        r = requests.post(self.command_url, headers=self.headers, json=json)
+        return r.status_code == requests.codes.ok
 
 
     @commands.command()
@@ -288,8 +323,11 @@ class RegisterCog(commands.Cog):
     async def register(self, ctx, command):
         if command == 'raid':
             for key, name in self.raid_cog.raid_lookup.items():
-                self.add_raid_slash_command(key, name)
-                logger.info("Registered {0} slash command.".format(key))
+                ok = self.add_raid_slash_command(key, name)
+                if ok:
+                    logger.info("Registered {0} slash command.".format(key))
+                else:
+                    logger.info("Failed to register {0} slash command.".format(key))
                 await asyncio.sleep(5)  # Avoid rate limits
         else:
             func_dict = {
@@ -303,14 +341,18 @@ class RegisterCog(commands.Cog):
                     'about': self.add_about_slash_command,
                     'privacy': self.add_privacy_slash_command,
                     'welcome': self.add_welcome_slash_command,
-                    'server_time': self.add_server_time_command
+                    'server_time': self.add_server_time_command,
+                    'list_players': self.add_list_players_command
                 }
             try:
-                func_dict[command]()
+                ok = func_dict[command]()
             except KeyError:
                 await ctx.send("Command not found.")
             else:
-                logger.info("Registered {0} slash command.".format(command))
+                if ok:
+                    logger.info("Registered {0} slash command.".format(command))
+                else:
+                    logger.error("Failed to register {0} slash command.".format(command))
 
 
 def setup(bot):
