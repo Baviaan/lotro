@@ -108,7 +108,7 @@ class ConfigCog(commands.Cog):
     async def privacy(self, ctx):
         """ Information on data collection. """
         msg = _("**PII:**\n"
-                "When you sign up for a raid the bot stores your discord id, discord nickname and the class(es) you "
+                "When you sign up for a raid the bot stores the time, your discord id, discord nickname and the class(es) you "
                 "sign up with. This information is automatically deleted 2 hours after the scheduled raid time or "
                 "immediately when you cancel your sign up.\n"
                 "If you set a default time zone for yourself, "

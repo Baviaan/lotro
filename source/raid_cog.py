@@ -258,6 +258,8 @@ class RaidCog(commands.Cog):
         raid_id = payload.message_id
         emoji = payload.emoji
         raid_deleted = False
+        time = datetime.datetime.utcnow()
+        timestamp = int(time.replace(tzinfo=datetime.timezone.utc).timestamp())  # Do not use local tz.
 
         if str(emoji) in ["\U0001F6E0", "\u26CF"]:
             organizer_id = select_one(self.conn, 'Raids', ['organizer_id'], ['raid_id'], [raid_id])
@@ -304,21 +306,21 @@ class RaidCog(commands.Cog):
             if r:
                 delete(self.conn, 'Players', ['player_id', 'raid_id'], [user.id, raid_id])
             else:
-                upsert(self.conn, 'Players', ['byname', 'unavailable'], [user.display_name, True],
+                upsert(self.conn, 'Players', ['byname', 'timestamp', 'unavailable'], [user.display_name, timestamp, True],
                        ['player_id', 'raid_id'], [user.id, raid_id])
         elif str(emoji) == "\u2705":  # Check mark emoji
             role_names = [role.name for role in user.roles if role.name in self.role_names]
             if role_names:
-                columns = ['byname', 'unavailable']
+                columns = ['byname', 'timestamp', 'unavailable']
                 columns.extend(role_names)
-                values = [user.display_name, False]
+                values = [user.display_name, timestamp, False]
                 values.extend([True] * len(role_names))
                 upsert(self.conn, 'Players', columns, values, ['player_id', 'raid_id'], [user.id, raid_id])
             else:
                 error_msg = _("{0} you have not assigned yourself any class roles.").format(user.mention)
                 await channel.send(error_msg, delete_after=15)
         elif emoji.name in self.role_names:
-            upsert(self.conn, 'Players', ['byname', 'unavailable', emoji.name], [user.display_name, False, True],
+            upsert(self.conn, 'Players', ['byname', 'timestamp', 'unavailable', emoji.name], [user.display_name, timestamp, False, True],
                    ['player_id', 'raid_id'], [user.id, raid_id])
             try:
                 role = await get_role(guild, emoji.name)

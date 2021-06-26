@@ -49,6 +49,7 @@ def table_sqls(table):
                       "raid_id integer not null, "
                       "player_id integer not null, "
                       "byname text not null, "
+                      "timestamp integer, "
                       "unavailable boolean, "
                       "{0}"
                       "primary key (raid_id, player_id), "
