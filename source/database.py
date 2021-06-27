@@ -77,6 +77,7 @@ def table_sqls(table):
                         "display text[], "
                         "prefix text, "
                         "raid_leader integer, "
+                        "priority integer, "
                         "calendar text, "
                         "fmt_24hr boolean, "
                         "last_command integer, "
