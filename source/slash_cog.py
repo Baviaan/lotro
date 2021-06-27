@@ -402,7 +402,8 @@ class SlashCog(commands.Cog):
         for row in player_data:
             if row[1]:
                 time = datetime.datetime.utcfromtimestamp(row[1])
-                formatted_time = time_cog.format_time(time, fmt_24hr)
+                server_time = time_cog.local_time(time, server_tz)
+                formatted_time = time_cog.format_time(server_time, fmt_24hr)
                 if time < cutoff_time:
                     players_on.append(row[0])
                     times_on.append(formatted_time)
