@@ -144,10 +144,13 @@ class SlashCog(commands.Cog):
             content = self.process_server_time(guild_id)
         elif name == 'list_players':
             ephemeral = False
-            embeds = True
-            embed = self.process_list_players(author_perms, author_roles, guild_id, options)
-            embed = embed.to_dict()
-            content = ''
+            embed, success = self.process_list_players(author_perms, author_roles, guild_id, options)
+            if success:
+                embeds = True
+                embed = embed.to_dict()
+                content = ''
+            else:
+                content = embed  # string
         else:
             content = _("Slash command not yet supported.")
 
@@ -361,7 +364,7 @@ class SlashCog(commands.Cog):
 
     def process_list_players(self, author_perms, author_roles, guild_id, options):
         if not self.is_raid_leader(author_perms, author_roles, guild_id):
-            return _("You must be a raid leader to list players.")
+            return _("You must be a raid leader to list players."), False
         raid_number = 1
         cutoff = 24
         if options:
@@ -376,9 +379,9 @@ class SlashCog(commands.Cog):
         conn = self.conn
         raids = select_order(conn, 'Raids', ['raid_id', 'name', 'time'], 'time', ['guild_id'], [guild_id])
         if raid_number > len(raids):
-            return _("Cannot list raid {0}: only {1} raids exist.").format(raid_number, len(raids))
+            return _("Cannot list raid {0}: only {1} raids exist.").format(raid_number, len(raids)), False
         elif raid_number < 1:
-            return _("Please provide a positive integer.")
+            return _("Please provide a positive integer."), False
         raid_id, raid_name, raid_time = raids[raid_number-1]
         player_data = select_order(conn, 'Players', ['byname', 'timestamp'], 'timestamp', ['raid_id', 'unavailable'], [raid_id, False])
 
@@ -419,7 +422,7 @@ class SlashCog(commands.Cog):
         embed.add_field(name=_("Late players:"), value=players_off)
         embed.add_field(name=_("Sign up time:"), value=times_off)
         embed.add_field(name="\u200b", value="\u200b")
-        return embed
+        return embed, True
 
 def setup(bot):
     bot.add_cog(SlashCog(bot))
