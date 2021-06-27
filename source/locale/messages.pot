@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2021-04-05 01:44+BST\n"
+"POT-Creation-Date: 2021-06-27 15:59+BST\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,93 +23,101 @@ msgstr ""
 msgid "**DEPRECATED**: Consider using the new / command."
 msgstr ""
 
-#: calendar_cog.py:24 time_cog.py:95
+#: calendar_cog.py:33 time_cog.py:95
 msgid "You do not have permission to change the settings."
 msgstr ""
 
-#: calendar_cog.py:44
+#: calendar_cog.py:53
 msgid "The Calendar will be updated in this channel."
 msgstr ""
 
-#: calendar_cog.py:46 config_cog.py:32 slash_cog.py:271 time_cog.py:109
+#: calendar_cog.py:55 config_cog.py:33 slash_cog.py:297 time_cog.py:109
 #: time_cog.py:122 time_cog.py:142 time_cog.py:167 time_cog.py:190
 msgid "An error occurred."
 msgstr ""
 
-#: calendar_cog.py:78
+#: calendar_cog.py:87
 msgid "A new run has been posted!"
 msgstr ""
 
-#: calendar_cog.py:90
+#: calendar_cog.py:99
 msgid "Scheduled runs:"
 msgstr ""
 
-#: calendar_cog.py:91
+#: calendar_cog.py:100
 msgid ""
 "Time displayed in server time.\n"
 "Click the link to sign up!"
 msgstr ""
 
-#: calendar_cog.py:103
+#: calendar_cog.py:112 calendar_cog.py:159
 msgid "Last updated"
 msgstr ""
 
-#: config_cog.py:24
+#: calendar_cog.py:153
+msgid "Upcoming events:"
+msgstr ""
+
+#: calendar_cog.py:154
+msgid "All times for {0}."
+msgstr ""
+
+#: config_cog.py:25
 msgid "You must be an admin to change the command prefix."
 msgstr ""
 
-#: config_cog.py:30
+#: config_cog.py:31
 msgid "Command prefix set to `{0}`."
 msgstr ""
 
-#: config_cog.py:88
+#: config_cog.py:89
 msgid "A bot for scheduling raids!"
 msgstr ""
 
-#: config_cog.py:89
+#: config_cog.py:90
 msgid "**Developer:** {0}"
 msgstr ""
 
-#: config_cog.py:90
+#: config_cog.py:91
 msgid "**[Source code]({0})**"
 msgstr ""
 
-#: config_cog.py:91
+#: config_cog.py:92
 msgid "**[Support server]({0})**"
 msgstr ""
 
-#: config_cog.py:92
+#: config_cog.py:93
 msgid "**[Invite me!]({0})**"
 msgstr ""
 
-#: config_cog.py:93
+#: config_cog.py:94
 msgid "**[Donate]({0})**"
 msgstr ""
 
-#: config_cog.py:95
+#: config_cog.py:96
 msgid "**Hosted by:** {0}"
 msgstr ""
 
-#: config_cog.py:96
+#: config_cog.py:97
 msgid "**Uptime:** {0}."
 msgstr ""
 
-#: config_cog.py:98
+#: config_cog.py:99
 msgid "**Using version:** {0}"
 msgstr ""
 
-#: config_cog.py:99
+#: config_cog.py:100
 msgid "**Latest version:** {0}"
 msgstr ""
 
-#: config_cog.py:109
+#: config_cog.py:110
 msgid ""
 "**PII:**\n"
-"When you sign up for a raid the bot stores your discord id, discord nickname and the class(es) you sign up with. This information is automatically deleted 2 hours after the scheduled raid time or immediately when you cancel your sign up.\n"
+"When you sign up for a raid the bot stores the time, your discord id, discord nickname and the class(es) you sign up with. This information is automatically deleted 2 hours after the scheduled raid time or immediately when you cancel your sign up.\n"
 "If you set a default time zone for yourself, the bot will additionally store your time zone along with your discord id such that it can parse times provided in your commands in your preferred time zone."
 msgstr ""
 
-#: config_cog.py:121 slash_cog.py:127
+#: config_cog.py:122 slash_cog.py:133
 msgid ""
 "Greetings {0}! I am confined to Orthanc and here to spend my days doing your raid admin.\n"
 "\n"
@@ -164,7 +172,7 @@ msgid ""
 "**We are in the following {0} guilds:**\n"
 msgstr ""
 
-#: raid_cog.py:28 raid_cog.py:37 raid_cog.py:448
+#: raid_cog.py:28 raid_cog.py:37 raid_cog.py:455
 msgid "Failed to parse tier argument: "
 msgstr ""
 
@@ -174,395 +182,415 @@ msgid ""
 "Defaulting to tier 1."
 msgstr ""
 
-#: raid_cog.py:124 slash_cog.py:206
+#: raid_cog.py:127 slash_cog.py:232
 msgid "You must be an admin to change the raid leader role."
 msgstr ""
 
-#: raid_cog.py:130
+#: raid_cog.py:133
 msgid "Raid Leader role set to `{0}`."
 msgstr ""
 
-#: raid_cog.py:133
+#: raid_cog.py:136
 msgid "No role `{0}` found."
 msgstr ""
 
-#: raid_cog.py:136
+#: raid_cog.py:139
 msgid "Raid leader role deleted."
 msgstr ""
 
-#: raid_cog.py:142
+#: raid_cog.py:145
 msgid "Due to limited resources you may only post up to {0} concurrent raids."
 msgstr ""
 
-#: raid_cog.py:147
+#: raid_cog.py:150
 msgid "Schedules a meetup."
 msgstr ""
 
-#: raid_cog.py:148
+#: raid_cog.py:151
 msgid "Schedules a meetup. Day/timezone will default to today/server if not specified. Usage:"
 msgstr ""
 
-#: raid_cog.py:149
+#: raid_cog.py:152
 msgid ""
 "Examples:\n"
 "{0}meetup scourges Friday 4pm\n"
 "{0}meetup \"kin house\" 21:00 UTC"
 msgstr ""
 
-#: raid_cog.py:158
+#: raid_cog.py:161
 msgid "Schedules a raid."
 msgstr ""
 
-#: raid_cog.py:159
+#: raid_cog.py:162
 msgid "Schedules a raid. Day/timezone will default to today/server if not specified. Usage:"
 msgstr ""
 
-#: raid_cog.py:160
+#: raid_cog.py:163
 msgid ""
 "Examples:\n"
 "{0}raid Anvil Friday 4pm\n"
 "{0}raid throne t3 21:00 UTC"
 msgstr ""
 
-#: raid_cog.py:171
+#: raid_cog.py:174
 msgid "Shortcut to schedule a raid (use the aliases)."
 msgstr ""
 
-#: raid_cog.py:172
+#: raid_cog.py:175
 msgid "Schedules a raid with the name of the command. Day/timezone will default to today/server if not specified. Usage:"
 msgstr ""
 
-#: raid_cog.py:174
+#: raid_cog.py:177
 msgid ""
 "Examples:\n"
 "{0}anvil Friday 4pm\n"
 "{0}anvil 21:00 UTC"
 msgstr ""
 
-#: raid_cog.py:183
+#: raid_cog.py:186
 msgid "unknown raid"
 msgstr ""
 
-#: raid_cog.py:209
+#: raid_cog.py:212
 msgid "Consider using `{prefix}{name} ...` instead of `{prefix}{command} {name} ...`."
 msgstr ""
 
-#: raid_cog.py:216 slash_cog.py:236
+#: raid_cog.py:219 slash_cog.py:262
 msgid "Please check the date <@{0}>. You are posting a raid for: {1} UTC."
 msgstr ""
 
-#: raid_cog.py:235 raid_cog.py:297 raid_cog.py:522 raid_cog.py:543
+#: raid_cog.py:238 raid_cog.py:302 raid_cog.py:529 raid_cog.py:550
 msgid "<Open>"
 msgstr ""
 
-#: raid_cog.py:248
+#: raid_cog.py:251
 msgid "Error: Missing 'Add Reactions' permission to add reactions to the raid post."
 msgstr ""
 
-#: raid_cog.py:275
+#: raid_cog.py:280
 msgid "You do not have permission to change the raid settings."
 msgstr ""
 
-#: raid_cog.py:282
+#: raid_cog.py:287
 msgid "Enabling roster for this raid."
 msgstr ""
 
-#: raid_cog.py:292
+#: raid_cog.py:297
 msgid "Dearest raid leader, {0} has cancelled their availability. Please note they were assigned to {1} in the raid."
 msgstr ""
 
-#: raid_cog.py:315
+#: raid_cog.py:320
 msgid "{0} you have not assigned yourself any class roles."
 msgstr ""
 
-#: raid_cog.py:325
+#: raid_cog.py:330
 msgid "Error: Missing 'Manage roles' permission to assign the class role."
 msgstr ""
 
-#: raid_cog.py:347
+#: raid_cog.py:354
 msgid "That's an error. Check the logs."
 msgstr ""
 
-#: raid_cog.py:355
+#: raid_cog.py:362
 msgid ""
 "Please respond with 'a(im)', 'd(ate)', 'r(oster)' or 't(ier)' to indicate which setting you wish to update for this raid.\n"
 "Type 'cancel' to cancel the raid."
 msgstr ""
 
-#: raid_cog.py:362
+#: raid_cog.py:369
 msgid "Configuration finished!"
 msgstr ""
 
-#: raid_cog.py:367
+#: raid_cog.py:374
 msgid "r"
 msgstr ""
 
-#: raid_cog.py:369
+#: raid_cog.py:376
 msgid "d"
 msgstr ""
 
-#: raid_cog.py:371
+#: raid_cog.py:378
 msgid "a"
 msgstr ""
 
-#: raid_cog.py:373
+#: raid_cog.py:380
 msgid "t"
 msgstr ""
 
-#: raid_cog.py:375
+#: raid_cog.py:382
 msgid "cancel"
 msgstr ""
 
-#: raid_cog.py:388
+#: raid_cog.py:395
 msgid "Please specify the new aim."
 msgstr ""
 
-#: raid_cog.py:400
+#: raid_cog.py:407
 msgid "Please use less than {0} characters."
 msgstr ""
 
-#: raid_cog.py:411
+#: raid_cog.py:418
 msgid "Please specify the new raid time."
 msgstr ""
 
-#: raid_cog.py:423 time_cog.py:33
+#: raid_cog.py:430 time_cog.py:33
 msgid "Failed to parse time argument: "
 msgstr ""
 
-#: raid_cog.py:436
+#: raid_cog.py:443
 msgid "Please specify the new raid tier."
 msgstr ""
 
-#: raid_cog.py:461
+#: raid_cog.py:468
 msgid "Please respond with 'yes/no' to indicate whether you want to use the roster for this raid."
 msgstr ""
 
-#: raid_cog.py:466 raid_cog.py:477 raid_cog.py:499
+#: raid_cog.py:473 raid_cog.py:484 raid_cog.py:506
 msgid "Roster configuration finished!"
 msgstr ""
 
-#: raid_cog.py:470
+#: raid_cog.py:477
 msgid "n"
 msgstr ""
 
-#: raid_cog.py:473
+#: raid_cog.py:480
 msgid ""
 "Roster disabled for this raid.\n"
 "Roster configuration finished!"
 msgstr ""
 
-#: raid_cog.py:476
+#: raid_cog.py:483
 msgid "y"
 msgstr ""
 
-#: raid_cog.py:483
+#: raid_cog.py:490
 msgid "Roster enabled for this raid."
 msgstr ""
 
-#: raid_cog.py:492
+#: raid_cog.py:499
 msgid ""
 "Send a message with the slot number and the class to change a default slot to something else.\n"
 "Example: `1 captain`\n"
 "Configuration will finish after 20s of no interaction. "
 msgstr ""
 
-#: raid_cog.py:509
+#: raid_cog.py:516
 msgid "No valid slot provided!"
 msgstr ""
 
-#: raid_cog.py:512
+#: raid_cog.py:519
 msgid "No slot provided!"
 msgstr ""
 
-#: raid_cog.py:520
+#: raid_cog.py:527
 msgid "You may only provide up to 3 classes per slot."
 msgstr ""
 
-#: raid_cog.py:527
+#: raid_cog.py:534
 msgid "Classes for slot {0} updated!"
 msgstr ""
 
-#: raid_cog.py:546
+#: raid_cog.py:553
 msgid "There are no players to assign for this raid!"
 msgstr ""
 
-#: raid_cog.py:550
+#: raid_cog.py:557
 msgid "**Warning**: Excluding some noobs from available players!"
 msgstr ""
 
-#: raid_cog.py:551
+#: raid_cog.py:558
 msgid "Please select the player you want to assign a spot in the raid from the list below using the corresponding reaction. Assignment will finish after {0}s of no interaction."
 msgstr ""
 
-#: raid_cog.py:555
+#: raid_cog.py:562
 msgid ""
 "Available players:\n"
 "*Please wait... Loading*"
 msgstr ""
 
-#: raid_cog.py:564
+#: raid_cog.py:571
 msgid "Select the class for this player."
 msgstr ""
 
-#: raid_cog.py:571
+#: raid_cog.py:578
 msgid ""
 "Available players:\n"
 msgstr ""
 
-#: raid_cog.py:584 raid_cog.py:617
+#: raid_cog.py:591 raid_cog.py:624
 msgid "Player assignment finished!"
 msgstr ""
 
-#: raid_cog.py:591
+#: raid_cog.py:598
 msgid "Please select a player first!"
 msgstr ""
 
-#: raid_cog.py:609
+#: raid_cog.py:616
 msgid "Removed {0} from the line up!"
 msgstr ""
 
-#: raid_cog.py:625
+#: raid_cog.py:632
 msgid "{0} did not sign up with {1}!"
 msgstr ""
 
-#: raid_cog.py:630
+#: raid_cog.py:637
 msgid "That is not a class, please start over!"
 msgstr ""
 
-#: raid_cog.py:637
+#: raid_cog.py:644
 msgid "There are no slots available for the selected class."
 msgstr ""
 
-#: raid_cog.py:645
+#: raid_cog.py:652
 msgid "Assigned {0} to {1}."
 msgstr ""
 
-#: raid_cog.py:667
+#: raid_cog.py:681
 msgid " server time"
 msgstr ""
 
-#: raid_cog.py:669
+#: raid_cog.py:683
 msgid "{0} on {1}"
 msgstr ""
 
-#: raid_cog.py:671
+#: raid_cog.py:685
 msgid "{0} {1} on {2}"
 msgstr ""
 
-#: raid_cog.py:674
+#: raid_cog.py:688
 msgid "Aim: {0}"
 msgstr ""
 
-#: raid_cog.py:678
+#: raid_cog.py:692
 msgid "Time zones:"
 msgstr ""
 
-#: raid_cog.py:683
+#: raid_cog.py:697
 msgid "Selected line up:"
 msgstr ""
 
-#: raid_cog.py:703
+#: raid_cog.py:717
 msgid "The following {0} players are available:"
 msgstr ""
 
-#: raid_cog.py:714
+#: raid_cog.py:728
 msgid "The following {0} players are unavailable:"
 msgstr ""
 
-#: raid_cog.py:718
+#: raid_cog.py:732
 msgid "Raid in your local time"
 msgstr ""
 
-#: raid_cog.py:815
+#: raid_cog.py:829
 msgid "Gondor calls for aid! Will you answer the call"
 msgstr ""
 
-#: raid_cog.py:820
+#: raid_cog.py:834
 msgid "? We are forming for the raid now."
 msgstr ""
 
-#: register_cog.py:28
+#: register_cog.py:31
 msgid "Manage time zone options."
 msgstr ""
 
-#: register_cog.py:45
+#: register_cog.py:44
 msgid "Set your time zone to be used when interpreting your raid commands."
 msgstr ""
 
-#: register_cog.py:51
+#: register_cog.py:50
 msgid "Set server time for this discord server."
 msgstr ""
 
-#: register_cog.py:57
+#: register_cog.py:56
 msgid "Add a time zone to the displayed time zones."
 msgstr ""
 
-#: register_cog.py:63
+#: register_cog.py:62
 msgid "Resets the displayed time zones to the default."
 msgstr ""
 
-#: register_cog.py:74
+#: register_cog.py:73
 msgid "Select a city representing your time zone."
 msgstr ""
 
-#: register_cog.py:81
+#: register_cog.py:80
 msgid "Specify your time zone in the IANA tz database format. This will overwrite your previous choice."
 msgstr ""
 
-#: register_cog.py:98
+#: register_cog.py:97
 msgid "Schedule {0}."
 msgstr ""
 
-#: register_cog.py:102 register_cog.py:148
+#: register_cog.py:101 register_cog.py:143
 msgid "The raid tier."
 msgstr ""
 
-#: register_cog.py:109 register_cog.py:142
+#: register_cog.py:108 register_cog.py:137
 msgid "When the raid should be scheduled."
 msgstr ""
 
-#: register_cog.py:115 register_cog.py:155
+#: register_cog.py:114 register_cog.py:150
 msgid "A short description of your objective."
 msgstr ""
 
-#: register_cog.py:132
+#: register_cog.py:127
 msgid "Schedule a custom raid or meetup."
 msgstr ""
 
-#: register_cog.py:136
+#: register_cog.py:131
 msgid "The name of the raid or meetup."
 msgstr ""
 
-#: register_cog.py:202
+#: register_cog.py:193
 msgid "Specify the role which is permitted to edit raids."
 msgstr ""
 
-#: register_cog.py:223
+#: register_cog.py:210
 msgid "Deletes your class roles (used when signing up)."
 msgstr ""
 
-#: register_cog.py:236
+#: register_cog.py:219
 msgid "Post and update the calendar in this channel."
 msgstr ""
 
-#: register_cog.py:249
+#: register_cog.py:228
+msgid "Shows upcoming official LotRO events in your local time."
+msgstr ""
+
+#: register_cog.py:237
 msgid "Specify whether to use AM/PM or 24h time."
 msgstr ""
 
-#: register_cog.py:253
+#: register_cog.py:241
 msgid "12h or 24h"
 msgstr ""
 
-#: register_cog.py:280
+#: register_cog.py:264
 msgid "Show information about this bot."
 msgstr ""
 
-#: register_cog.py:293
+#: register_cog.py:273
 msgid "Show information on data collection."
 msgstr ""
 
-#: register_cog.py:306
+#: register_cog.py:282
 msgid "Resend the welcome message."
+msgstr ""
+
+#: register_cog.py:291
+msgid "Shows the current server time."
+msgstr ""
+
+#: register_cog.py:300
+msgid "List the signed up players for a raid in order of sign up time."
+msgstr ""
+
+#: register_cog.py:304
+msgid "Specify the raid to list, e.g. 2 for the second upcoming raid. This defaults to 1 if omitted."
+msgstr ""
+
+#: register_cog.py:310
+msgid "Specify cut-off time in hours before raid time. This defaults to 24 hours if omitted."
 msgstr ""
 
 #: role_cog.py:22
@@ -577,7 +605,7 @@ msgstr ""
 msgid "{0} does not have any roles assigned."
 msgstr ""
 
-#: role_cog.py:45 slash_cog.py:185
+#: role_cog.py:45 slash_cog.py:204
 msgid "Missing permissions to manage the class roles!"
 msgstr ""
 
@@ -585,71 +613,107 @@ msgstr ""
 msgid "Removed all class roles for {0}."
 msgstr ""
 
-#: slash_cog.py:67 slash_cog.py:79
+#: slash_cog.py:69 slash_cog.py:81
 msgid "Missing permissions to access this channel."
 msgstr ""
 
-#: slash_cog.py:75
+#: slash_cog.py:77
 msgid "Posting a new raid!"
 msgstr ""
 
-#: slash_cog.py:83
+#: slash_cog.py:85
 msgid "The calendar will be updated in this channel."
 msgstr ""
 
-#: slash_cog.py:86
+#: slash_cog.py:88
 msgid "You must be a raid leader to set the calendar."
 msgstr ""
 
 #: slash_cog.py:91
+msgid "Waiting for lotro.com to respond..."
+msgstr ""
+
+#: slash_cog.py:97
 msgid "Removing your class roles..."
 msgstr ""
 
-#: slash_cog.py:98
+#: slash_cog.py:104
 msgid "Successfully set this server's time format!"
 msgstr ""
 
-#: slash_cog.py:118
+#: slash_cog.py:124
 msgid ""
 "**PII:**\n"
-"When you sign up for a raid the bot stores your discord id, discord nickname and the class(es) you sign up with. This information is automatically deleted 2 hours after the scheduled raid time or immediately when you cancel your sign up.\n"
+"When you sign up for a raid the bot stores the time, your discord id, discord nickname and the class(es) you sign up with. This information is automatically deleted 2 hours after the scheduled raid time or immediately when you cancel your sign up.\n"
 " If you set a default time zone for yourself, the bot will additionally store your time zone along with your discord id such that it can parse times provided in your commands in your preferred time zone."
 msgstr ""
 
-#: slash_cog.py:138
+#: slash_cog.py:155
 msgid "Slash command not yet supported."
 msgstr ""
 
-#: slash_cog.py:183
+#: slash_cog.py:202
 msgid "Successfully removed your class roles."
 msgstr ""
 
-#: slash_cog.py:211
+#: slash_cog.py:237
 msgid "Successfully updated the raid leader role!"
 msgstr ""
 
-#: slash_cog.py:263 slash_cog.py:286 slash_cog.py:306
+#: slash_cog.py:289 slash_cog.py:312 slash_cog.py:332
 msgid "{0} is not a valid time zone!"
 msgstr ""
 
-#: slash_cog.py:269 slash_cog.py:291
+#: slash_cog.py:295 slash_cog.py:317
 msgid "Set default time zone to {0}."
 msgstr ""
 
-#: slash_cog.py:276
+#: slash_cog.py:302
 msgid "You must be a raid leader to change the server time zone."
 msgstr ""
 
-#: slash_cog.py:296 slash_cog.py:321
+#: slash_cog.py:322 slash_cog.py:347
 msgid "You must be a raid leader to change the time zone display."
 msgstr ""
 
-#: slash_cog.py:316
+#: slash_cog.py:342
 msgid "Added {0} to be displayed."
 msgstr ""
 
-#: slash_cog.py:326
+#: slash_cog.py:352
 msgid "Reset time zone display to default."
+msgstr ""
+
+#: slash_cog.py:362
+msgid "Current server time: {0}"
+msgstr ""
+
+#: slash_cog.py:367
+msgid "You must be a raid leader to list players."
+msgstr ""
+
+#: slash_cog.py:382
+msgid "Cannot list raid {0}: only {1} raids exist."
+msgstr ""
+
+#: slash_cog.py:384
+msgid "Please provide a positive integer."
+msgstr ""
+
+#: slash_cog.py:396
+msgid "**Sign up list for {0} on {1}**"
+msgstr ""
+
+#: slash_cog.py:420
+msgid "Players:"
+msgstr ""
+
+#: slash_cog.py:421 slash_cog.py:424
+msgid "Sign up time:"
+msgstr ""
+
+#: slash_cog.py:423
+msgid "Late players:"
 msgstr ""
 
 #: time_cog.py:25
@@ -766,7 +830,7 @@ msgid "Set server to use {0}h time format."
 msgstr ""
 
 #: time_cog.py:234
-msgid "%b %d, %A %H:%M"
+msgid "%d %b, %A %H:%M"
 msgstr ""
 
 #: time_cog.py:237
