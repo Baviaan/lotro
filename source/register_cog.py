@@ -285,7 +285,7 @@ class RegisterCog(commands.Cog):
         r = requests.post(self.command_url, headers=self.headers, json=json)
         return r.status_code == requests.codes.ok
 
-    def add_server_time_command(self):
+    def add_server_time_slash_command(self):
         json = {
             "name": 'server_time',
             "description": _("Shows the current server time."),
@@ -294,7 +294,7 @@ class RegisterCog(commands.Cog):
         r = requests.post(self.command_url, headers=self.headers, json=json)
         return r.status_code == requests.codes.ok
 
-    def add_list_players_command(self):
+    def add_list_players_slash_command(self):
         json = {
             "name": "list_players",
             "description": _("List the signed up players for a raid in order of sign up time."),
@@ -317,6 +317,22 @@ class RegisterCog(commands.Cog):
         r = requests.post(self.command_url, headers=self.headers, json=json)
         return r.status_code == requests.codes.ok
 
+    def add_priority_slash_command(self):
+        json = {
+            "name": 'kin',
+            "description": _("Set your kin role to distinguish kin sign ups from non-kin."),
+            "options": [
+                {
+                    "name": "role",
+                    "description": "Discord role.",
+                    "type": 8,
+                    "required": False
+                }
+            ]
+        }
+
+        r = requests.post(self.command_url, headers=self.headers, json=json)
+        return r.status_code == requests.codes.ok
 
     @commands.command()
     @commands.is_owner()
@@ -341,8 +357,9 @@ class RegisterCog(commands.Cog):
                     'about': self.add_about_slash_command,
                     'privacy': self.add_privacy_slash_command,
                     'welcome': self.add_welcome_slash_command,
-                    'server_time': self.add_server_time_command,
-                    'list_players': self.add_list_players_command
+                    'server_time': self.add_server_time_slash_command,
+                    'list_players': self.add_list_players_slash_command,
+                    'priority': self.add_priority_slash_command
                 }
             try:
                 ok = func_dict[command]()

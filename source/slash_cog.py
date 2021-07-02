@@ -151,6 +151,8 @@ class SlashCog(commands.Cog):
                 content = ''
             else:
                 content = embed  # string
+        elif name == 'kin':
+            content = self.parse_priority_slash_command(guild_id, author_perms, options)
         else:
             content = _("Slash command not yet supported.")
 
@@ -424,6 +426,21 @@ class SlashCog(commands.Cog):
         embed.add_field(name=_("Sign up time:"), value=times_off)
         embed.add_field(name="\u200b", value="\u200b")
         return embed, True
+
+    def parse_priority_slash_command(self, guild_id, author_perms, options):
+        admin_permission = 0x00000008
+        if not (author_perms & admin_permission) == admin_permission:
+            content = _("You must be an admin to change the kin role.")
+            return content
+        if not options:
+            res = upsert(self.conn, 'Settings', ['priority'], [None], ['guild_id'], [guild_id])
+            content = _("Kin role removed.")
+            return content
+        priority_id = options['role']
+        res = upsert(self.conn, 'Settings', ['priority'], [priority_id], ['guild_id'], [guild_id])
+        self.conn.commit()
+        content = _("Successfully updated the kin role!")
+        return content
 
 def setup(bot):
     bot.add_cog(SlashCog(bot))

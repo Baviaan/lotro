@@ -306,21 +306,24 @@ class RaidCog(commands.Cog):
             if r:
                 delete(self.conn, 'Players', ['player_id', 'raid_id'], [user.id, raid_id])
             else:
-                upsert(self.conn, 'Players', ['byname', 'timestamp', 'unavailable'], [user.display_name, timestamp, True],
+                byname = self.process_name(guild.id, user)
+                upsert(self.conn, 'Players', ['byname', 'timestamp', 'unavailable'], [byname, timestamp, True],
                        ['player_id', 'raid_id'], [user.id, raid_id])
         elif str(emoji) == "\u2705":  # Check mark emoji
             role_names = [role.name for role in user.roles if role.name in self.role_names]
             if role_names:
                 columns = ['byname', 'timestamp', 'unavailable']
                 columns.extend(role_names)
-                values = [user.display_name, timestamp, False]
+                byname = self.process_name(guild.id, user)
+                values = [byname, timestamp, False]
                 values.extend([True] * len(role_names))
                 upsert(self.conn, 'Players', columns, values, ['player_id', 'raid_id'], [user.id, raid_id])
             else:
                 error_msg = _("{0} you have not assigned yourself any class roles.").format(user.mention)
                 await channel.send(error_msg, delete_after=15)
         elif emoji.name in self.role_names:
-            upsert(self.conn, 'Players', ['byname', 'timestamp', 'unavailable', emoji.name], [user.display_name, timestamp, False, True],
+            byname = self.process_name(guild.id, user)
+            upsert(self.conn, 'Players', ['byname', 'timestamp', 'unavailable', emoji.name], [byname, timestamp, False, True],
                    ['player_id', 'raid_id'], [user.id, raid_id])
             try:
                 role = await get_role(guild, emoji.name)
@@ -352,6 +355,17 @@ class RaidCog(commands.Cog):
             error_msg = "\n".join([msg, embed.title, embed.description, str(embed.fields)])
             logger.warning(error_msg)
             await channel.send(_("That's an error. Check the logs."))
+
+    def process_name(self, guild_id, user):
+        role_id = select_one(self.conn, 'Settings', ['priority'], ['guild_id'],[guild_id])
+        if role_id in [role.id for role in user.roles]:
+            byname = "\U0001F46A " + user.display_name
+        else:
+            if "\U0001F46A" in user.display_name:
+                byname = "iMAhACkEr"
+            else:
+                byname = user.display_name
+        return byname
 
     async def configure(self, user, channel, raid_id):
         bot = self.bot
