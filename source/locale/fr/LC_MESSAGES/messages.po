@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2021-06-27 15:59+BST\n"
+"POT-Creation-Date: 2021-07-02 22:17+BST\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: FRENCH <LL@li.org>\n"
@@ -31,7 +31,7 @@ msgstr "Vous n'avez pas la permission de changer les paramètres"
 msgid "The Calendar will be updated in this channel."
 msgstr ""
 
-#: calendar_cog.py:55 config_cog.py:33 slash_cog.py:297 time_cog.py:109
+#: calendar_cog.py:55 config_cog.py:33 slash_cog.py:299 time_cog.py:109
 #: time_cog.py:122 time_cog.py:142 time_cog.py:167 time_cog.py:190
 msgid "An error occurred."
 msgstr "Une erreur est survenue."
@@ -181,7 +181,7 @@ msgstr "**Membres:** {0}"
 msgid "**We are in the following {0} guilds:**\n"
 msgstr "**Nous sommes dans les serveurs suivantes:**\n"
 
-#: raid_cog.py:28 raid_cog.py:37 raid_cog.py:455
+#: raid_cog.py:28 raid_cog.py:37 raid_cog.py:469
 msgid "Failed to parse tier argument: "
 msgstr "Échec de l'analyse de l'argument de niveau: "
 
@@ -193,7 +193,7 @@ msgstr ""
 "Le nom du canal ne spécifie pas de niveau.\n"
 "Défaillant à niveau 1."
 
-#: raid_cog.py:127 slash_cog.py:232
+#: raid_cog.py:127 slash_cog.py:234
 msgid "You must be an admin to change the raid leader role."
 msgstr ""
 
@@ -286,11 +286,11 @@ msgid ""
 "`."
 msgstr ""
 
-#: raid_cog.py:219 slash_cog.py:262
+#: raid_cog.py:219 slash_cog.py:264
 msgid "Please check the date <@{0}>. You are posting a raid for: {1} UTC."
 msgstr "<@{0}> veuillez vérifier que la date est correcte: {1} UTC."
 
-#: raid_cog.py:238 raid_cog.py:302 raid_cog.py:529 raid_cog.py:550
+#: raid_cog.py:238 raid_cog.py:302 raid_cog.py:543 raid_cog.py:564
 msgid "<Open>"
 msgstr "<Disponible>"
 
@@ -315,19 +315,19 @@ msgstr ""
 "Cher chef de raid, {0} a annulé sa disponibilité. Veuillez noter qu'il a été "
 "assigné à {1} dans le raid."
 
-#: raid_cog.py:320
+#: raid_cog.py:322
 msgid "{0} you have not assigned yourself any class roles."
 msgstr "{0} vous ne vous êtes attribué aucun rôle de classe."
 
-#: raid_cog.py:330
+#: raid_cog.py:333
 msgid "Error: Missing 'Manage roles' permission to assign the class role."
 msgstr ""
 
-#: raid_cog.py:354
+#: raid_cog.py:357
 msgid "That's an error. Check the logs."
 msgstr "C'est une erreur. Vérifiez les logs."
 
-#: raid_cog.py:362
+#: raid_cog.py:376
 msgid ""
 "Please respond with 'a(im)', 'd(ate)', 'r(oster)' or 't(ier)' to indicate "
 "which setting you wish to update for this raid.\n"
@@ -337,51 +337,51 @@ msgstr ""
 "indiquer le paramètre que vous souhaitez mettre à jour pour ce raid.\n"
 "Tapez «annuler» pour annuler le raid."
 
-#: raid_cog.py:369
+#: raid_cog.py:383
 msgid "Configuration finished!"
 msgstr "Configuration fini!"
 
-#: raid_cog.py:374
+#: raid_cog.py:388
 msgid "r"
 msgstr "l"
 
-#: raid_cog.py:376
+#: raid_cog.py:390
 msgid "d"
 msgstr "h"
 
-#: raid_cog.py:378
+#: raid_cog.py:392
 msgid "a"
 msgstr "o"
 
-#: raid_cog.py:380
+#: raid_cog.py:394
 msgid "t"
 msgstr "n"
 
-#: raid_cog.py:382
+#: raid_cog.py:396
 msgid "cancel"
 msgstr "annuler"
 
-#: raid_cog.py:395
+#: raid_cog.py:409
 msgid "Please specify the new aim."
 msgstr "Veuillez spécifier le nouvel objectif de raid."
 
-#: raid_cog.py:407
+#: raid_cog.py:421
 msgid "Please use less than {0} characters."
 msgstr ""
 
-#: raid_cog.py:418
+#: raid_cog.py:432
 msgid "Please specify the new raid time."
 msgstr "Veuillez spécifier la nouvelle heure de raid."
 
-#: raid_cog.py:430 time_cog.py:33
+#: raid_cog.py:444 time_cog.py:33
 msgid "Failed to parse time argument: "
 msgstr "Échec de l'analyse de l'argument de l'heure: "
 
-#: raid_cog.py:443
+#: raid_cog.py:457
 msgid "Please specify the new raid tier."
 msgstr "Veuillez spécifier le nouveau niveau de raid."
 
-#: raid_cog.py:468
+#: raid_cog.py:482
 msgid ""
 "Please respond with 'yes/no' to indicate whether you want to use the roster "
 "for this raid."
@@ -389,15 +389,15 @@ msgstr ""
 "Veuillez répondre par 'oui/non' pour indiquer si vous souhaitez utiliser la "
 "liste pour ce raid."
 
-#: raid_cog.py:473 raid_cog.py:484 raid_cog.py:506
+#: raid_cog.py:487 raid_cog.py:498 raid_cog.py:520
 msgid "Roster configuration finished!"
 msgstr "La configuration de la liste est terminée!"
 
-#: raid_cog.py:477
+#: raid_cog.py:491
 msgid "n"
 msgstr "n"
 
-#: raid_cog.py:480
+#: raid_cog.py:494
 msgid ""
 "Roster disabled for this raid.\n"
 "Roster configuration finished!"
@@ -405,15 +405,15 @@ msgstr ""
 "Liste désactivée pour ce raid.\n"
 "La configuration de la liste est terminée!"
 
-#: raid_cog.py:483
+#: raid_cog.py:497
 msgid "y"
 msgstr "o"
 
-#: raid_cog.py:490
+#: raid_cog.py:504
 msgid "Roster enabled for this raid."
 msgstr "Liste activée pour ce raid."
 
-#: raid_cog.py:499
+#: raid_cog.py:513
 #, fuzzy
 msgid ""
 "Send a message with the slot number and the class to change a default slot "
@@ -426,31 +426,31 @@ msgstr ""
 "vous souhaitez. La configuration se terminera après 20 secondes sans "
 "interaction."
 
-#: raid_cog.py:516
+#: raid_cog.py:530
 msgid "No valid slot provided!"
 msgstr "Aucun emplacement valide fourni!"
 
-#: raid_cog.py:519
+#: raid_cog.py:533
 msgid "No slot provided!"
 msgstr "Aucun emplacement prévu!"
 
-#: raid_cog.py:527
+#: raid_cog.py:541
 msgid "You may only provide up to 3 classes per slot."
 msgstr ""
 
-#: raid_cog.py:534
+#: raid_cog.py:548
 msgid "Classes for slot {0} updated!"
 msgstr "Les classes pour l'emplacement {0} ont été mises à jour!"
 
-#: raid_cog.py:553
+#: raid_cog.py:567
 msgid "There are no players to assign for this raid!"
 msgstr "Il n'y a aucun joueur à assigner pour ce raid!"
 
-#: raid_cog.py:557
+#: raid_cog.py:571
 msgid "**Warning**: Excluding some noobs from available players!"
 msgstr "**Attention**: suppression de quelques noobs des joueurs disponibles!"
 
-#: raid_cog.py:558
+#: raid_cog.py:572
 msgid ""
 "Please select the player you want to assign a spot in the raid from the list "
 "below using the corresponding reaction. Assignment will finish after {0}s of "
@@ -460,7 +460,7 @@ msgstr ""
 "dans le raid dans la liste ci-dessous en utilisant la réaction "
 "correspondante. L'affectation se terminera après {0}s sans interaction."
 
-#: raid_cog.py:562
+#: raid_cog.py:576
 msgid ""
 "Available players:\n"
 "*Please wait... Loading*"
@@ -468,83 +468,83 @@ msgstr ""
 "Joueurs disponibles:\n"
 "S'il vous plaît, patientez un moment."
 
-#: raid_cog.py:571
+#: raid_cog.py:585
 msgid "Select the class for this player."
 msgstr "Sélectionnez la classe de ce joueur."
 
-#: raid_cog.py:578
+#: raid_cog.py:592
 msgid "Available players:\n"
 msgstr "Joueurs disponibles:\n"
 
-#: raid_cog.py:591 raid_cog.py:624
+#: raid_cog.py:605 raid_cog.py:638
 msgid "Player assignment finished!"
 msgstr "Affectation des joueurs terminée!"
 
-#: raid_cog.py:598
+#: raid_cog.py:612
 msgid "Please select a player first!"
 msgstr "Veuillez d'abord sélectionner un joueur!"
 
-#: raid_cog.py:616
+#: raid_cog.py:630
 msgid "Removed {0} from the line up!"
 msgstr "{0} supprimé de la liste!"
 
-#: raid_cog.py:632
+#: raid_cog.py:646
 msgid "{0} did not sign up with {1}!"
 msgstr "{0} ne s'est pas inscrit avec {1}!"
 
-#: raid_cog.py:637
+#: raid_cog.py:651
 msgid "That is not a class, please start over!"
 msgstr "Ce n'est pas une classe, s'il vous plait recommencer!"
 
-#: raid_cog.py:644
+#: raid_cog.py:658
 msgid "There are no slots available for the selected class."
 msgstr "Aucun emplacement valide fourni pour la classe sélectionnée."
 
-#: raid_cog.py:652
+#: raid_cog.py:666
 msgid "Assigned {0} to {1}."
 msgstr "Affecte {0} à {1}."
 
-#: raid_cog.py:681
+#: raid_cog.py:695
 msgid " server time"
 msgstr " Heure serveur"
 
-#: raid_cog.py:683
+#: raid_cog.py:697
 msgid "{0} on {1}"
 msgstr "{0} à {1}."
 
-#: raid_cog.py:685
+#: raid_cog.py:699
 msgid "{0} {1} on {2}"
 msgstr "{0} {1} à {2}"
 
-#: raid_cog.py:688
+#: raid_cog.py:702
 msgid "Aim: {0}"
 msgstr "Objectif: {0}"
 
-#: raid_cog.py:692
+#: raid_cog.py:706
 msgid "Time zones:"
 msgstr "Fuseaux horaires:"
 
-#: raid_cog.py:697
+#: raid_cog.py:711
 msgid "Selected line up:"
 msgstr "Line up séléctionnée:"
 
-#: raid_cog.py:717
+#: raid_cog.py:731
 msgid "The following {0} players are available:"
 msgstr "Les {0} joueurs suivants sont disponibles:"
 
-#: raid_cog.py:728
+#: raid_cog.py:742
 msgid "The following {0} players are unavailable:"
 msgstr "Les {0} joueurs suivants ne sont pas disponibles:"
 
-#: raid_cog.py:732
+#: raid_cog.py:746
 msgid "Raid in your local time"
 msgstr "Heure de raid dans votre heure locale"
 
-#: raid_cog.py:829
+#: raid_cog.py:843
 msgid "Gondor calls for aid! Will you answer the call"
 msgstr "Le Gondor appelle à l'aide! Allez-vous répondre à l'appel"
 
-#: raid_cog.py:834
+#: raid_cog.py:848
 msgid "? We are forming for the raid now."
 msgstr "? Nous nous préparons pour le raid maintenant."
 
@@ -658,6 +658,10 @@ msgid ""
 "omitted."
 msgstr ""
 
+#: register_cog.py:323
+msgid "Set your kin role to distinguish kin sign ups from non-kin."
+msgstr ""
+
 #: role_cog.py:22
 msgid "{0} currently has the following roles: "
 msgstr "{0} a les rôles suivants: "
@@ -670,7 +674,7 @@ msgstr ""
 msgid "{0} does not have any roles assigned."
 msgstr "{0} n'a aucun rôle assigné."
 
-#: role_cog.py:45 slash_cog.py:204
+#: role_cog.py:45 slash_cog.py:206
 msgid "Missing permissions to manage the class roles!"
 msgstr ""
 
@@ -718,72 +722,85 @@ msgid ""
 "provided in your commands in your preferred time zone."
 msgstr ""
 
-#: slash_cog.py:155
+#: slash_cog.py:157
 msgid "Slash command not yet supported."
 msgstr ""
 
-#: slash_cog.py:202
+#: slash_cog.py:204
 msgid "Successfully removed your class roles."
 msgstr ""
 
-#: slash_cog.py:237
+#: slash_cog.py:239
 msgid "Successfully updated the raid leader role!"
 msgstr ""
 
-#: slash_cog.py:289 slash_cog.py:312 slash_cog.py:332
+#: slash_cog.py:291 slash_cog.py:314 slash_cog.py:334
 msgid "{0} is not a valid time zone!"
 msgstr ""
 
-#: slash_cog.py:295 slash_cog.py:317
+#: slash_cog.py:297 slash_cog.py:319
 msgid "Set default time zone to {0}."
 msgstr ""
 
-#: slash_cog.py:302
+#: slash_cog.py:304
 msgid "You must be a raid leader to change the server time zone."
 msgstr ""
 
-#: slash_cog.py:322 slash_cog.py:347
+#: slash_cog.py:324 slash_cog.py:349
 msgid "You must be a raid leader to change the time zone display."
 msgstr ""
 
-#: slash_cog.py:342
+#: slash_cog.py:344
 msgid "Added {0} to be displayed."
 msgstr ""
 
-#: slash_cog.py:352
+#: slash_cog.py:354
 msgid "Reset time zone display to default."
 msgstr ""
 
-#: slash_cog.py:362
+#: slash_cog.py:364
 msgid "Current server time: {0}"
 msgstr "Heure actuelle du serveur: {0}"
 
-#: slash_cog.py:367
+#: slash_cog.py:369
 msgid "You must be a raid leader to list players."
 msgstr ""
 
-#: slash_cog.py:382
+#: slash_cog.py:384
 msgid "Cannot list raid {0}: only {1} raids exist."
 msgstr ""
 
-#: slash_cog.py:384
+#: slash_cog.py:386
 msgid "Please provide a positive integer."
 msgstr ""
 
-#: slash_cog.py:396
+#: slash_cog.py:398
 msgid "**Sign up list for {0} on {1}**"
 msgstr ""
 
-#: slash_cog.py:420
+#: slash_cog.py:422
 msgid "Players:"
 msgstr ""
 
-#: slash_cog.py:421 slash_cog.py:424
+#: slash_cog.py:423 slash_cog.py:426
 msgid "Sign up time:"
 msgstr ""
 
-#: slash_cog.py:423
+#: slash_cog.py:425
 msgid "Late players:"
+msgstr ""
+
+#: slash_cog.py:433
+#, fuzzy
+msgid "You must be an admin to change the kin role."
+msgstr "Vous n'avez pas la permission de changer les paramètres"
+
+#: slash_cog.py:437
+msgid "Kin role removed."
+msgstr ""
+
+#: slash_cog.py:442
+msgid "Successfully updated the kin role!"
 msgstr ""
 
 #: time_cog.py:25
