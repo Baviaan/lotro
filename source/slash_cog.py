@@ -256,7 +256,7 @@ class SlashCog(commands.Cog):
             boss = options['aim']
         except KeyError:
             boss = ""
-        full_name = self.raid_cog.get_raid_name(name)[0]
+        full_name = self.raid_cog.get_raid_name(name)
         # Check if time is in near future. Otherwise parsed date was likely unintended.
         current_time = datetime.datetime.utcnow()
         delta_time = datetime.timedelta(days=7)

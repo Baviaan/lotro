@@ -193,25 +193,17 @@ class RaidCog(commands.Cog):
         await self.raid_command(ctx, name, tier, "", time, roster=roster)
 
     def get_raid_name(self, name):
-        custom = False
         try:
             name = self.raid_lookup[name.lower()]
-            return name, custom
         except KeyError:
-            custom = True
             names = list(self.raid_lookup.values())
             match = get_match(name, names)
             if match[0]:
-                return match[0], custom
-        return name, custom
+                name = match[0]
+        return name
 
     async def raid_command(self, ctx, name, tier, boss, time, roster=False):
-        full_name, custom = self.get_raid_name(name)
-        command = ctx.invoked_with
-        if command in ['raid', 'r,', 'instance'] and not custom:
-            tip = _("Consider using `{prefix}{name} ...` instead of `{prefix}{command} {name} ...`.").format(
-                prefix=ctx.prefix, name=name, command=command)
-            await ctx.send(tip, delete_after=30)
+        full_name = self.get_raid_name(name)
         # Check if time is in near future. Otherwise parsed date was likely unintended.
         current_time = datetime.datetime.utcnow()
         delta_time = datetime.timedelta(days=7)
