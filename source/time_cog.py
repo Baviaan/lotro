@@ -229,17 +229,6 @@ class TimeCog(commands.Cog):
         return time_string
 
     @staticmethod
-    def calendar_time(time, fmt_24hr):
-        if fmt_24hr:
-            time_string = time.strftime(_("%d %b, %A %H:%M"))
-        else:
-            if os.name == "nt":  # Windows uses '#' instead of '-'.
-                time_string = time.strftime(_("%b %d, %A %#I:%M %p"))
-            else:
-                time_string = time.strftime(_("%b %d, %A %-I:%M %p"))
-        return time_string
-
-    @staticmethod
     def local_time(time, timezone):
         if not time.tzinfo:
             time = pytz.utc.localize(time)  # time is stored as UTC
