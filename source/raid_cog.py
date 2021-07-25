@@ -847,6 +847,10 @@ class RaidCog(commands.Cog):
     async def before_background_task(self):
         await self.bot.wait_until_ready()
 
+    @background_task.error
+    async def handle_error(self, exception):
+        logger.error(exception)
+
 
 def setup(bot):
     bot.add_cog(RaidCog(bot))
