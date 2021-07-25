@@ -678,32 +678,24 @@ class RaidCog(commands.Cog):
         return
 
     def build_raid_message(self, guild_id, raid_id, embed_texts_av, embed_texts_unav):
+        name, tier, time, boss, roster = select_one(self.conn, 'Raids', ['name', 'tier', 'time', 'boss', 'roster'], ['raid_id'], [raid_id])
         try:
-            timestamp = int(select_one(self.conn, 'Raids', ['time'], ['raid_id'], [raid_id]))
+            timestamp = int(time)
         except TypeError:
             logger.info("The raid has been deleted during editing.")
             return
-        time = datetime.datetime.utcfromtimestamp(timestamp)
-        name, tier, boss, roster = select_one(self.conn, 'Raids', ['name', 'tier', 'boss', 'roster'], ['raid_id'],
-                                              [raid_id])
         number_of_players = count(self.conn, 'Players', 'player_id', ['raid_id', 'unavailable'], [raid_id, False])
 
-        time_cog = self.time_cog
-        server_tz = time_cog.get_server_time(guild_id)
-        server_time = time_cog.local_time(time, server_tz)
-        fmt_24hr = time_cog.get_24hr_fmt(guild_id)
-        header_time = time_cog.format_time(server_time, fmt_24hr) + _(" server time")
-
-        embed_title = _("{0} on {1}").format(name, header_time)
         if tier:
-            embed_title = _("{0} {1} on {2}").format(name, tier, header_time)
-        embed_description = ""
+            embed_title = f"{name} {tier}\n<t:{timestamp}:F>"
+        else:
+            embed_title = f"{name}\n<t:{timestamp}:F>"
         if boss:
             embed_description = _("Aim: {0}").format(boss)
+        else:
+            embed_description = ""
 
         embed = discord.Embed(title=embed_title, colour=discord.Colour(0x3498db), description=embed_description)
-        time_string = self.build_time_string(time, guild_id, fmt_24hr)
-        embed.add_field(name=_("Time zones:"), value=time_string)
         if roster:
             result = select(self.conn, 'Assignment', ['byname, class_name'], ['raid_id'], [raid_id])
             number_of_slots = len(result)
@@ -743,8 +735,6 @@ class RaidCog(commands.Cog):
                 else:
                     embed_name = "\u200B"
                 embed.add_field(name=embed_name, value=embed_texts_unav[i])
-        embed.set_footer(text=_("Raid in your local time"))
-        embed.timestamp = time
         return embed
 
     def build_raid_players(self, raid_id, available=True, block_size=6):
@@ -800,16 +790,6 @@ class RaidCog(commands.Cog):
         if len(max(msg, key=len)) >= 1024 and block_size >= 2:
             msg = self.build_raid_players(raid_id, block_size=block_size // 2)
         return msg
-
-    def build_time_string(self, time, guild_id, fmt_24hr):
-        time_strings = []
-        time_cog = self.time_cog
-        display_times = time_cog.get_display_times(guild_id)
-        for timezone in display_times:
-            local_time = time_cog.local_time(time, timezone)
-            _, _, city = timezone.partition('/')
-            time_strings.append(city.replace('_', ' ') + ": " + time_cog.format_time(local_time, fmt_24hr))
-        return "\n".join(time_strings)
 
     @tasks.loop(seconds=300)
     async def background_task(self):

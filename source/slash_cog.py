@@ -387,15 +387,8 @@ class SlashCog(commands.Cog):
         raid_id, raid_name, raid_time = raids[raid_number-1]
         player_data = select_order(conn, 'Players', ['byname', 'timestamp'], 'timestamp', ['raid_id', 'unavailable'], [raid_id, False])
 
-        time_cog = self.time_cog
-        raid_time = datetime.datetime.utcfromtimestamp(raid_time)
-        cutoff_time = raid_time - datetime.timedelta(hours=cutoff)
-        server_tz = time_cog.get_server_time(guild_id)
-        server_time = time_cog.local_time(raid_time, server_tz)
-        fmt_24hr = time_cog.get_24hr_fmt(guild_id)
-        formatted_time = time_cog.format_time(server_time, fmt_24hr)
-
-        embed_title = _("**Sign up list for {0} on {1}**").format(raid_name, formatted_time)
+        cutoff_time = raid_time - 3600 * cutoff
+        embed_title = _("**Sign up list for {0} on <t:{1}>**").format(raid_name, raid_time)
         embed = discord.Embed(title=embed_title, colour=discord.Colour(0x3498db))
         players_on = ["\u200b"]
         players_off = ["\u200b"]
@@ -403,15 +396,13 @@ class SlashCog(commands.Cog):
         times_off = ["\u200b"]
         for row in player_data:
             if row[1]:
-                time = datetime.datetime.utcfromtimestamp(row[1])
-                server_time = time_cog.local_time(time, server_tz)
-                formatted_time = time_cog.format_time(server_time, fmt_24hr)
+                time = row[1]
                 if time < cutoff_time:
                     players_on.append(row[0])
-                    times_on.append(formatted_time)
+                    times_on.append(f"<t:{time}:R>")
                 else:
                     players_off.append(row[0])
-                    times_off.append(formatted_time)
+                    times_off.append(f"<t:{time}:R>")
             else:
                 players_on.append(row[0])
                 times_on.append("\u200b")
