@@ -73,8 +73,8 @@ Please note the bot will automatically shut down if it is not in any discord ser
 
 ------------------------------------
 
-Any questions please ask in our discord server:
-https://discord.gg/dGcBzPN
+Any questions please ask in our discord server, invite code: `dGcBzPN`
+You can paste the code directly in the discord app when clicking the join server button.
 
 ------------------------------------
 

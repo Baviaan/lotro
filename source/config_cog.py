@@ -63,7 +63,8 @@ class ConfigCog(commands.Cog):
     async def about_embed(self):
         dev = "Baviaan#4862"
         repo = "https://github.com/Baviaan/lotro"
-        server = "https://discord.gg/dGcBzPN"
+        code = "dGcBzPN"
+        server = "https://discord.gg/"+code
         app_info = await self.bot.application_info()
         host = app_info.owner.name
         uptime = datetime.datetime.utcnow() - self.bot.launch_time
