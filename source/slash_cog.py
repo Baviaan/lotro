@@ -29,6 +29,9 @@ class SlashCog(commands.Cog):
         if msg['t'] != "INTERACTION_CREATE":
             return
         d = msg['d']
+        if d['type'] != 2:
+            # slash commands are type 2
+            return
         token = d['token']
         name = d['data']['name']
         try:
@@ -273,7 +276,7 @@ class SlashCog(commands.Cog):
         self.raid_cog.roster_init(raid_id)
         self.conn.commit()
         logger.info("Created new slash raid: {0} at {1}".format(full_name, time))
-        embed = self.raid_cog.build_raid_message(guild_id, raid_id, "\u200B", None)
+        embed = self.raid_cog.build_raid_message(raid_id, "\u200B", None)
         await post.edit(embed=embed)
         await self.raid_cog.emoji_init(channel, post)
         self.raid_cog.raids.append(raid_id)
