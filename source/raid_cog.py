@@ -226,6 +226,7 @@ class RaidCog(commands.Cog):
         logger.info("Created new raid: {0} at {1}".format(full_name, time))
         embed = self.build_raid_message(raid_id, "\u200B", None)
         await post.edit(embed=embed, view=RaidView(self))
+        #await post.edit(embed=embed)
         #await self.emoji_init(ctx.channel, post)
         self.raids.append(raid_id)
         await self.bot.get_cog('CalendarCog').update_calendar(ctx.guild.id)
@@ -238,13 +239,31 @@ class RaidCog(commands.Cog):
             upsert(self.conn, 'Assignment', assignment_columns, assignment_values, ['raid_id', 'slot_id'], [raid_id, i])
 
     async def emoji_init(self, channel, post):
-        emojis = ["\U0001F6E0", "\u26CF", "\u274C", "\u2705"]  # Config, pick, cancel, check
+        emojis = ["\U0001F6E0\uFE0F", "\u26CF\uFE0F", "\u274C", "\u2705"]  # Config, pick, cancel, check
         emojis.extend(self.class_emojis)
         try:
             for emoji in emojis:
                 await post.add_reaction(emoji)
         except discord.Forbidden:
             await channel.send(_("Error: Missing 'Add Reactions' permission to add reactions to the raid post."))
+
+    async def has_raid_permission(self, user, guild, channel, raid_id):
+        if user.guild_permissions.administrator:
+            return True
+
+        organizer_id = select_one(self.conn, 'Raids', ['organizer_id'], ['raid_id'], [raid_id])
+        if organizer_id == user.id:
+            return True
+
+        raid_leader_id = select_one(self.conn, 'Settings', ['raid_leader'], ['guild_id'], [guild.id])
+        if raid_leader_id:
+            raid_leader = guild.get_role(raid_leader_id)
+            if raid_leader in user.roles:
+                return True
+        perm_msg = _("You do not have permission to change the raid settings.")
+        await channel.send(perm_msg, delete_after=15)
+        return False
+
 
     async def raid_update(self, payload):
         bot = self.bot
@@ -253,55 +272,17 @@ class RaidCog(commands.Cog):
         user = payload.member
         raid_id = payload.message_id
         emoji = payload.emoji
-        raid_deleted = False
 
-        if str(emoji) in ["\U0001F6E0", "\u26CF"]:
-            organizer_id = select_one(self.conn, 'Raids', ['organizer_id'], ['raid_id'], [raid_id])
-            raid_leader_id = select_one(self.conn, 'Settings', ['raid_leader'], ['guild_id'], [guild.id])
-            if raid_leader_id:
-                raid_leader = guild.get_role(raid_leader_id)
-            else:
-                raid_leader = None
-
-            operation_allowed = False
-            if organizer_id == user.id:
-                operation_allowed = True
-            elif raid_leader in user.roles:
-                operation_allowed = True
-            elif user.guild_permissions.administrator:
-                operation_allowed = True
-            if not operation_allowed:
-                error_msg = _("You do not have permission to change the raid settings.")
-                await channel.send(error_msg, delete_after=15)
-                return
-        if str(emoji) == "\u26CF":  # Pick emoji
-            roster = select_one(self.conn, 'Raids', ['roster'], ['raid_id'], [raid_id])
-            if not roster:
-                upsert(self.conn, 'Raids', ['roster'], [True], ['raid_id'], [raid_id])
-                await channel.send(_("Enabling roster for this raid."), delete_after=10)
-            await self.get_players(user, channel, raid_id)
-        elif str(emoji) == "\U0001F6E0":  # Config emoji
-            raid_deleted = await self.configure(user, channel, raid_id)
+        if str(emoji) in ["\u26CF", "\u26CF\uFE0F"]:  # Pick emoji
+            await self.get_players(guild, channel, raid_id, user)
+        elif str(emoji) in ["\U0001F6E0", "\U0001F6E0\uFE0F"]:  # Config emoji
+            return await self.configure(guild, channel, raid_id, user)
         elif str(emoji) == "\u274C":  # Cancel emoji
-            # This already commits and updates post
             await self.sign_up_cancel(guild, channel, raid_id, user)
-            return
         elif str(emoji) == "\u2705":  # Check mark emoji
-            # This already commits and updates post
             await self.sign_up_all(guild, channel, raid_id, user)
-            return
         elif emoji.name in self.role_names:
-            # This already commits and updates post
             await self.sign_up_class(guild, channel, raid_id, user, emoji.name)
-            return
-        self.conn.commit()
-        if raid_deleted:
-            post = channel.get_partial_message(raid_id)
-            await post.delete()
-            return True
-        else:
-            await self.update_raid_post(raid_id, channel)
-            return
 
     async def sign_up_class(self, guild, channel, raid_id, user, class_name):
         timestamp = int(time.time())
@@ -385,7 +366,10 @@ class RaidCog(commands.Cog):
                 byname = user.display_name
         return byname
 
-    async def configure(self, user, channel, raid_id):
+    async def configure(self, guild, channel, raid_id, user):
+        if not await self.has_raid_permission(user, guild, channel, raid_id):
+            return
+
         bot = self.bot
 
         def check(msg):
@@ -403,6 +387,7 @@ class RaidCog(commands.Cog):
         else:
             await msg.delete()
             await reply.delete()
+            raid_deleted = False
             if reply.content.lower().startswith(_("r")):
                 await self.roster_configure(user, channel, raid_id)
             elif reply.content.lower().startswith(_("d")):
@@ -413,10 +398,15 @@ class RaidCog(commands.Cog):
                 await self.tier_configure(user, channel, raid_id)
             elif reply.content.lower().startswith(_("cancel")):
                 await self.cleanup_old_raid(raid_id, "Raid manually deleted.")
-                return True  # The raid has deleted from database.
+                raid_deleted = True
         self.conn.commit()
         await bot.get_cog('CalendarCog').update_calendar(channel.guild.id, new_run=False)
-        return
+        if raid_deleted:
+            post = channel.get_partial_message(raid_id)
+            await post.delete()
+            return True  # The raid has deleted from database.
+        else:
+            await self.update_raid_post(raid_id, channel)
 
     async def boss_configure(self, author, channel, raid_id):
         bot = self.bot
@@ -566,7 +556,14 @@ class RaidCog(commands.Cog):
                     await channel.send(_("Classes for slot {0} updated!").format(index), delete_after=10)
         await msg.delete()
 
-    async def get_players(self, author, channel, raid_id):
+    async def get_players(self, guild, channel, raid_id, author):
+        if not await self.has_raid_permission(author, guild, channel, raid_id):
+            return
+        roster = select_one(self.conn, 'Raids', ['roster'], ['raid_id'], [raid_id])
+        if not roster:
+            upsert(self.conn, 'Raids', ['roster'], [True], ['raid_id'], [raid_id])
+            await channel.send(_("Enabling roster for this raid."), delete_after=10)
+
         bot = self.bot
 
         def check(reaction, user):
@@ -693,6 +690,7 @@ class RaidCog(commands.Cog):
             pass
         if len(available) > 20:
             await extra_msg.delete()
+        self.conn.commit()
         return
 
     def build_raid_message(self, raid_id, embed_texts_av, embed_texts_unav):
@@ -879,13 +877,15 @@ class RaidView(discord.ui.View):
         for emoji in raid_cog.class_emojis:
             self.add_item(EmojiButton(emoji, raid_cog.sign_up_class))
 
-    @discord.ui.button(emoji="\U0001F6E0", style=discord.ButtonStyle.blurple, custom_id='raid_view:settings')
+    @discord.ui.button(emoji="\U0001F6E0\uFE0F", style=discord.ButtonStyle.blurple, custom_id='raid_view:settings')
     async def settings(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await interaction.response.send_message("Settings!", ephemeral=True)
+        await interaction.response.defer()
+        await self.raid_cog.configure(interaction.guild, interaction.channel, interaction.message.id, interaction.user)
 
-    @discord.ui.button(emoji="\u26CF", style=discord.ButtonStyle.blurple, custom_id='raid_view:select')
+    @discord.ui.button(emoji="\u26CF\uFE0F", style=discord.ButtonStyle.blurple, custom_id='raid_view:select')
     async def select(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await interaction.response.send_message("Selecting line up", ephemeral=True)
+        await interaction.response.defer()
+        await self.raid_cog.get_players(interaction.guild, interaction.channel, interaction.message.id, interaction.user)
 
     @discord.ui.button(emoji="\u274C", style=discord.ButtonStyle.red, custom_id='raid_view:cancel')
     async def red_cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
