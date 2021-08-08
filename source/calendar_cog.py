@@ -134,7 +134,7 @@ class CalendarCog(commands.Cog):
         self.upcoming_events = upcoming_events
         return upcoming_events
 
-    def events_embed(self, user_id, guild_id):
+    def events_embed(self, guild_id):
         events = self.get_events()
 
         title = _("Upcoming events:")

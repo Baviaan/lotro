@@ -19,33 +19,28 @@ class SlashCog(commands.Cog):
         self.bot = bot
         self.conn = bot.conn
         self.host_id = bot.host_id
-        bot.add_listener(self.on_socket_response)
+        bot.add_listener(self.on_interaction)
         self.raid_cog = bot.get_cog('RaidCog')
         self.config_cog = bot.get_cog('ConfigCog')
         self.calendar_cog = bot.get_cog('CalendarCog')
         self.time_cog = bot.get_cog('TimeCog')
 
-    async def on_socket_response(self, msg):
-        if msg['t'] != "INTERACTION_CREATE":
+    async def on_interaction(self, interaction):
+        if interaction.type != discord.InteractionType.application_command:
             return
-        d = msg['d']
-        if d['type'] != 2:
-            # slash commands are type 2
-            return
-        token = d['token']
-        name = d['data']['name']
+        token = interaction.token
+        d = interaction.data
+        name = d['name']
         try:
-            if d['data']['options'][0]['type'] == 1:
-                name = d['data']['options'][0]['name']
-                options = {option['name']: option['value'] for option in d['data']['options'][0]['options']}
+            if d['options'][0]['type'] == 1:
+                name = d['options'][0]['name']
+                options = {option['name']: option['value'] for option in d['options'][0]['options']}
             else:
-                options = {option['name']: option['value'] for option in d['data']['options']}
+                options = {option['name']: option['value'] for option in d['options']}
         except KeyError:
             options = None
-        guild_id = int(d['guild_id'])
-        author_id = int(d['member']['user']['id'])
-        author_perms = int(d['member']['permissions'])
-        author_roles = [int(i) for i in d['member']['roles']]
+        guild_id = interaction.guild_id
+        user = interaction.user
         ephemeral = True
         embeds = False
 
@@ -57,15 +52,7 @@ class SlashCog(commands.Cog):
         channel_required_commands = self.raid_cog.nicknames[:]
         channel_required_commands.extend(['custom', 'calendar'])
         if name in channel_required_commands:
-            channel = self.bot.get_channel(d['channel_id'])
-            if not channel:
-                try:
-                    channel = await self.bot.fetch_channel(d['channel_id'])
-                except discord.Forbidden:
-                    channel = None
-                else:
-                    if not channel.permissions_for(guild.me).send_messages:
-                        channel = None
+            channel = interaction.channel
 
         if name in self.raid_cog.nicknames or name == 'custom':
             if not channel:
@@ -73,7 +60,7 @@ class SlashCog(commands.Cog):
             else:
                 time_arg = options['time']
                 try:
-                    time = await Time().converter(self.bot, guild_id, author_id, time_arg)
+                    time = await Time().converter(self.bot, guild_id, user.id, time_arg)
                 except commands.BadArgument as e:
                     content = str(e)
                 else:
@@ -83,7 +70,7 @@ class SlashCog(commands.Cog):
             if not channel:
                 content = _("Missing permissions to access this channel.")
             else:
-                allowed = self.is_raid_leader(author_perms, author_roles, guild_id)
+                allowed = self.is_raid_leader(user, guild_id)
                 if allowed:
                     content = _("The calendar will be updated in this channel.")
                     post_new_calendar = True
@@ -95,7 +82,7 @@ class SlashCog(commands.Cog):
             post_events = True
         elif name == 'leader':
             ephemeral = False
-            content = self.parse_leader_slash_command(guild_id, author_perms, options)
+            content = self.parse_leader_slash_command(guild_id, user, options)
         elif name == 'remove_roles':
             content = _("Removing your class roles...")
             update_roles = True
@@ -106,16 +93,16 @@ class SlashCog(commands.Cog):
             self.conn.commit()
             content = _("Successfully set this server's time format!")
         elif name == 'personal':
-            content = self.process_time_zones_personal(author_id, options)
+            content = self.process_time_zones_personal(user.id, options)
         elif name == 'server':
             ephemeral = False
-            content = self.process_time_zones_server(author_perms, author_roles, guild_id, options)
+            content = self.process_time_zones_server(user, guild_id, options)
         elif name == 'add_display':
             ephemeral = False
-            content = self.process_time_zones_add_display(author_perms, author_roles, guild_id, options)
+            content = self.process_time_zones_add_display(user, guild_id, options)
         elif name == 'reset_display':
             ephemeral = False
-            content = self.process_time_zones_reset_display(author_perms, author_roles, guild_id)
+            content = self.process_time_zones_reset_display(user, guild_id)
         elif name == 'about':
             ephemeral = False
             embeds = True
@@ -147,7 +134,7 @@ class SlashCog(commands.Cog):
             content = self.process_server_time(guild_id)
         elif name == 'list_players':
             ephemeral = False
-            embed, success = self.process_list_players(author_perms, author_roles, guild_id, options)
+            embed, success = self.process_list_players(user, guild_id, options)
             if success:
                 embeds = True
                 embed = embed.to_dict()
@@ -155,7 +142,7 @@ class SlashCog(commands.Cog):
             else:
                 content = embed  # string
         elif name == 'kin':
-            content = self.parse_priority_slash_command(guild_id, author_perms, options)
+            content = self.parse_priority_slash_command(guild_id, user, options)
         else:
             content = _("Slash command not yet supported.")
 
@@ -170,17 +157,17 @@ class SlashCog(commands.Cog):
         if embeds:
             json['data']['embeds'] = [embed]
 
-        url = self.api + "interactions/{0}/{1}/callback".format(d['id'], token)
+        url = self.api + "interactions/{0}/{1}/callback".format(interaction.id, token)
         r = requests.post(url, json=json)
 
         if post_new_raid:
-            await self.raid_command(name, guild_id, channel, author_id, time, options)
+            await self.raid_command(name, guild_id, channel, user.id, time, options)
         elif post_new_calendar:
             await self.post_calendar(guild_id, channel)
         elif update_roles:
-            await self.process_roles_command(guild, author_id, token)
+            await self.process_roles_command(guild, user.id, token)
         elif post_events:
-            self.process_events_command(author_id, guild_id, token)
+            self.process_events_command(guild_id, token)
 
         timestamp = int(datetime.datetime.now().timestamp())
         increment(self.conn, 'Settings', 'slash_count', ['guild_id'], [guild_id])
@@ -188,20 +175,17 @@ class SlashCog(commands.Cog):
         if res:
             self.conn.commit()
 
-    def is_raid_leader(self, author_perms, author_roles, guild_id):
-        admin_permission = 0x00000008
-        if (author_perms & admin_permission) == admin_permission:
+    def is_raid_leader(self, user, guild_id):
+        if user.guild_permissions.administrator:
             return True
         raid_leader_id = select_one(self.conn, 'Settings', ['raid_leader'], ['guild_id'], [guild_id])
-        if raid_leader_id in author_roles:
-            return True
+        if raid_leader_id:
+            raid_leader = guild.get_role(raid_leader_id)
+            if raid_leader in user.roles:
+                return True
         return False
 
-    async def process_roles_command(self, guild, author_id, token):
-        member = guild.get_member(author_id)
-        if not member:
-            member = await guild.fetch_member(author_id)
-
+    async def process_roles_command(self, guild, member, token):
         try:
             await member.remove_roles(*[role for role in member.roles if role.name in self.bot.role_names])
             content = _("Successfully removed your class roles.")
@@ -220,8 +204,8 @@ class SlashCog(commands.Cog):
         res = upsert(self.conn, 'Settings', ['calendar'], [ids], ['guild_id'], [guild_id])
         self.conn.commit()
 
-    def process_events_command(self, author_id, guild_id, token):
-        embed = self.calendar_cog.events_embed(author_id, guild_id)
+    def process_events_command(self, guild_id, token):
+        embed = self.calendar_cog.events_embed(guild_id)
         embed = embed.to_dict()
         endpoint = self.api + "webhooks/{0}/{1}/messages/@original".format(self.bot.user.id, token)
         json = {
@@ -231,9 +215,8 @@ class SlashCog(commands.Cog):
         requests.patch(endpoint, json=json)
 
 
-    def parse_leader_slash_command(self, guild_id, author_perms, options):
-        admin_permission = 0x00000008
-        if not (author_perms & admin_permission) == admin_permission:
+    def parse_leader_slash_command(self, guild_id, user, options):
+        if not user.guild_permissions.administrator:
             content = _("You must be an admin to change the raid leader role.")
             return content
         leader_id = options['role']
@@ -242,7 +225,7 @@ class SlashCog(commands.Cog):
         content = _("Successfully updated the raid leader role!")
         return content
 
-    async def raid_command(self, name, guild_id, channel, author_id, time, options):
+    async def raid_command(self, name, guild_id, channel, user_id, time, options):
         roster = False
         try:
             name = options['name']
@@ -259,9 +242,9 @@ class SlashCog(commands.Cog):
             boss = options['aim']
         except KeyError:
             boss = ""
-        await self.raid_cog.post_raid(name, tier, boss, time, roster, guild_id, channel, author_id)
+        await self.raid_cog.post_raid(name, tier, boss, time, roster, guild_id, channel, user_id)
 
-    def process_time_zones_personal(self, author_id, options):
+    def process_time_zones_personal(self, user_id, options):
         conn = self.conn
         try:
             timezone = options['custom_timezone']
@@ -273,7 +256,7 @@ class SlashCog(commands.Cog):
             content = _("{0} is not a valid time zone!").format(e)
         else:
             tz = str(tz)
-            res = upsert(conn, 'Timezone', ['timezone'], [tz], ['player_id'], [author_id])
+            res = upsert(conn, 'Timezone', ['timezone'], [tz], ['player_id'], [user_id])
             if res:
                 conn.commit()
                 content = _("Set default time zone to {0}.").format(tz)
@@ -281,8 +264,8 @@ class SlashCog(commands.Cog):
                 content = _("An error occurred.")
         return content
 
-    def process_time_zones_server(self, author_perms, author_roles, guild_id, options):
-        if not self.is_raid_leader(author_perms, author_roles, guild_id):
+    def process_time_zones_server(self, user, guild_id, options):
+        if not self.is_raid_leader(user, guild_id):
             content = _("You must be a raid leader to change the server time zone.")
             return content
         conn = self.conn
@@ -301,8 +284,8 @@ class SlashCog(commands.Cog):
             content = _("Set default time zone to {0}.").format(tz)
         return content
 
-    def process_time_zones_add_display(self, author_perms, author_roles, guild_id, options):
-        if not self.is_raid_leader(author_perms, author_roles, guild_id):
+    def process_time_zones_add_display(self, user, guild_id, options):
+        if not self.is_raid_leader(user, guild_id):
             content = _("You must be a raid leader to change the time zone display.")
             return content
         conn = self.conn
@@ -326,8 +309,8 @@ class SlashCog(commands.Cog):
             content = _("Added {0} to be displayed.").format(tz)
         return content
 
-    def process_time_zones_reset_display(self, author_perms, author_roles, guild_id):
-        if not self.is_raid_leader(author_perms, author_roles, guild_id):
+    def process_time_zones_reset_display(self, guild_id):
+        if not self.is_raid_leader(user, guild_id):
             content = _("You must be a raid leader to change the time zone display.")
             return content
         conn = self.conn
@@ -346,8 +329,8 @@ class SlashCog(commands.Cog):
         content = _("Current server time: {0}").format(formatted_time)
         return content
 
-    def process_list_players(self, author_perms, author_roles, guild_id, options):
-        if not self.is_raid_leader(author_perms, author_roles, guild_id):
+    def process_list_players(self, user, guild_id, options):
+        if not self.is_raid_leader(user, guild_id):
             return _("You must be a raid leader to list players."), False
         raid_number = 1
         cutoff = 24
@@ -400,9 +383,8 @@ class SlashCog(commands.Cog):
         embed.add_field(name="\u200b", value="\u200b")
         return embed, True
 
-    def parse_priority_slash_command(self, guild_id, author_perms, options):
-        admin_permission = 0x00000008
-        if not (author_perms & admin_permission) == admin_permission:
+    def parse_priority_slash_command(self, guild_id, user, options):
+        if not user.guild_permissions.administrator:
             content = _("You must be an admin to change the kin role.")
             return content
         if not options:
