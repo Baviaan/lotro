@@ -174,7 +174,7 @@ class SlashCog(commands.Cog):
         r = requests.post(url, json=json)
 
         if post_new_raid:
-            await self.post_raid(name, guild_id, channel, author_id, time, options)
+            await self.raid_command(name, guild_id, channel, author_id, time, options)
         elif post_new_calendar:
             await self.post_calendar(guild_id, channel)
         elif update_roles:
@@ -242,7 +242,7 @@ class SlashCog(commands.Cog):
         content = _("Successfully updated the raid leader role!")
         return content
 
-    async def post_raid(self, name, guild_id, channel, author_id, time, options):
+    async def raid_command(self, name, guild_id, channel, author_id, time, options):
         roster = False
         try:
             name = options['name']
@@ -259,28 +259,7 @@ class SlashCog(commands.Cog):
             boss = options['aim']
         except KeyError:
             boss = ""
-        full_name = self.raid_cog.get_raid_name(name)
-        # Check if time is in near future. Otherwise parsed date was likely unintended.
-        current_time = datetime.datetime.utcnow()
-        delta_time = datetime.timedelta(days=7)
-        if current_time + delta_time < time:
-            error_message = _("Please check the date <@{0}>. You are posting a raid for: {1} UTC.").format(author_id,
-                                                                                                           time)
-            await channel.send(error_message, delete_after=30)
-        post = await channel.send('\u200B')
-        raid_id = post.id
-        timestamp = int(time.replace(tzinfo=datetime.timezone.utc).timestamp())  # Do not use local tz.
-        raid_columns = ['channel_id', 'guild_id', 'organizer_id', 'name', 'tier', 'boss', 'time', 'roster']
-        raid_values = [channel.id, guild_id, author_id, full_name, tier, boss, timestamp, roster]
-        upsert(self.conn, 'Raids', raid_columns, raid_values, ['raid_id'], [raid_id])
-        self.raid_cog.roster_init(raid_id)
-        self.conn.commit()
-        logger.info("Created new slash raid: {0} at {1}".format(full_name, time))
-        embed = self.raid_cog.build_raid_message(raid_id, "\u200B", None)
-        await post.edit(embed=embed)
-        await self.raid_cog.emoji_init(channel, post)
-        self.raid_cog.raids.append(raid_id)
-        await self.bot.get_cog('CalendarCog').update_calendar(guild_id)
+        await self.raid_cog.post_raid(name, tier, boss, time, roster, guild_id, channel, author_id)
 
     def process_time_zones_personal(self, author_id, options):
         conn = self.conn

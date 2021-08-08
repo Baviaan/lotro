@@ -207,19 +207,22 @@ class RaidCog(commands.Cog):
         return name
 
     async def raid_command(self, ctx, name, tier, boss, time, roster=False):
+        await self.post_raid(name, tier, boss, time, roster, ctx.guild.id, ctx.channel, ctx.author.id)
+
+    async def post_raid(self, name, tier, boss, time, roster, guild_id, channel, author_id):
         full_name = self.get_raid_name(name)
         # Check if time is in near future. Otherwise parsed date was likely unintended.
         current_time = datetime.datetime.utcnow()
         delta_time = datetime.timedelta(days=7)
         if current_time + delta_time < time:
             error_message = _("Please check the date <@{0}>. You are posting a raid for: {1} UTC.").format(
-                ctx.author.id, time)
-            await ctx.send(error_message, delete_after=30)
-        post = await ctx.send('\u200B')
+                author_id, time)
+            await channel.send(error_message, delete_after=30)
+        post = await channel.send('\u200B')
         raid_id = post.id
         timestamp = int(time.replace(tzinfo=datetime.timezone.utc).timestamp())  # Do not use local tz.
         raid_columns = ['channel_id', 'guild_id', 'organizer_id', 'name', 'tier', 'boss', 'time', 'roster']
-        raid_values = [ctx.channel.id, ctx.guild.id, ctx.author.id, full_name, tier, boss, timestamp, roster]
+        raid_values = [channel.id, guild_id, author_id, full_name, tier, boss, timestamp, roster]
         upsert(self.conn, 'Raids', raid_columns, raid_values, ['raid_id'], [raid_id])
         self.roster_init(raid_id)
         self.conn.commit()
@@ -227,9 +230,9 @@ class RaidCog(commands.Cog):
         embed = self.build_raid_message(raid_id, "\u200B", None)
         await post.edit(embed=embed, view=RaidView(self))
         #await post.edit(embed=embed)
-        #await self.emoji_init(ctx.channel, post)
+        #await self.emoji_init(channel, post)
         self.raids.append(raid_id)
-        await self.bot.get_cog('CalendarCog').update_calendar(ctx.guild.id)
+        await self.bot.get_cog('CalendarCog').update_calendar(guild_id)
 
     def roster_init(self, raid_id):
         available = _("<Open>")
