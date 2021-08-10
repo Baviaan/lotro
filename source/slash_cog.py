@@ -53,6 +53,8 @@ class SlashCog(commands.Cog):
         channel_required_commands.extend(['custom', 'calendar'])
         if name in channel_required_commands:
             channel = interaction.channel
+            if not channel.permissions_for(guild.me).send_messages:
+                 channel = None
 
         if name in self.raid_cog.nicknames or name == 'custom':
             if not channel:
