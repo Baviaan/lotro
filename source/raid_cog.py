@@ -250,7 +250,7 @@ class RaidCog(commands.Cog):
         except discord.Forbidden:
             await channel.send(_("Error: Missing 'Add Reactions' permission to add reactions to the raid post."))
 
-    async def has_raid_permission(self, user, guild, channel, raid_id):
+    async def has_raid_permission(self, user, guild, raid_id, channel=None):
         if user.guild_permissions.administrator:
             return True
 
@@ -263,8 +263,9 @@ class RaidCog(commands.Cog):
             raid_leader = guild.get_role(raid_leader_id)
             if raid_leader in user.roles:
                 return True
-        perm_msg = _("You do not have permission to change the raid settings.")
-        await channel.send(perm_msg, delete_after=15)
+        if channel:
+            perm_msg = _("You do not have permission to change the raid settings.")
+            await channel.send(perm_msg, delete_after=15)
         return False
 
 
@@ -370,7 +371,7 @@ class RaidCog(commands.Cog):
         return byname
 
     async def configure(self, guild, channel, raid_id, user):
-        if not await self.has_raid_permission(user, guild, channel, raid_id):
+        if not await self.has_raid_permission(user, guild, raid_id, channel):
             return
 
         bot = self.bot
@@ -560,7 +561,7 @@ class RaidCog(commands.Cog):
         await msg.delete()
 
     async def get_players(self, guild, channel, raid_id, author):
-        if not await self.has_raid_permission(author, guild, channel, raid_id):
+        if not await self.has_raid_permission(author, guild, raid_id, channel):
             return
         roster = select_one(self.conn, 'Raids', ['roster'], ['raid_id'], [raid_id])
         if not roster:
@@ -882,13 +883,31 @@ class RaidView(discord.ui.View):
 
     @discord.ui.button(emoji="\U0001F6E0\uFE0F", style=discord.ButtonStyle.blurple, custom_id='raid_view:settings')
     async def settings(self, button: discord.ui.Button, interaction: discord.Interaction):
+        if not await self.raid_cog.has_raid_permission(interaction.user, interaction.guild, interaction.message.id):
+            perm_msg = _("You do not have permission to change the raid settings.")
+            await interaction.response.send_message(perm_msg, ephemeral=True)
+            return
         await interaction.response.defer()
         await self.raid_cog.configure(interaction.guild, interaction.channel, interaction.message.id, interaction.user)
 
     @discord.ui.button(emoji="\u26CF\uFE0F", style=discord.ButtonStyle.blurple, custom_id='raid_view:select')
     async def select(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await interaction.response.defer()
-        await self.raid_cog.get_players(interaction.guild, interaction.channel, interaction.message.id, interaction.user)
+        if not await self.raid_cog.has_raid_permission(interaction.user, interaction.guild, interaction.message.id):
+            perm_msg = _("You do not have permission to change the raid settings.")
+            await interaction.response.send_message(perm_msg, ephemeral=True)
+            return
+        raid_id = interaction.message.id
+        available = select(self.raid_cog.conn, 'Players', ['player_id, byname'], ['raid_id', 'unavailable'], [raid_id, False])
+        if not available:
+            msg = _("There are no players to assign for this raid!")
+            await interaction.response.send_message(msg, ephemeral=True)
+            return
+        msg = _("Please first select the player. The roster is updated when a class is selected. You can select a slot manually or leave it on automatic. (This selection message is ephemeral and will cease to work after 60s without interaction.)")
+        view = SelectView(self.raid_cog, raid_id)
+        await interaction.response.send_message(msg, view=view, ephemeral=True)
+        roster = select_one(self.raid_cog.conn, 'Raids', ['roster'], ['raid_id'], [raid_id])
+        if not roster:
+            upsert(self.raid_cog.conn, 'Raids', ['roster'], [True], ['raid_id'], [raid_id])
 
     @discord.ui.button(emoji="\u274C", style=discord.ButtonStyle.red, custom_id='raid_view:cancel')
     async def red_cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
@@ -911,6 +930,100 @@ class EmojiButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         class_name = self.custom_id
         await self.sign_up_class(interaction.guild, interaction.channel, interaction.message.id, interaction.user, class_name)
+
+
+class SelectView(discord.ui.View):
+    def __init__(self, raid_cog, raid_id):
+        super().__init__(timeout=20)
+        self.raid_cog = raid_cog
+        self.raid_id = raid_id
+        self.conn = raid_cog.conn
+
+        self.slot = -1
+        self.player = None
+
+        self.add_item(SlotSelect(len(raid_cog.slots_class_names)))
+        self.add_item(PlayerSelect(raid_cog.conn, raid_id))
+        self.add_item(ClassSelect(raid_cog.class_emojis))
+
+    async def on_timeout(self):
+        self.conn.commit()
+
+
+class SlotSelect(discord.ui.Select):
+    def __init__(self, number_of_slots):
+        options = [
+                discord.SelectOption(label=_("Automatic"), value=-1)
+        ]
+        for i in range(number_of_slots):
+            options.append(discord.SelectOption(label=i+1, value=i))
+        super().__init__(placeholder=_("Slot (automatic)"), options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        self.view.slot = int(self.values[0])
+
+
+class PlayerSelect(discord.ui.Select):
+    def __init__(self, conn, raid_id):
+        available = select(conn, 'Players', ['player_id, byname'], ['raid_id', 'unavailable'], [raid_id, False])
+        if len(available) > 25:
+            available = available[:25]  # discord API limit is 25 options
+        options = []
+        for player in available:
+            options.append(discord.SelectOption(value=player[0], label=player[1]))
+        super().__init__(placeholder=_("Player"), options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        self.view.player = self.values[0]
+
+
+
+class ClassSelect(discord.ui.Select):
+    def __init__(self, class_emojis):
+        options = []
+        for emoji in class_emojis:
+            options.append(discord.SelectOption(label=emoji.name, emoji=emoji))
+        options.append(discord.SelectOption(label=_("Remove"), value='remove', emoji="\u274C"))
+        super().__init__(placeholder=_("Class"), options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        raid_id = self.view.raid_id
+        if self.view.player is None:
+            msg = _("Please select a player first.")
+            await interaction.response.send_message(msg, ephemeral=True)
+            return
+
+        slot = select_one(self.view.conn, 'Assignment', ['slot_id', 'byname'], ['player_id', 'raid_id'], [self.view.player, raid_id])
+        if slot is not None:
+            assignment_columns = ['player_id', 'byname', 'class_name']
+            class_names = ','.join(self.view.raid_cog.slots_class_names[slot[0]])
+            assignment_values = [None, _("<Open>"), class_names]
+            upsert(self.view.conn, 'Assignment', assignment_columns, assignment_values, ['raid_id', 'slot_id'], [raid_id, slot[0]])
+            await self.view.raid_cog.update_raid_post(raid_id, interaction.channel)
+
+        if self.values[0] == 'remove':
+            return
+
+        signup = select_one(self.view.conn, 'Players', [self.values[0], 'byname'], ['player_id', 'raid_id'], [self.view.player, raid_id])
+        if not signup[0]:
+            msg = _("{0} did not sign up with {1}.").format(signup[1], self.values[0])
+            await interaction.response.send_message(msg, ephemeral=True)
+            return
+
+        if self.view.slot == -1:
+            search = '%' + self.values[0] + '%'
+            slot_id = select_one(self.view.conn, 'Assignment', ['slot_id'], ['raid_id'], [raid_id], ['player_id'], ['class_name'], [search])
+        else:
+            slot_id = self.view.slot
+        if slot_id is None:
+            msg =_("There are no slots available for the selected class. Please select the slot manually or pick a different class.")
+            await interaction.response.send_message(msg, ephemeral=True)
+            return
+
+        assignment_columns = ['player_id', 'byname', 'class_name']
+        assignment_values = [self.view.player, signup[1], self.values[0]]
+        upsert(self.view.conn, 'Assignment', assignment_columns, assignment_values, ['raid_id', 'slot_id'], [raid_id, slot_id])
+        await self.view.raid_cog.update_raid_post(raid_id, interaction.channel)
 
 
 def setup(bot):
