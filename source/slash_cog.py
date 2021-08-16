@@ -167,7 +167,7 @@ class SlashCog(commands.Cog):
         elif post_new_calendar:
             await self.post_calendar(guild_id, channel)
         elif update_roles:
-            await self.process_roles_command(guild, user.id, token)
+            await self.process_roles_command(guild, user, token)
         elif post_events:
             self.process_events_command(guild_id, token)
 
