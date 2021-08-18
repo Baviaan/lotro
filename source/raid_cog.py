@@ -268,7 +268,6 @@ class RaidCog(commands.Cog):
             await channel.send(perm_msg, delete_after=15)
         return False
 
-
     async def raid_update(self, payload):
         bot = self.bot
         guild = bot.get_guild(payload.guild_id)
@@ -411,6 +410,30 @@ class RaidCog(commands.Cog):
             return True  # The raid has deleted from database.
         else:
             await self.update_raid_post(raid_id, channel)
+
+    async def name_configure(self, author, channel, raid_id):
+        bot = self.bot
+
+        def check(msg):
+            return author == msg.author
+
+        msg = await channel.send(_("Please specify the new raid name."))
+        try:
+            response = await bot.wait_for('message', check=check, timeout=30)
+        except asyncio.TimeoutError:
+            return
+        else:
+            await response.delete()
+        finally:
+            await msg.delete()
+        name = response.content
+        char_limit = 255
+        if len(name) > char_limit:
+            await channel.send(_("Please use less than {0} characters.").format(char_limit), delete_after=20)
+            return
+        full_name = self.get_raid_name(name)
+        upsert(self.conn, 'Raids', ['name'], [full_name], ['raid_id'], [raid_id])
+        return
 
     async def boss_configure(self, author, channel, raid_id):
         bot = self.bot
@@ -887,8 +910,10 @@ class RaidView(discord.ui.View):
             perm_msg = _("You do not have permission to change the raid settings.")
             await interaction.response.send_message(perm_msg, ephemeral=True)
             return
-        await interaction.response.defer()
-        await self.raid_cog.configure(interaction.guild, interaction.channel, interaction.message.id, interaction.user)
+        msg = _("Please select the setting to update or delete the raid.\n") \
+            + _("(This selection message is ephemeral and will cease to work after 60s without interaction.)")
+        view = ConfigureView(self.raid_cog, interaction.message.id)
+        await interaction.response.send_message(msg, view=view, ephemeral=True)
 
     @discord.ui.button(emoji="\u26CF\uFE0F", style=discord.ButtonStyle.blurple, custom_id='raid_view:select')
     async def select(self, button: discord.ui.Button, interaction: discord.Interaction):
@@ -897,12 +922,15 @@ class RaidView(discord.ui.View):
             await interaction.response.send_message(perm_msg, ephemeral=True)
             return
         raid_id = interaction.message.id
-        available = select(self.raid_cog.conn, 'Players', ['player_id, byname'], ['raid_id', 'unavailable'], [raid_id, False])
+        available = select(self.raid_cog.conn, 'Players', ['player_id, byname'], ['raid_id', 'unavailable'],
+                           [raid_id, False])
         if not available:
             msg = _("There are no players to assign for this raid!")
             await interaction.response.send_message(msg, ephemeral=True)
             return
-        msg = _("Please first select the player. The roster is updated when a class is selected. You can select a slot manually or leave it on automatic. (This selection message is ephemeral and will cease to work after 60s without interaction.)")
+        msg = _("Please first select the player. The roster is updated when a class is selected. "
+                "You can select a slot manually or leave it on automatic.\n") \
+            + _("(This selection message is ephemeral and will cease to work after 60s without interaction.)")
         view = SelectView(self.raid_cog, raid_id)
         await interaction.response.send_message(msg, view=view, ephemeral=True)
         roster = select_one(self.raid_cog.conn, 'Raids', ['roster'], ['raid_id'], [raid_id])
@@ -911,15 +939,18 @@ class RaidView(discord.ui.View):
 
     @discord.ui.button(emoji="\u274C", style=discord.ButtonStyle.red, custom_id='raid_view:cancel')
     async def red_cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await self.raid_cog.sign_up_cancel(interaction.guild, interaction.channel, interaction.message.id, interaction.user)
+        await self.raid_cog.sign_up_cancel(interaction.guild, interaction.channel, interaction.message.id,
+                                           interaction.user)
 
     @discord.ui.button(emoji="\u2705", style=discord.ButtonStyle.green, custom_id='raid_view:check')
     async def green_check(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await self.raid_cog.sign_up_all(interaction.guild, interaction.channel, interaction.message.id, interaction.user)
+        await self.raid_cog.sign_up_all(interaction.guild, interaction.channel, interaction.message.id,
+                                        interaction.user)
 
     @discord.ui.button(label="\U0001D4D1", custom_id='raid_view:brawler')
     async def brawler(self, button: discord.ui.Button, interaction: discord.Interaction):
         await interaction.response.send_message("You will have to wait for this...", ephemeral=True)
+        #await self.raid_cog.sign_up_class(interaction.guild, interaction.channel, interaction.message.id, interaction.user, 'Brawler')
 
 
 class EmojiButton(discord.ui.Button):
@@ -929,12 +960,13 @@ class EmojiButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         class_name = self.custom_id
-        await self.sign_up_class(interaction.guild, interaction.channel, interaction.message.id, interaction.user, class_name)
+        await self.sign_up_class(interaction.guild, interaction.channel, interaction.message.id, interaction.user,
+                                 class_name)
 
 
 class SelectView(discord.ui.View):
     def __init__(self, raid_cog, raid_id):
-        super().__init__(timeout=20)
+        super().__init__(timeout=60)
         self.raid_cog = raid_cog
         self.raid_id = raid_id
         self.conn = raid_cog.conn
@@ -977,7 +1009,6 @@ class PlayerSelect(discord.ui.Select):
         self.view.player = self.values[0]
 
 
-
 class ClassSelect(discord.ui.Select):
     def __init__(self, class_emojis):
         options = []
@@ -993,18 +1024,21 @@ class ClassSelect(discord.ui.Select):
             await interaction.response.send_message(msg, ephemeral=True)
             return
 
-        slot = select_one(self.view.conn, 'Assignment', ['slot_id', 'byname'], ['player_id', 'raid_id'], [self.view.player, raid_id])
+        slot = select_one(self.view.conn, 'Assignment', ['slot_id', 'byname'], ['player_id', 'raid_id'],
+                          [self.view.player, raid_id])
         if slot is not None:
             assignment_columns = ['player_id', 'byname', 'class_name']
             class_names = ','.join(self.view.raid_cog.slots_class_names[slot[0]])
             assignment_values = [None, _("<Open>"), class_names]
-            upsert(self.view.conn, 'Assignment', assignment_columns, assignment_values, ['raid_id', 'slot_id'], [raid_id, slot[0]])
+            upsert(self.view.conn, 'Assignment', assignment_columns, assignment_values, ['raid_id', 'slot_id'],
+                   [raid_id, slot[0]])
             await self.view.raid_cog.update_raid_post(raid_id, interaction.channel)
 
         if self.values[0] == 'remove':
             return
 
-        signup = select_one(self.view.conn, 'Players', [self.values[0], 'byname'], ['player_id', 'raid_id'], [self.view.player, raid_id])
+        signup = select_one(self.view.conn, 'Players', [self.values[0], 'byname'], ['player_id', 'raid_id'],
+                            [self.view.player, raid_id])
         if not signup[0]:
             msg = _("{0} did not sign up with {1}.").format(signup[1], self.values[0])
             await interaction.response.send_message(msg, ephemeral=True)
@@ -1012,18 +1046,76 @@ class ClassSelect(discord.ui.Select):
 
         if self.view.slot == -1:
             search = '%' + self.values[0] + '%'
-            slot_id = select_one(self.view.conn, 'Assignment', ['slot_id'], ['raid_id'], [raid_id], ['player_id'], ['class_name'], [search])
+            slot_id = select_one(self.view.conn, 'Assignment', ['slot_id'], ['raid_id'], [raid_id], ['player_id'],
+                                 ['class_name'], [search])
         else:
             slot_id = self.view.slot
         if slot_id is None:
-            msg =_("There are no slots available for the selected class. Please select the slot manually or pick a different class.")
+            msg = _("There are no slots available for the selected class. "
+                    "Please select the slot manually or pick a different class.")
             await interaction.response.send_message(msg, ephemeral=True)
             return
 
         assignment_columns = ['player_id', 'byname', 'class_name']
         assignment_values = [self.view.player, signup[1], self.values[0]]
-        upsert(self.view.conn, 'Assignment', assignment_columns, assignment_values, ['raid_id', 'slot_id'], [raid_id, slot_id])
+        upsert(self.view.conn, 'Assignment', assignment_columns, assignment_values, ['raid_id', 'slot_id'],
+               [raid_id, slot_id])
         await self.view.raid_cog.update_raid_post(raid_id, interaction.channel)
+
+
+class ConfigureView(discord.ui.View):
+    def __init__(self, raid_cog, raid_id):
+        super().__init__(timeout=60)
+        self.raid_cog = raid_cog
+        self.raid_id = raid_id
+        self.conn = raid_cog.conn
+
+        self.add_item(TierSelect())
+
+    @discord.ui.button(label="Name", style=discord.ButtonStyle.secondary, custom_id='configure_view:name')
+    async def update_name(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await interaction.response.defer()
+        await self.raid_cog.name_configure(interaction.user, interaction.channel, self.raid_id)
+        await self.raid_cog.update_raid_post(self.raid_id, interaction.channel)
+
+    @discord.ui.button(label="Aim", style=discord.ButtonStyle.secondary, custom_id='configure_view:aim')
+    async def update_aim(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await interaction.response.defer()
+        await self.raid_cog.boss_configure(interaction.user, interaction.channel, self.raid_id)
+        await self.raid_cog.update_raid_post(self.raid_id, interaction.channel)
+
+    @discord.ui.button(label="Time", style=discord.ButtonStyle.secondary, custom_id='configure_view:time')
+    async def update_time(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await interaction.response.defer()
+        await self.raid_cog.time_configure(interaction.user, interaction.channel, self.raid_id)
+        await self.raid_cog.update_raid_post(self.raid_id, interaction.channel)
+
+    @discord.ui.button(label="Delete", style=discord.ButtonStyle.red, custom_id='configure_view:delete')
+    async def red_cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await self.raid_cog.cleanup_old_raid(self.raid_id, "Raid manually deleted.")
+        post = interaction.channel.get_partial_message(self.raid_id)
+        await post.delete()
+
+    async def on_timeout(self):
+        self.conn.commit()
+
+
+class TierSelect(discord.ui.Select):
+    def __init__(self):
+        options = [
+                discord.SelectOption(label="1", value="T1"),
+                discord.SelectOption(label="2", value="T2"),
+                discord.SelectOption(label="2c", value="T2c"),
+                discord.SelectOption(label="3", value="T3"),
+                discord.SelectOption(label="4", value="T4"),
+                discord.SelectOption(label="5", value="T5")
+        ]
+        super().__init__(placeholder=_("Tier"), options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        tier = self.values[0]
+        upsert(self.view.conn, 'Raids', ['tier'], [tier], ['raid_id'], [self.view.raid_id])
+        await self.view.raid_cog.update_raid_post(self.view.raid_id, interaction.channel)
 
 
 def setup(bot):
