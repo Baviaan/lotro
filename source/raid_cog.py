@@ -753,6 +753,7 @@ class ConfigureView(discord.ui.View):
     def __init__(self, raid_cog, raid_id):
         super().__init__(timeout=60)
         self.raid_cog = raid_cog
+        self.calendar_cog = raid_cog.bot.get_cog('CalendarCog')
         self.raid_id = raid_id
         self.conn = raid_cog.conn
 
@@ -763,6 +764,7 @@ class ConfigureView(discord.ui.View):
         await interaction.response.defer()
         await self.raid_cog.name_configure(interaction.user, interaction.channel, self.raid_id)
         await self.raid_cog.update_raid_post(self.raid_id, interaction.channel)
+        await self.calendar_cog.update_calendar(interaction.guild.id, new_run=False)
 
     @discord.ui.button(label="Aim", style=discord.ButtonStyle.secondary, custom_id='configure_view:aim')
     async def update_aim(self, button: discord.ui.Button, interaction: discord.Interaction):
@@ -775,6 +777,7 @@ class ConfigureView(discord.ui.View):
         await interaction.response.defer()
         await self.raid_cog.time_configure(interaction.user, interaction.channel, self.raid_id)
         await self.raid_cog.update_raid_post(self.raid_id, interaction.channel)
+        await self.calendar_cog.update_calendar(interaction.guild.id, new_run=False)
 
     @discord.ui.button(label="Delete", style=discord.ButtonStyle.red, custom_id='configure_view:delete')
     async def red_cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
@@ -802,6 +805,7 @@ class TierSelect(discord.ui.Select):
         tier = self.values[0]
         upsert(self.view.conn, 'Raids', ['tier'], [tier], ['raid_id'], [self.view.raid_id])
         await self.view.raid_cog.update_raid_post(self.view.raid_id, interaction.channel)
+        await self.view.calendar_cog.update_calendar(interaction.guild.id, new_run=False)
 
 
 def setup(bot):
