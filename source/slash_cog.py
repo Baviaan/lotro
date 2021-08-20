@@ -88,23 +88,11 @@ class SlashCog(commands.Cog):
         elif name == 'remove_roles':
             content = _("Removing your class roles...")
             update_roles = True
-        elif name == 'format':
-            ephemeral = False
-            fmt = options['format']
-            res = upsert(self.conn, 'Settings', ['fmt_24hr'], [fmt], ['guild_id'], [guild_id])
-            self.conn.commit()
-            content = _("Successfully set this server's time format!")
         elif name == 'personal':
             content = self.process_time_zones_personal(user.id, options)
         elif name == 'server':
             ephemeral = False
             content = self.process_time_zones_server(user, guild_id, options)
-        elif name == 'add_display':
-            ephemeral = False
-            content = self.process_time_zones_add_display(user, guild_id, options)
-        elif name == 'reset_display':
-            ephemeral = False
-            content = self.process_time_zones_reset_display(user, guild_id)
         elif name == 'about':
             ephemeral = False
             embeds = True
@@ -284,41 +272,6 @@ class SlashCog(commands.Cog):
             res = upsert(conn, 'Settings', ['server'], [tz], ['guild_id'], [guild_id])
             conn.commit()
             content = _("Set default time zone to {0}.").format(tz)
-        return content
-
-    def process_time_zones_add_display(self, user, guild_id, options):
-        if not self.is_raid_leader(user, guild_id):
-            content = _("You must be a raid leader to change the time zone display.")
-            return content
-        conn = self.conn
-        try:
-            timezone = options['custom_timezone']
-        except KeyError:
-            timezone = options['timezone']
-        try:
-            tz = pytz.timezone(timezone)
-        except pytz.UnknownTimeZoneError as e:
-            content = _("{0} is not a valid time zone!").format(e)
-        else:
-            tz = str(tz)
-            tz_string = select_one(conn, 'Settings', ['display'], ['guild_id'], [guild_id])
-            if tz_string:
-                tz_string = ",".join([tz_string, tz])
-            else:
-                tz_string = tz
-            res = upsert(conn, 'Settings', ['display'], [tz_string], ['guild_id'], [guild_id])
-            conn.commit()
-            content = _("Added {0} to be displayed.").format(tz)
-        return content
-
-    def process_time_zones_reset_display(self, guild_id):
-        if not self.is_raid_leader(user, guild_id):
-            content = _("You must be a raid leader to change the time zone display.")
-            return content
-        conn = self.conn
-        res = upsert(conn, 'Settings', ['display'], [None], ['guild_id'], [guild_id])
-        conn.commit()
-        content = _("Reset time zone display to default.")
         return content
 
     def process_server_time(self, guild_id):

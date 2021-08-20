@@ -50,17 +50,6 @@ class RegisterCog(commands.Cog):
                 "description": _("Set server time for this discord server."),
                 "type": 1,
                 "options": timezone_options
-            },
-            {
-                "name": "add_display",
-                "description": _("Add a time zone to the displayed time zones."),
-                "type": 1,
-                "options": timezone_options
-            },
-            {
-                "name": "reset_display",
-                "description": _("Resets the displayed time zones to the default."),
-                "type": 1,
             }
         ]
         return subcommands
@@ -231,33 +220,6 @@ class RegisterCog(commands.Cog):
         r = requests.post(self.command_url, headers=self.headers, json=json)
         return r.status_code == requests.codes.ok
 
-    def add_format_slash_command(self):
-        json = {
-            "name": 'format',
-            "description": _("Specify whether to use AM/PM or 24h time."),
-            "options": [
-                {
-                    "name": "format",
-                    "description": _("12h or 24h"),
-                    "type": 5,
-                    "required": True,
-                    "choices": [
-                        {
-                            "name": "12h",
-                            "value": False
-                        },
-                        {
-                            "name": "24h",
-                            "value": True
-                        }
-                    ]
-                }
-            ]
-        }
-
-        r = requests.post(self.command_url, headers=self.headers, json=json)
-        return r.status_code == requests.codes.ok
-
     def add_about_slash_command(self):
         json = {
             "name": 'about',
@@ -353,7 +315,6 @@ class RegisterCog(commands.Cog):
                     'roles': self.add_roles_slash_command,
                     'calendar': self.add_calendar_slash_command,
                     'events': self.add_events_slash_command,
-                    'format': self.add_format_slash_command,
                     'about': self.add_about_slash_command,
                     'privacy': self.add_privacy_slash_command,
                     'welcome': self.add_welcome_slash_command,
