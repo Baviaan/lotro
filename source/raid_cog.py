@@ -619,7 +619,7 @@ class RaidView(discord.ui.View):
             error_msg = _("Dearest raid leader, {0} has cancelled their availability. "
                           "Please note they were assigned to {1} in the raid.").format(i.user.mention, class_name)
             await i.channel.send(error_msg)
-            class_names = ','.join(self.slots_class_names[assigned_slot])
+            class_names = ','.join(self.raid_cog.slots_class_names[assigned_slot])
             assign_columns = ['player_id', 'byname', 'class_name']
             assign_values = [None, _("<Open>"), class_names]
             upsert(self.conn, 'Assignment', assign_columns, assign_values, ['raid_id', 'slot_id'],
