@@ -279,8 +279,7 @@ class SlashCog(commands.Cog):
         server_tz = self.time_cog.get_server_time(guild_id)
         server_time = self.time_cog.local_time(time, server_tz)
 
-        fmt_24hr = self.time_cog.get_24hr_fmt(guild_id)
-        formatted_time = self.time_cog.format_time(server_time, fmt_24hr)
+        formatted_time = server_time.strftime("%A %H:%M")
         content = _("Current server time: {0}").format(formatted_time)
         return content
 

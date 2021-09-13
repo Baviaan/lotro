@@ -73,10 +73,6 @@ class TimeCog(commands.Cog):
     servertime_example = _("Examples:\n{0}servertime Australia/Sydney\n{0}servertime Europe/London\n{0}servertime "
                            "America/New_York").format(prefix)
 
-    fmt_brief = _("Set time to 12h or 24h format.")
-    fmt_description = _("Specifies whether the bot displays time in 12h or 24h format.")
-    fmt_example = _("Examples:\n{0}format 12\n{0}format 24").format(prefix)
-
     async def is_raid_leader(self, ctx):
         conn = self.bot.conn
         if ctx.author.guild_permissions.administrator:
@@ -134,26 +130,6 @@ class TimeCog(commands.Cog):
                 await ctx.send(_("An error occurred."))
         return
 
-    @commands.command(help=fmt_example, brief=fmt_brief, description=fmt_description)
-    async def format(self, ctx, fmt):
-        """Sets time to 12h or 24h format for the guild"""
-        if not await self.is_raid_leader(ctx):
-            return
-        conn = self.bot.conn
-        if fmt in ['24', '24h']:
-            fmt_24hr = True
-        elif fmt in ['12', '12h']:
-            fmt_24hr = False
-        else:
-            await ctx.send(_("Please specify '12' or '24' when using this command."))
-            return
-        res = upsert(conn, 'Settings', ['fmt_24hr'], [fmt_24hr], ['guild_id'], [ctx.guild.id])
-        if res:
-            conn.commit()
-            await ctx.send(_("Set server to use {0}h time format.").format(fmt[0:2]))
-        else:
-            await ctx.send(_("An error occurred."))
-
     def get_user_timezone(self, user_id, guild_id):
         conn = self.bot.conn
         result = select_one(conn, 'Timezone', ['timezone'], ['player_id'], [user_id])
@@ -167,22 +143,6 @@ class TimeCog(commands.Cog):
         if result is None:
             result = self.bot.server_tz
         return result
-
-    def get_24hr_fmt(self, guild_id):
-        conn = self.bot.conn
-        fmt_24hr = select_one(conn, 'Settings', ['fmt_24hr'], ['guild_id'], [guild_id])
-        return fmt_24hr
-
-    @staticmethod
-    def format_time(time, fmt_24hr):
-        if fmt_24hr:
-            time_string = time.strftime("%A %H:%M")
-        else:
-            if os.name == "nt":  # Windows uses '#' instead of '-'.
-                time_string = time.strftime("%A %#I:%M %p")
-            else:
-                time_string = time.strftime("%A %-I:%M %p")
-        return time_string
 
     @staticmethod
     def local_time(time, timezone):
