@@ -73,14 +73,6 @@ class TimeCog(commands.Cog):
     servertime_example = _("Examples:\n{0}servertime Australia/Sydney\n{0}servertime Europe/London\n{0}servertime "
                            "America/New_York").format(prefix)
 
-    displaytime_brief = _("Sets the display times to be used in raid posts for this guild.")
-    displaytime_description = _("This command allows a user overwrite the timezones displayed in raid posts. Timezone "
-                                "is to be provided in the tz database format. See "
-                                "https://en.wikipedia.org/wiki/List_of_tz_database_time_zones")
-    displaytime_example = _("Examples:\n{0}displaytimes Australia/Sydney Australia/Adelaide Australia/Perth\n"
-                            "{0}displaytimes Europe/London Europe/Amsterdam\n"
-                            "{0}displaytimes Europe/London America/New_York America/Los_Angeles").format(prefix)
-
     fmt_brief = _("Set time to 12h or 24h format.")
     fmt_description = _("Specifies whether the bot displays time in 12h or 24h format.")
     fmt_example = _("Examples:\n{0}format 12\n{0}format 24").format(prefix)
@@ -142,33 +134,6 @@ class TimeCog(commands.Cog):
                 await ctx.send(_("An error occurred."))
         return
 
-    @commands.command(help=displaytime_example, brief=displaytime_brief, description=displaytime_description)
-    async def displaytimes(self, ctx, *timezones):
-        """Sets additional timezones to be displayed."""
-        if not await self.is_raid_leader(ctx):
-            return
-        conn = self.bot.conn
-        tzs = []
-        for timezone in timezones:
-            try:
-                tz = pytz.timezone(timezone)
-            except pytz.UnknownTimeZoneError as e:
-                await ctx.send(str(e) + _(" is not a valid timezone!"))
-            else:
-                tzs.append(str(tz))
-        if tzs:
-            tz_string = ",".join(tzs)
-            res = upsert(conn, 'Settings', ['display'], [tz_string], ['guild_id'], [ctx.guild.id])
-            if res:
-                conn.commit()
-                msg_content = _("Set display times to: ") + ", ".join(tzs) + "."
-                await ctx.send(msg_content)
-            else:
-                await ctx.send(_("An error occurred."))
-        else:
-            await ctx.send(_("Please provide a time zone argument!"))
-        return
-
     @commands.command(help=fmt_example, brief=fmt_brief, description=fmt_description)
     async def format(self, ctx, fmt):
         """Sets time to 12h or 24h format for the guild"""
@@ -194,15 +159,6 @@ class TimeCog(commands.Cog):
         result = select_one(conn, 'Timezone', ['timezone'], ['player_id'], [user_id])
         if result is None:
             result = self.get_server_time(guild_id)
-        return result
-
-    def get_display_times(self, guild_id):
-        conn = self.bot.conn
-        result = select_one(conn, 'Settings', ['display'], ['guild_id'], [guild_id])
-        if result is None:
-            result = self.bot.display_times
-        else:
-            result = result.split(',')
         return result
 
     def get_server_time(self, guild_id):
