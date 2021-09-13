@@ -3,3 +3,4 @@
 mv messages.pot ./locale/
 msgmerge --update locale/es/LC_MESSAGES/messages.po locale/messages.pot
 msgmerge --update locale/fr/LC_MESSAGES/messages.po locale/messages.pot
+msgmerge --update locale/ru/LC_MESSAGES/messages.po locale/messages.pot
