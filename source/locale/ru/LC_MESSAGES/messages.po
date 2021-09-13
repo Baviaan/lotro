@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2021-09-13 17:55+BST\n"
+"POT-Creation-Date: 2021-09-13 19:16+BST\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,7 +23,7 @@ msgstr ""
 msgid "**DEPRECATED**: Consider using the new / command."
 msgstr ""
 
-#: calendar_cog.py:33 time_cog.py:95
+#: calendar_cog.py:33 time_cog.py:83
 msgid "You do not have permission to change the settings."
 msgstr ""
 
@@ -31,8 +31,8 @@ msgstr ""
 msgid "The Calendar will be updated in this channel."
 msgstr ""
 
-#: calendar_cog.py:55 config_cog.py:33 slash_cog.py:254 time_cog.py:109
-#: time_cog.py:122 time_cog.py:142 time_cog.py:167 time_cog.py:190
+#: calendar_cog.py:55 config_cog.py:33 slash_cog.py:254 time_cog.py:97
+#: time_cog.py:110 time_cog.py:130
 msgid "An error occurred."
 msgstr ""
 
@@ -576,47 +576,47 @@ msgstr ""
 msgid "You must be a raid leader to change the server time zone."
 msgstr ""
 
-#: slash_cog.py:284
+#: slash_cog.py:283
 msgid "Current server time: {0}"
 msgstr ""
 
-#: slash_cog.py:289
+#: slash_cog.py:288
 msgid "You must be a raid leader to list players."
 msgstr ""
 
-#: slash_cog.py:304
+#: slash_cog.py:303
 msgid "Cannot list raid {0}: only {1} raids exist."
 msgstr ""
 
-#: slash_cog.py:306
+#: slash_cog.py:305
 msgid "Please provide a positive integer."
 msgstr ""
 
-#: slash_cog.py:311
+#: slash_cog.py:310
 msgid "**Sign up list for {0} on <t:{1}>**"
 msgstr ""
 
-#: slash_cog.py:333
+#: slash_cog.py:332
 msgid "Players:"
 msgstr ""
 
-#: slash_cog.py:334 slash_cog.py:337
+#: slash_cog.py:333 slash_cog.py:336
 msgid "Sign up time:"
 msgstr ""
 
-#: slash_cog.py:336
+#: slash_cog.py:335
 msgid "Late players:"
 msgstr ""
 
-#: slash_cog.py:343
+#: slash_cog.py:342
 msgid "You must be an admin to change the kin role."
 msgstr ""
 
-#: slash_cog.py:347
+#: slash_cog.py:346
 msgid "Kin role removed."
 msgstr ""
 
-#: slash_cog.py:352
+#: slash_cog.py:351
 msgid "Successfully updated the kin role!"
 msgstr ""
 
@@ -665,80 +665,30 @@ msgid ""
 "{0}servertime America/New_York"
 msgstr ""
 
-#: time_cog.py:76
-msgid "Sets the display times to be used in raid posts for this guild."
-msgstr ""
-
-#: time_cog.py:77
-msgid ""
-"This command allows a user overwrite the timezones displayed in raid posts. "
-"Timezone is to be provided in the tz database format. See https://en."
-"wikipedia.org/wiki/List_of_tz_database_time_zones"
-msgstr ""
-
-#: time_cog.py:80
-msgid ""
-"Examples:\n"
-"{0}displaytimes Australia/Sydney Australia/Adelaide Australia/Perth\n"
-"{0}displaytimes Europe/London Europe/Amsterdam\n"
-"{0}displaytimes Europe/London America/New_York America/Los_Angeles"
-msgstr ""
-
-#: time_cog.py:84
-msgid "Set time to 12h or 24h format."
-msgstr ""
-
-#: time_cog.py:85
-msgid "Specifies whether the bot displays time in 12h or 24h format."
-msgstr ""
-
-#: time_cog.py:86
-msgid ""
-"Examples:\n"
-"{0}format 12\n"
-"{0}format 24"
-msgstr ""
-
-#: time_cog.py:103
+#: time_cog.py:91
 msgid "default"
 msgstr ""
 
-#: time_cog.py:103
+#: time_cog.py:91
 msgid "delete"
 msgstr ""
 
-#: time_cog.py:103
+#: time_cog.py:91
 msgid "reset"
 msgstr ""
 
-#: time_cog.py:107
+#: time_cog.py:95
 msgid "Deleted timezone information for {0}."
 msgstr ""
 
-#: time_cog.py:114 time_cog.py:134 time_cog.py:156
+#: time_cog.py:102 time_cog.py:122
 msgid " is not a valid timezone!"
 msgstr ""
 
-#: time_cog.py:120
+#: time_cog.py:108
 msgid "Set default timezone for {0} to {1}."
 msgstr ""
 
-#: time_cog.py:140
+#: time_cog.py:128
 msgid "Set server time to {0}."
-msgstr ""
-
-#: time_cog.py:164
-msgid "Set display times to: "
-msgstr ""
-
-#: time_cog.py:169
-msgid "Please provide a time zone argument!"
-msgstr ""
-
-#: time_cog.py:183
-msgid "Please specify '12' or '24' when using this command."
-msgstr ""
-
-#: time_cog.py:188
-msgid "Set server to use {0}h time format."
 msgstr ""
