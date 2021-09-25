@@ -282,7 +282,10 @@ class RaidCog(commands.Cog):
         else:
             await response.delete()
         finally:
-            await msg.delete()
+            try:
+                await msg.delete()
+            except discord.NotFound:
+                pass
         name = response.content
         char_limit = 255
         if len(name) > char_limit:
@@ -306,7 +309,10 @@ class RaidCog(commands.Cog):
         else:
             await response.delete()
         finally:
-            await msg.delete()
+            try:
+                await msg.delete()
+            except discord.NotFound:
+                pass
         boss = response.content
         char_limit = 255
         if len(boss) > char_limit:
@@ -329,7 +335,10 @@ class RaidCog(commands.Cog):
         else:
             await response.delete()
         finally:
-            await msg.delete()
+            try:
+                await msg.delete()
+            except discord.NotFound:
+                pass
         try:
             time = await Time().converter(bot, channel.guild.id, author.id, response.content)
         except commands.BadArgument:
@@ -341,13 +350,13 @@ class RaidCog(commands.Cog):
         return
 
     def build_raid_message(self, raid_id, embed_texts_av, embed_texts_unav):
-        name, tier, time, boss, roster = select_one(self.conn, 'Raids', ['name', 'tier', 'time', 'boss', 'roster'],
-                                                    ['raid_id'], [raid_id])
         try:
-            timestamp = int(time)
+            name, tier, time, boss, roster = select_one(self.conn, 'Raids', ['name', 'tier', 'time', 'boss', 'roster'],
+                                                    ['raid_id'], [raid_id])
         except TypeError:
             logger.info("The raid has been deleted during editing.")
             return
+        timestamp = int(time)
         number_of_players = count(self.conn, 'Players', 'player_id', ['raid_id', 'unavailable'], [raid_id, False])
 
         if tier:
@@ -514,6 +523,7 @@ class RaidCog(commands.Cog):
 
     @background_task.error
     async def handle_error(self, exception):
+        logger.error("Background task failed.")
         logger.error(exception)
 
 
@@ -788,7 +798,10 @@ class ConfigureView(discord.ui.View):
     async def red_cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
         await self.raid_cog.cleanup_old_raid(self.raid_id, "Raid manually deleted.")
         post = interaction.channel.get_partial_message(self.raid_id)
-        await post.delete()
+        try:
+            await post.delete()
+        except discord.NotFound:
+            pass
 
     async def on_timeout(self):
         self.conn.commit()
