@@ -98,8 +98,8 @@ You can paste the code directly in the discord app when clicking the join server
 ### User specific commands
 | Command | Example | Notes |
 | ------- | ------- | ----- |
-| **/remove_roles** | !roles | Removes the class roles you have. |
-| **!time_zones personal** \<timezone\> | /time_zones personal europe/london | Set to server time by default. This timezone is used to interpret *your* raid commands. |
+| **/remove_roles** | /roles | Removes the class roles you have. |
+| **/time_zones personal** \<timezone\> | /time_zones personal europe/london | Set to server time by default. This timezone is used to interpret *your* raid commands. |
 
 ### Info commands
 
