@@ -21,7 +21,7 @@ If you would like to host your own instance, continue reading below.
 ------------------------------------
 
 Prerequisites:\
-python >= 3.6\
+python >= 3.8\
 Check the requirements.txt file for required libraries.\
 You can get all of them with: `python3 -m pip install -U -r requirements.txt`, assuming requirements.txt is in your current directory.
 
@@ -31,11 +31,11 @@ See details further below how to specify your configuration file and then simply
 **Instructions for Windows.**\
 Python does not come pre-installed on Windows so you will need to install it yourself. Go to https://www.python.org/downloads/ and click the big yellow button to download Python 3.9. Simply run the downloaded file to install Python. Now to save yourself a world of pain, BEFORE you click the 'Install Now' button, make sure you check the box **'Add Python 3.9 to PATH'**. This will allow you to use the python command in your terminal (command prompt).
 
-To check installation was successful open a terminal and type `python --version`, it will return (as of writing) Python 3.9.2, assuming you do not have Python 2 installed.
+To check installation was successful open a terminal and type `python --version`, it will return (as of writing) Python 3.9.6, assuming you do not have Python 2 installed.
 (Search for cmd and press enter to open a terminal.)
 Download the latest release from https://github.com/Baviaan/lotro/releases/latest by clicking on the zip version and extract the folder on your computer.
 In your terminal change directory to wherever you extracted the files.
-(For example type `cd Desktop\lotro-4.0.0` if you downloaded version 4.0.0 and extracted the folder to your desktop.)
+(For example type `cd Desktop\lotro-5.0.0` if you downloaded version 5.0.0 and extracted the folder to your desktop.)
 Now you can install the required Python libraries with `python -m pip install -U -r requirements.txt`.
 Before you run the bot you will need to edit your configuration file.
 See below for further instructions what to put in the configuration file.

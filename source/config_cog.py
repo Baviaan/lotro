@@ -127,7 +127,7 @@ class ConfigCog(commands.Cog):
                 "Use `/custom` to schedule a custom raid or meetup.\n\n"
                 "With `/calendar` you can get an (automatically updated) overview of all scheduled raids. "
                 "It is recommended you use a separate discord channel to display the calendar in.\n"
-                "Use `/time_zones` and `/format` to change the default time settings and "
+                "Use `/time_zones` to change the default time settings and "
                 "you can designate a raid leader role with `/leader`, which allows non-admins to edit raids."
                 ).format(guild_name)
         return msg

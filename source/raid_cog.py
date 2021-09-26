@@ -8,6 +8,7 @@ from itertools import compress
 import json
 import logging
 import re
+import time
 import typing
 
 from database import create_table, count, delete, select, select_le, select_one, upsert
@@ -96,22 +97,11 @@ class RaidCog(commands.Cog):
         # Run background task
         self.background_task.start()
 
+        # Add raid view
+        self.bot.add_view(RaidView(self))
+
     def cog_unload(self):
         self.background_task.cancel()
-
-    @commands.Cog.listener()
-    async def on_raw_reaction_add(self, payload):
-        if payload.user_id == self.bot.user.id:
-            return
-        channel = self.bot.get_channel(payload.channel_id)
-        if payload.message_id in self.raids:
-            raid_deleted = await self.raid_update(payload)
-            if not raid_deleted:
-                message = channel.get_partial_message(payload.message_id)
-                try:
-                    await message.remove_reaction(payload.emoji, payload.member)
-                except discord.NotFound:
-                    pass
 
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload):
@@ -193,46 +183,40 @@ class RaidCog(commands.Cog):
         await self.raid_command(ctx, name, tier, "", time, roster=roster)
 
     def get_raid_name(self, name):
-        custom = False
         try:
             name = self.raid_lookup[name.lower()]
-            return name, custom
         except KeyError:
-            custom = True
             names = list(self.raid_lookup.values())
             match = get_match(name, names)
             if match[0]:
-                return match[0], custom
-        return name, custom
+                name = match[0]
+        return name
 
     async def raid_command(self, ctx, name, tier, boss, time, roster=False):
-        full_name, custom = self.get_raid_name(name)
-        command = ctx.invoked_with
-        if command in ['raid', 'r,', 'instance'] and not custom:
-            tip = _("Consider using `{prefix}{name} ...` instead of `{prefix}{command} {name} ...`.").format(
-                prefix=ctx.prefix, name=name, command=command)
-            await ctx.send(tip, delete_after=30)
+        await self.post_raid(name, tier, boss, time, roster, ctx.guild.id, ctx.channel, ctx.author.id)
+
+    async def post_raid(self, name, tier, boss, time, roster, guild_id, channel, author_id):
+        full_name = self.get_raid_name(name)
         # Check if time is in near future. Otherwise parsed date was likely unintended.
         current_time = datetime.datetime.utcnow()
         delta_time = datetime.timedelta(days=7)
         if current_time + delta_time < time:
             error_message = _("Please check the date <@{0}>. You are posting a raid for: {1} UTC.").format(
-                ctx.author.id, time)
-            await ctx.send(error_message, delete_after=30)
-        post = await ctx.send('\u200B')
+                author_id, time)
+            await channel.send(error_message, delete_after=30)
+        post = await channel.send('\u200B')
         raid_id = post.id
         timestamp = int(time.replace(tzinfo=datetime.timezone.utc).timestamp())  # Do not use local tz.
         raid_columns = ['channel_id', 'guild_id', 'organizer_id', 'name', 'tier', 'boss', 'time', 'roster']
-        raid_values = [ctx.channel.id, ctx.guild.id, ctx.author.id, full_name, tier, boss, timestamp, roster]
+        raid_values = [channel.id, guild_id, author_id, full_name, tier, boss, timestamp, roster]
         upsert(self.conn, 'Raids', raid_columns, raid_values, ['raid_id'], [raid_id])
         self.roster_init(raid_id)
         self.conn.commit()
         logger.info("Created new raid: {0} at {1}".format(full_name, time))
-        embed = self.build_raid_message(ctx.guild.id, raid_id, "\u200B", None)
-        await post.edit(embed=embed)
-        await self.emoji_init(ctx.channel, post)
+        embed = self.build_raid_message(raid_id, "\u200B", None)
+        await post.edit(embed=embed, view=RaidView(self))
         self.raids.append(raid_id)
-        await self.bot.get_cog('CalendarCog').update_calendar(ctx.guild.id)
+        await self.bot.get_cog('CalendarCog').update_calendar(guild_id)
 
     def roster_init(self, raid_id):
         available = _("<Open>")
@@ -242,7 +226,7 @@ class RaidCog(commands.Cog):
             upsert(self.conn, 'Assignment', assignment_columns, assignment_values, ['raid_id', 'slot_id'], [raid_id, i])
 
     async def emoji_init(self, channel, post):
-        emojis = ["\U0001F6E0", "\u26CF", "\u274C", "\u2705"]  # Config, pick, cancel, check
+        emojis = ["\U0001F6E0\uFE0F", "\u26CF\uFE0F", "\u274C", "\u2705"]  # Config, pick, cancel, check
         emojis.extend(self.class_emojis)
         try:
             for emoji in emojis:
@@ -250,100 +234,28 @@ class RaidCog(commands.Cog):
         except discord.Forbidden:
             await channel.send(_("Error: Missing 'Add Reactions' permission to add reactions to the raid post."))
 
-    async def raid_update(self, payload):
-        bot = self.bot
-        guild = bot.get_guild(payload.guild_id)
-        channel = guild.get_channel(payload.channel_id)
-        user = payload.member
-        raid_id = payload.message_id
-        emoji = payload.emoji
-        raid_deleted = False
-        time = datetime.datetime.utcnow()
-        timestamp = int(time.replace(tzinfo=datetime.timezone.utc).timestamp())  # Do not use local tz.
-
-        if str(emoji) in ["\U0001F6E0", "\u26CF"]:
-            organizer_id = select_one(self.conn, 'Raids', ['organizer_id'], ['raid_id'], [raid_id])
-            raid_leader_id = select_one(self.conn, 'Settings', ['raid_leader'], ['guild_id'], [guild.id])
-            if raid_leader_id:
-                raid_leader = guild.get_role(raid_leader_id)
-            else:
-                raid_leader = None
-
-            operation_allowed = False
-            if organizer_id == user.id:
-                operation_allowed = True
-            elif raid_leader in user.roles:
-                operation_allowed = True
-            elif user.guild_permissions.administrator:
-                operation_allowed = True
-            if not operation_allowed:
-                error_msg = _("You do not have permission to change the raid settings.")
-                await channel.send(error_msg, delete_after=15)
-                return
-        if str(emoji) == "\u26CF":  # Pick emoji
-            roster = select_one(self.conn, 'Raids', ['roster'], ['raid_id'], [raid_id])
-            if not roster:
-                upsert(self.conn, 'Raids', ['roster'], [True], ['raid_id'], [raid_id])
-                await channel.send(_("Enabling roster for this raid."), delete_after=10)
-            await self.get_players(user, channel, raid_id)
-        elif str(emoji) == "\U0001F6E0":  # Config emoji
-            raid_deleted = await self.configure(user, channel, raid_id)
-        elif str(emoji) == "\u274C":  # Cancel emoji
-            assigned_slot = select_one(self.conn, 'Assignment', ['slot_id'], ['player_id', 'raid_id'],
-                                       [user.id, raid_id])
-            if assigned_slot is not None:
-                class_name = select_one(self.conn, 'Assignment', ['class_name'], ['player_id', 'raid_id'],
-                                        [user.id, raid_id])
-                error_msg = _("Dearest raid leader, {0} has cancelled their availability. "
-                              "Please note they were assigned to {1} in the raid.").format(user.mention, class_name)
-                await channel.send(error_msg)
-                class_names = ','.join(self.slots_class_names[assigned_slot])
-                assign_columns = ['player_id', 'byname', 'class_name']
-                assign_values = [None, _("<Open>"), class_names]
-                upsert(self.conn, 'Assignment', assign_columns, assign_values, ['raid_id', 'slot_id'],
-                       [raid_id, assigned_slot])
-            r = select_one(self.conn, 'Players', ['byname'], ['player_id', 'raid_id'], [user.id, raid_id])
-            if r:
-                delete(self.conn, 'Players', ['player_id', 'raid_id'], [user.id, raid_id])
-            else:
-                byname = self.process_name(guild.id, user)
-                upsert(self.conn, 'Players', ['byname', 'timestamp', 'unavailable'], [byname, timestamp, True],
-                       ['player_id', 'raid_id'], [user.id, raid_id])
-        elif str(emoji) == "\u2705":  # Check mark emoji
-            role_names = [role.name for role in user.roles if role.name in self.role_names]
-            if role_names:
-                columns = ['byname', 'timestamp', 'unavailable']
-                columns.extend(role_names)
-                byname = self.process_name(guild.id, user)
-                values = [byname, timestamp, False]
-                values.extend([True] * len(role_names))
-                upsert(self.conn, 'Players', columns, values, ['player_id', 'raid_id'], [user.id, raid_id])
-            else:
-                error_msg = _("{0} you have not assigned yourself any class roles.").format(user.mention)
-                await channel.send(error_msg, delete_after=15)
-        elif emoji.name in self.role_names:
-            byname = self.process_name(guild.id, user)
-            upsert(self.conn, 'Players', ['byname', 'timestamp', 'unavailable', emoji.name], [byname, timestamp, False, True],
-                   ['player_id', 'raid_id'], [user.id, raid_id])
-            try:
-                role = await get_role(guild, emoji.name)
-                if role not in user.roles:
-                    await user.add_roles(role)
-            except discord.Forbidden:
-                await channel.send(_("Error: Missing 'Manage roles' permission to assign the class role."))
-        self.conn.commit()
-        if raid_deleted:
-            post = channel.get_partial_message(raid_id)
-            await post.delete()
+    async def has_raid_permission(self, user, guild, raid_id, channel=None):
+        if user.guild_permissions.administrator:
             return True
-        else:
-            await self.update_raid_post(raid_id, channel)
-            return
+
+        organizer_id = select_one(self.conn, 'Raids', ['organizer_id'], ['raid_id'], [raid_id])
+        if organizer_id == user.id:
+            return True
+
+        raid_leader_id = select_one(self.conn, 'Settings', ['raid_leader'], ['guild_id'], [guild.id])
+        if raid_leader_id:
+            raid_leader = guild.get_role(raid_leader_id)
+            if raid_leader in user.roles:
+                return True
+        if channel:
+            perm_msg = _("You do not have permission to change the raid settings.")
+            await channel.send(perm_msg, delete_after=15)
+        return False
 
     async def update_raid_post(self, raid_id, channel):
         available = self.build_raid_players(raid_id)
         unavailable = self.build_raid_players(raid_id, available=False)
-        embed = self.build_raid_message(channel.guild.id, raid_id, available, unavailable)
+        embed = self.build_raid_message(raid_id, available, unavailable)
         if not embed:
             return
         post = channel.get_partial_message(raid_id)
@@ -356,48 +268,31 @@ class RaidCog(commands.Cog):
             logger.warning(error_msg)
             await channel.send(_("That's an error. Check the logs."))
 
-    def process_name(self, guild_id, user):
-        role_id = select_one(self.conn, 'Settings', ['priority'], ['guild_id'],[guild_id])
-        if role_id in [role.id for role in user.roles]:
-            byname = "\U0001F46A " + user.display_name
-        else:
-            if "\U0001F46A" in user.display_name:
-                byname = "iMAhACkEr"
-            else:
-                byname = user.display_name
-        return byname
-
-    async def configure(self, user, channel, raid_id):
+    async def name_configure(self, author, channel, raid_id):
         bot = self.bot
 
         def check(msg):
-            return user == msg.author
+            return author == msg.author
 
-        text = _("Please respond with 'a(im)', 'd(ate)', 'r(oster)' or 't(ier)' to indicate which setting you wish to "
-                 "update for this raid.\nType 'cancel' to cancel the raid.")
-        msg = await channel.send(text)
+        msg = await channel.send(_("Please specify the new raid name."))
         try:
-            reply = await bot.wait_for('message', timeout=20, check=check)
+            response = await bot.wait_for('message', check=check, timeout=30)
         except asyncio.TimeoutError:
-            await msg.delete()
-            await channel.send(_("Configuration finished!"), delete_after=10)
             return
         else:
-            await msg.delete()
-            await reply.delete()
-            if reply.content.lower().startswith(_("r")):
-                await self.roster_configure(user, channel, raid_id)
-            elif reply.content.lower().startswith(_("d")):
-                await self.time_configure(user, channel, raid_id)
-            elif reply.content.lower().startswith(_("a")):  # Boss renamed to aim in UI
-                await self.boss_configure(user, channel, raid_id)
-            elif reply.content.lower().startswith(_("t")):
-                await self.tier_configure(user, channel, raid_id)
-            elif reply.content.lower().startswith(_("cancel")):
-                await self.cleanup_old_raid(raid_id, "Raid manually deleted.")
-                return True  # The raid has deleted from database.
-        self.conn.commit()
-        await bot.get_cog('CalendarCog').update_calendar(channel.guild.id, new_run=False)
+            await response.delete()
+        finally:
+            try:
+                await msg.delete()
+            except discord.NotFound:
+                pass
+        name = response.content
+        char_limit = 255
+        if len(name) > char_limit:
+            await channel.send(_("Please use less than {0} characters.").format(char_limit), delete_after=20)
+            return
+        full_name = self.get_raid_name(name)
+        upsert(self.conn, 'Raids', ['name'], [full_name], ['raid_id'], [raid_id])
         return
 
     async def boss_configure(self, author, channel, raid_id):
@@ -414,7 +309,10 @@ class RaidCog(commands.Cog):
         else:
             await response.delete()
         finally:
-            await msg.delete()
+            try:
+                await msg.delete()
+            except discord.NotFound:
+                pass
         boss = response.content
         char_limit = 255
         if len(boss) > char_limit:
@@ -437,7 +335,10 @@ class RaidCog(commands.Cog):
         else:
             await response.delete()
         finally:
-            await msg.delete()
+            try:
+                await msg.delete()
+            except discord.NotFound:
+                pass
         try:
             time = await Time().converter(bot, channel.guild.id, author.id, response.content)
         except commands.BadArgument:
@@ -448,262 +349,26 @@ class RaidCog(commands.Cog):
             upsert(self.conn, 'Raids', ['time'], [timestamp], ['raid_id'], [raid_id])
         return
 
-    async def tier_configure(self, author, channel, raid_id):
-        bot = self.bot
-
-        def check(msg):
-            return author == msg.author
-
-        msg = await channel.send(_("Please specify the new raid tier."))
+    def build_raid_message(self, raid_id, embed_texts_av, embed_texts_unav):
         try:
-            response = await bot.wait_for('message', check=check, timeout=30)
-        except asyncio.TimeoutError:
-            return
-        else:
-            await response.delete()
-        finally:
-            await msg.delete()
-        try:
-            tier = Tier.converter(response.content)
-        except commands.BadArgument:
-            error_msg = _("Failed to parse tier argument: ") + response.content
-            await channel.send(error_msg, delete_after=20)
-        else:
-            upsert(self.conn, 'Raids', ['tier'], [tier], ['raid_id'], [raid_id])
-        return
-
-    async def roster_configure(self, author, channel, raid_id):
-        bot = self.bot
-        roster = select_one(self.conn, 'Raids', ['roster'], ['raid_id'], [raid_id])
-
-        def check(msg):
-            return author == msg.author
-
-        text = _("Please respond with 'yes/no' to indicate whether you want to use the roster for this raid.")
-        msg = await channel.send(text)
-        try:
-            reply = await bot.wait_for('message', timeout=20, check=check)
-        except asyncio.TimeoutError:
-            await channel.send(_("Roster configuration finished!"), delete_after=10)
-            return
-        else:
-            await reply.delete()
-            if reply.content.lower().startswith(_("n")):
-                if roster:
-                    upsert(self.conn, 'Raids', ['roster'], [False], ['raid_id'], [raid_id])
-                    await channel.send(_("Roster disabled for this raid.\nRoster configuration finished!"),
-                                       delete_after=10)
-                return
-            elif not reply.content.lower().startswith(_("y")):
-                await channel.send(_("Roster configuration finished!"), delete_after=10)
-                return
-        finally:
-            await msg.delete()
-        if not roster:
-            upsert(self.conn, 'Raids', ['roster'], [True], ['raid_id'], [raid_id])
-            await channel.send(_("Roster enabled for this raid."), delete_after=10)
-        await self.roster_overwrite(author, channel, raid_id)
-
-    async def roster_overwrite(self, author, channel, raid_id):
-        bot = self.bot
-
-        def check(msg):
-            return author == msg.author
-
-        text = _("Send a message with the slot number and the class to change a default slot to something else.\n"
-                 "Example: `1 captain`\nConfiguration will finish after 20s of no interaction. ")
-        msg = await channel.send(text)
-        while True:
-            try:
-                reply = await bot.wait_for('message', timeout=20, check=check)
-            except asyncio.TimeoutError:
-                await channel.send(_("Roster configuration finished!"), delete_after=10)
-                break
-            else:
-                await reply.delete()
-                if reply.content[0].isdigit():
-                    index = int(reply.content[0])
-                    if index == 1:
-                        if reply.content[1].isdigit():
-                            index = int(reply.content[0:2])
-                    if index <= 0 or index > len(self.slots_class_names):
-                        await channel.send(_("No valid slot provided!"), delete_after=10)
-                        continue
-                else:
-                    await channel.send(_("No slot provided!"), delete_after=10)
-                    continue
-                new_classes = []
-                for name in self.role_names:
-                    if name.lower() in reply.content.lower():
-                        new_classes.append(name)
-                if new_classes:
-                    if len(new_classes) > 3:
-                        await channel.send(_("You may only provide up to 3 classes per slot."), delete_after=10)
-                        continue  # allow maximum of 3 classes
-                    available = _("<Open>")
-                    assignment_columns = ['player_id', 'byname', 'class_name']
-                    assignment_values = [None, available, ','.join(new_classes)]
-                    upsert(self.conn, 'Assignment', assignment_columns, assignment_values, ['raid_id', 'slot_id'],
-                           [raid_id, index - 1])
-                    await channel.send(_("Classes for slot {0} updated!").format(index), delete_after=10)
-        await msg.delete()
-
-    async def get_players(self, author, channel, raid_id):
-        bot = self.bot
-
-        def check(reaction, user):
-            return user == author
-
-        timeout = 60
-        reactions = alphabet_emojis()
-        reaction_limit = len(reactions)
-
-        players = select(self.conn, 'Assignment', ['player_id'], ['raid_id'], [raid_id])
-        assigned_ids = [player[0] for player in players if player[0] is not None]
-        available = select(self.conn, 'Players', ['player_id, byname'], ['raid_id', 'unavailable'], [raid_id, False])
-        default_name = _("<Open>")
-
-        if not available:
-            await channel.send(_("There are no players to assign for this raid!"), delete_after=10)
-            return
-        if len(available) > reaction_limit:
-            available = available[:reaction_limit]  # This only works for the first 36 players.
-            await channel.send(_("**Warning**: Excluding some noobs from available players!"), delete_after=15)
-        msg_content = _("Please select the player you want to assign a spot in the raid from the list below using the "
-                        "corresponding reaction. Assignment will finish after {0}s of no interaction.").format(timeout)
-        info_msg = await channel.send(msg_content)
-
-        msg_content = _("Available players:\n*Please wait... Loading*")
-        player_msg = await channel.send(msg_content)
-        number_of_choices = min(len(available), 20)
-        for reaction in reactions[:number_of_choices]:
-            await player_msg.add_reaction(reaction)
-        if len(available) > 20:
-            extra_msg = await channel.send("\u200b")
-            for reaction in reactions[number_of_choices:len(available)]:
-                await extra_msg.add_reaction(reaction)
-        class_msg_content = _("Select the class for this player.")
-        class_msg = await channel.send(class_msg_content)
-        for reaction in self.class_emojis:
-            await class_msg.add_reaction(reaction)
-
-        while True:
-            # Update player msg
-            msg_content = _("Available players:\n")
-            counter = 0
-            for player in available:
-                if player[0] in assigned_ids:
-                    msg_content = msg_content + str(reactions[counter]) + " ~~" + player[1] + "~~\n"
-                else:
-                    msg_content = msg_content + str(reactions[counter]) + " " + player[1] + "\n"
-                counter = counter + 1
-            await player_msg.edit(content=msg_content)
-            # Get player
-            try:
-                (reaction, user) = await bot.wait_for('reaction_add', timeout=timeout, check=check)
-            except asyncio.TimeoutError:
-                await channel.send(_("Player assignment finished!"), delete_after=10)
-                break
-            else:
-                try:
-                    index = reactions.index(reaction.emoji)
-                except ValueError:
-                    await class_msg.remove_reaction(reaction, user)
-                    await channel.send(_("Please select a player first!"), delete_after=10)
-                    continue
-                else:
-                    if index < 20:
-                        await player_msg.remove_reaction(reaction, user)
-                    else:
-                        await extra_msg.remove_reaction(reaction, user)
-                    selected_player = available[index]
-                    slot = select_one(self.conn, 'Assignment', ['slot_id'], ['player_id', 'raid_id'],
-                                      [selected_player[0], raid_id])
-                    if slot is not None:
-                        # Player already assigned a slot, remove player and reset slot.
-                        class_names = ','.join(self.slots_class_names[slot])
-                        assignment_columns = ['player_id', 'byname', 'class_name']
-                        assignment_values = [None, default_name, class_names]
-                        upsert(self.conn, 'Assignment', assignment_columns, assignment_values, ['raid_id', 'slot_id'],
-                               [raid_id, slot])
-                        assigned_ids.remove(selected_player[0])
-                        text = _("Removed {0} from the line up!").format(selected_player[1])
-                        await channel.send(text, delete_after=10)
-                        await self.update_raid_post(raid_id, channel)
-                        continue
-            # Get class
-            try:
-                (reaction, user) = await bot.wait_for('reaction_add', timeout=timeout, check=check)
-            except asyncio.TimeoutError:
-                await channel.send(_("Player assignment finished!"), delete_after=10)
-                break
-            else:
-                if reaction.emoji in self.class_emojis:
-                    await class_msg.remove_reaction(reaction, user)
-                    signup = select_one(self.conn, 'Players', [reaction.emoji.name], ['player_id', 'raid_id'],
-                                        [selected_player[0], raid_id])
-                    if not signup:
-                        text = _("{0} did not sign up with {1}!").format(selected_player[1], str(reaction.emoji))
-                        await channel.send(text, delete_after=10)
-                        continue
-                else:
-                    await player_msg.remove_reaction(reaction, user)
-                    await channel.send(_("That is not a class, please start over!"), delete_after=10)
-                    continue
-            # Check for free slot
-            search = '%' + reaction.emoji.name + '%'
-            slot_id = select_one(self.conn, 'Assignment', ['slot_id'], ['raid_id'], [raid_id], ['player_id'],
-                                 ['class_name'], [search])
-            if slot_id is None:
-                await channel.send(_("There are no slots available for the selected class."), delete_after=10)
-            else:
-                assignment_columns = ['player_id', 'byname', 'class_name']
-                assignment_values = list(selected_player)
-                assignment_values.append(reaction.emoji.name)
-                upsert(self.conn, 'Assignment', assignment_columns, assignment_values, ['raid_id', 'slot_id'],
-                       [raid_id, slot_id])
-                assigned_ids.append(selected_player[0])
-                msg_content = _("Assigned {0} to {1}.").format(selected_player[1], str(reaction.emoji))
-                await channel.send(msg_content, delete_after=10)
-                await self.update_raid_post(raid_id, channel)
-
-        try:
-            await info_msg.delete()
-            await player_msg.delete()
-            await class_msg.delete()
-        except discord.NotFound:
-            pass
-        if len(available) > 20:
-            await extra_msg.delete()
-        return
-
-    def build_raid_message(self, guild_id, raid_id, embed_texts_av, embed_texts_unav):
-        try:
-            timestamp = int(select_one(self.conn, 'Raids', ['time'], ['raid_id'], [raid_id]))
+            name, tier, time, boss, roster = select_one(self.conn, 'Raids', ['name', 'tier', 'time', 'boss', 'roster'],
+                                                    ['raid_id'], [raid_id])
         except TypeError:
             logger.info("The raid has been deleted during editing.")
             return
-        time = datetime.datetime.utcfromtimestamp(timestamp)
-        name, tier, boss, roster = select_one(self.conn, 'Raids', ['name', 'tier', 'boss', 'roster'], ['raid_id'],
-                                              [raid_id])
+        timestamp = int(time)
         number_of_players = count(self.conn, 'Players', 'player_id', ['raid_id', 'unavailable'], [raid_id, False])
 
-        time_cog = self.time_cog
-        server_tz = time_cog.get_server_time(guild_id)
-        server_time = time_cog.local_time(time, server_tz)
-        fmt_24hr = time_cog.get_24hr_fmt(guild_id)
-        header_time = time_cog.format_time(server_time, fmt_24hr) + _(" server time")
-
-        embed_title = _("{0} on {1}").format(name, header_time)
         if tier:
-            embed_title = _("{0} {1} on {2}").format(name, tier, header_time)
-        embed_description = ""
+            embed_title = f"{name} {tier}\n<t:{timestamp}:F>"
+        else:
+            embed_title = f"{name}\n<t:{timestamp}:F>"
         if boss:
             embed_description = _("Aim: {0}").format(boss)
+        else:
+            embed_description = ""
 
         embed = discord.Embed(title=embed_title, colour=discord.Colour(0x3498db), description=embed_description)
-        time_string = self.build_time_string(time, guild_id, fmt_24hr)
-        embed.add_field(name=_("Time zones:"), value=time_string)
         if roster:
             result = select(self.conn, 'Assignment', ['byname, class_name'], ['raid_id'], [raid_id])
             number_of_slots = len(result)
@@ -725,6 +390,7 @@ class RaidCog(commands.Cog):
                     embed_text = embed_text + self.class_emojis_dict[class_name]
                 embed_text = embed_text + ": " + row[0] + "\n"
             embed.add_field(name=embed_name, value=embed_text)
+            embed.add_field(name="\u200B", value="\u200B")
         # Add a field for each embed text
         for i in range(len(embed_texts_av)):
             if i == 0:
@@ -743,8 +409,6 @@ class RaidCog(commands.Cog):
                 else:
                     embed_name = "\u200B"
                 embed.add_field(name=embed_name, value=embed_texts_unav[i])
-        embed.set_footer(text=_("Raid in your local time"))
-        embed.timestamp = time
         return embed
 
     def build_raid_players(self, raid_id, available=True, block_size=6):
@@ -801,16 +465,6 @@ class RaidCog(commands.Cog):
             msg = self.build_raid_players(raid_id, block_size=block_size // 2)
         return msg
 
-    def build_time_string(self, time, guild_id, fmt_24hr):
-        time_strings = []
-        time_cog = self.time_cog
-        display_times = time_cog.get_display_times(guild_id)
-        for timezone in display_times:
-            local_time = time_cog.local_time(time, timezone)
-            _, _, city = timezone.partition('/')
-            time_strings.append(city.replace('_', ' ') + ": " + time_cog.format_time(local_time, fmt_24hr))
-        return "\n".join(time_strings)
-
     @tasks.loop(seconds=300)
     async def background_task(self):
         bot = self.bot
@@ -866,6 +520,310 @@ class RaidCog(commands.Cog):
     @background_task.before_loop
     async def before_background_task(self):
         await self.bot.wait_until_ready()
+
+    @background_task.error
+    async def handle_error(self, exception):
+        logger.error("Background task failed.")
+        logger.error(exception)
+
+
+class RaidView(discord.ui.View):
+    def __init__(self, raid_cog):
+        super().__init__(timeout=None)
+        self.raid_cog = raid_cog
+        self.conn = raid_cog.conn
+        for emoji in raid_cog.class_emojis:
+            self.add_item(EmojiButton(emoji))
+
+    @discord.ui.button(emoji="\U0001F6E0\uFE0F", style=discord.ButtonStyle.blurple, custom_id='raid_view:settings')
+    async def settings(self, button: discord.ui.Button, interaction: discord.Interaction):
+        if not await self.raid_cog.has_raid_permission(interaction.user, interaction.guild, interaction.message.id):
+            perm_msg = _("You do not have permission to change the raid settings.")
+            await interaction.response.send_message(perm_msg, ephemeral=True)
+            return
+        msg = _("Please select the setting to update or delete the raid.\n") \
+            + _("(This selection message is ephemeral and will cease to work after 60s without interaction.)")
+        view = ConfigureView(self.raid_cog, interaction.message.id)
+        await interaction.response.send_message(msg, view=view, ephemeral=True)
+
+    @discord.ui.button(emoji="\u26CF\uFE0F", style=discord.ButtonStyle.blurple, custom_id='raid_view:select')
+    async def select(self, button: discord.ui.Button, interaction: discord.Interaction):
+        if not await self.raid_cog.has_raid_permission(interaction.user, interaction.guild, interaction.message.id):
+            perm_msg = _("You do not have permission to change the raid settings.")
+            await interaction.response.send_message(perm_msg, ephemeral=True)
+            return
+        raid_id = interaction.message.id
+        available = select(self.conn, 'Players', ['player_id, byname'], ['raid_id', 'unavailable'],
+                           [raid_id, False])
+        if not available:
+            msg = _("There are no players to assign for this raid!")
+            await interaction.response.send_message(msg, ephemeral=True)
+            return
+        msg = _("Please first select the player. The roster is updated when a class is selected. "
+                "You can select a slot manually or leave it on automatic.\n") \
+            + _("(This selection message is ephemeral and will cease to work after 60s without interaction.)")
+        view = SelectView(self.raid_cog, raid_id)
+        await interaction.response.send_message(msg, view=view, ephemeral=True)
+        roster = select_one(self.conn, 'Raids', ['roster'], ['raid_id'], [raid_id])
+        if not roster:
+            upsert(self.conn, 'Raids', ['roster'], [True], ['raid_id'], [raid_id])
+
+    @discord.ui.button(emoji="\u274C", style=discord.ButtonStyle.red, custom_id='raid_view:cancel')
+    async def red_cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await self.sign_up_cancel(interaction)
+
+    @discord.ui.button(emoji="\u2705", style=discord.ButtonStyle.green, custom_id='raid_view:check')
+    async def green_check(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await self.sign_up_all(interaction)
+
+    @discord.ui.button(label="\U0001D4D1", custom_id='raid_view:brawler')
+    async def brawler(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await interaction.response.send_message("You will have to wait for this...", ephemeral=True)
+        #await self.sign_up_class(interaction, 'Brawler')
+
+    async def sign_up_class(self, i, class_name):
+        raid_id = i.message.id
+        timestamp = int(time.time())
+        byname = self.process_name(i.guild.id, i.user)
+        upsert(self.conn, 'Players', ['byname', 'timestamp', 'unavailable', class_name],
+               [byname, timestamp, False, True], ['player_id', 'raid_id'], [i.user.id, raid_id])
+        try:
+            role = await get_role(i.guild, class_name)
+            if role not in i.user.roles:
+                await i.user.add_roles(role)
+        except discord.Forbidden:
+            err_msg = _("Error: Missing 'Manage roles' permission to assign the class role.")
+            await i.response.send_message(err_msg)
+        else:
+            await i.response.defer()
+        self.conn.commit()
+        await self.raid_cog.update_raid_post(raid_id, i.channel)
+
+    async def sign_up_all(self, i):
+        raid_id = i.message.id
+        role_names = [role.name for role in i.user.roles if role.name in self.raid_cog.role_names]
+        if role_names:
+            timestamp = int(time.time())
+            columns = ['byname', 'timestamp', 'unavailable']
+            columns.extend(role_names)
+            byname = self.process_name(i.guild.id, i.user)
+            values = [byname, timestamp, False]
+            values.extend([True] * len(role_names))
+            upsert(self.conn, 'Players', columns, values, ['player_id', 'raid_id'], [i.user.id, raid_id])
+            self.conn.commit()
+            await i.response.defer()
+            await self.raid_cog.update_raid_post(raid_id, i.channel)
+        else:
+            err_msg = _("You have not assigned yourself any class roles yet, please sign up with a class first.")
+            await i.response.send_message(err_msg, ephemeral=True)
+
+    async def sign_up_cancel(self, i):
+        await i.response.defer()
+        raid_id = i.message.id
+        timestamp = int(time.time())
+        assigned_slot = select_one(self.conn, 'Assignment', ['slot_id'], ['player_id', 'raid_id'],
+                                   [i.user.id, raid_id])
+        if assigned_slot is not None:
+            class_name = select_one(self.conn, 'Assignment', ['class_name'], ['player_id', 'raid_id'],
+                                    [i.user.id, raid_id])
+            error_msg = _("Dearest raid leader, {0} has cancelled their availability. "
+                          "Please note they were assigned to {1} in the raid.").format(i.user.mention, class_name)
+            await i.channel.send(error_msg)
+            class_names = ','.join(self.raid_cog.slots_class_names[assigned_slot])
+            assign_columns = ['player_id', 'byname', 'class_name']
+            assign_values = [None, _("<Open>"), class_names]
+            upsert(self.conn, 'Assignment', assign_columns, assign_values, ['raid_id', 'slot_id'],
+                   [raid_id, assigned_slot])
+        r = select_one(self.conn, 'Players', ['byname'], ['player_id', 'raid_id'], [i.user.id, raid_id])
+        if r:
+            delete(self.conn, 'Players', ['player_id', 'raid_id'], [i.user.id, raid_id])
+        else:
+            byname = self.process_name(i.guild.id, i.user)
+            upsert(self.conn, 'Players', ['byname', 'timestamp', 'unavailable'], [byname, timestamp, True],
+                   ['player_id', 'raid_id'], [i.user.id, raid_id])
+        self.conn.commit()
+        await self.raid_cog.update_raid_post(raid_id, i.channel)
+
+    def process_name(self, guild_id, user):
+        role_id = select_one(self.conn, 'Settings', ['priority'], ['guild_id'], [guild_id])
+        if role_id in [role.id for role in user.roles]:
+            byname = "\U0001F46A " + user.display_name
+        else:
+            if "\U0001F46A" in user.display_name:
+                byname = "iMAhACkEr"
+            else:
+                byname = user.display_name
+        return byname
+
+
+class EmojiButton(discord.ui.Button):
+    def __init__(self, emoji):
+        super().__init__(emoji=emoji, custom_id=emoji.name)
+
+    async def callback(self, interaction: discord.Interaction):
+        class_name = self.custom_id
+        await self.view.sign_up_class(interaction, class_name)
+
+
+class SelectView(discord.ui.View):
+    def __init__(self, raid_cog, raid_id):
+        super().__init__(timeout=60)
+        self.raid_cog = raid_cog
+        self.raid_id = raid_id
+        self.conn = raid_cog.conn
+
+        self.slot = -1
+        self.player = None
+
+        self.add_item(SlotSelect(len(raid_cog.slots_class_names)))
+        self.add_item(PlayerSelect(raid_cog.conn, raid_id))
+        self.add_item(ClassSelect(raid_cog.class_emojis))
+
+    async def on_timeout(self):
+        self.conn.commit()
+
+
+class SlotSelect(discord.ui.Select):
+    def __init__(self, number_of_slots):
+        options = [
+                discord.SelectOption(label=_("Automatic"), value=-1)
+        ]
+        for i in range(number_of_slots):
+            options.append(discord.SelectOption(label=i+1, value=i))
+        super().__init__(placeholder=_("Slot (automatic)"), options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        self.view.slot = int(self.values[0])
+
+
+class PlayerSelect(discord.ui.Select):
+    def __init__(self, conn, raid_id):
+        available = select(conn, 'Players', ['player_id, byname'], ['raid_id', 'unavailable'], [raid_id, False])
+        if len(available) > 25:
+            available = available[:25]  # discord API limit is 25 options
+        options = []
+        for player in available:
+            options.append(discord.SelectOption(value=player[0], label=player[1]))
+        super().__init__(placeholder=_("Player"), options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        self.view.player = self.values[0]
+
+
+class ClassSelect(discord.ui.Select):
+    def __init__(self, class_emojis):
+        options = []
+        for emoji in class_emojis:
+            options.append(discord.SelectOption(label=emoji.name, emoji=emoji))
+        options.append(discord.SelectOption(label=_("Remove"), value='remove', emoji="\u274C"))
+        super().__init__(placeholder=_("Class"), options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        raid_id = self.view.raid_id
+        if self.view.player is None:
+            msg = _("Please select a player first.")
+            await interaction.response.send_message(msg, ephemeral=True)
+            return
+
+        slot = select_one(self.view.conn, 'Assignment', ['slot_id', 'byname'], ['player_id', 'raid_id'],
+                          [self.view.player, raid_id])
+        if slot is not None:
+            assignment_columns = ['player_id', 'byname', 'class_name']
+            class_names = ','.join(self.view.raid_cog.slots_class_names[slot[0]])
+            assignment_values = [None, _("<Open>"), class_names]
+            upsert(self.view.conn, 'Assignment', assignment_columns, assignment_values, ['raid_id', 'slot_id'],
+                   [raid_id, slot[0]])
+            await self.view.raid_cog.update_raid_post(raid_id, interaction.channel)
+
+        if self.values[0] == 'remove':
+            return
+
+        signup = select_one(self.view.conn, 'Players', [self.values[0], 'byname'], ['player_id', 'raid_id'],
+                            [self.view.player, raid_id])
+        if not signup[0]:
+            msg = _("{0} did not sign up with {1}.").format(signup[1], self.values[0])
+            await interaction.response.send_message(msg, ephemeral=True)
+            return
+
+        if self.view.slot == -1:
+            search = '%' + self.values[0] + '%'
+            slot_id = select_one(self.view.conn, 'Assignment', ['slot_id'], ['raid_id'], [raid_id], ['player_id'],
+                                 ['class_name'], [search])
+        else:
+            slot_id = self.view.slot
+        if slot_id is None:
+            msg = _("There are no slots available for the selected class. "
+                    "Please select the slot manually or pick a different class.")
+            await interaction.response.send_message(msg, ephemeral=True)
+            return
+
+        assignment_columns = ['player_id', 'byname', 'class_name']
+        assignment_values = [self.view.player, signup[1], self.values[0]]
+        upsert(self.view.conn, 'Assignment', assignment_columns, assignment_values, ['raid_id', 'slot_id'],
+               [raid_id, slot_id])
+        await self.view.raid_cog.update_raid_post(raid_id, interaction.channel)
+
+
+class ConfigureView(discord.ui.View):
+    def __init__(self, raid_cog, raid_id):
+        super().__init__(timeout=60)
+        self.raid_cog = raid_cog
+        self.calendar_cog = raid_cog.bot.get_cog('CalendarCog')
+        self.raid_id = raid_id
+        self.conn = raid_cog.conn
+
+        self.add_item(TierSelect())
+
+    @discord.ui.button(label="Name", style=discord.ButtonStyle.secondary, custom_id='configure_view:name')
+    async def update_name(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await interaction.response.defer()
+        await self.raid_cog.name_configure(interaction.user, interaction.channel, self.raid_id)
+        await self.raid_cog.update_raid_post(self.raid_id, interaction.channel)
+        await self.calendar_cog.update_calendar(interaction.guild.id, new_run=False)
+
+    @discord.ui.button(label="Aim", style=discord.ButtonStyle.secondary, custom_id='configure_view:aim')
+    async def update_aim(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await interaction.response.defer()
+        await self.raid_cog.boss_configure(interaction.user, interaction.channel, self.raid_id)
+        await self.raid_cog.update_raid_post(self.raid_id, interaction.channel)
+
+    @discord.ui.button(label="Time", style=discord.ButtonStyle.secondary, custom_id='configure_view:time')
+    async def update_time(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await interaction.response.defer()
+        await self.raid_cog.time_configure(interaction.user, interaction.channel, self.raid_id)
+        await self.raid_cog.update_raid_post(self.raid_id, interaction.channel)
+        await self.calendar_cog.update_calendar(interaction.guild.id, new_run=False)
+
+    @discord.ui.button(label="Delete", style=discord.ButtonStyle.red, custom_id='configure_view:delete')
+    async def red_cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await self.raid_cog.cleanup_old_raid(self.raid_id, "Raid manually deleted.")
+        post = interaction.channel.get_partial_message(self.raid_id)
+        try:
+            await post.delete()
+        except discord.NotFound:
+            pass
+
+    async def on_timeout(self):
+        self.conn.commit()
+
+
+class TierSelect(discord.ui.Select):
+    def __init__(self):
+        options = [
+                discord.SelectOption(label="1", value="T1"),
+                discord.SelectOption(label="2", value="T2"),
+                discord.SelectOption(label="2c", value="T2c"),
+                discord.SelectOption(label="3", value="T3"),
+                discord.SelectOption(label="4", value="T4"),
+                discord.SelectOption(label="5", value="T5")
+        ]
+        super().__init__(placeholder=_("Tier"), options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        tier = self.values[0]
+        upsert(self.view.conn, 'Raids', ['tier'], [tier], ['raid_id'], [self.view.raid_id])
+        await self.view.raid_cog.update_raid_post(self.view.raid_id, interaction.channel)
+        await self.view.calendar_cog.update_calendar(interaction.guild.id, new_run=False)
 
 
 def setup(bot):

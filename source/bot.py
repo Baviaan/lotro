@@ -25,7 +25,6 @@ class Bot(commands.Bot):
             config = json.load(f)
         self.token = config['BOT_TOKEN']
         self.server_tz = config['SERVER_TZ']
-        self.display_times = config['TIMEZONES']
         self.default_prefix = config['PREFIX']
         role_names = config['CLASSES']
         self.role_names = tuple(role_names)
@@ -69,7 +68,6 @@ class Bot(commands.Bot):
         intents = discord.Intents.none()
         intents.guilds = True
         intents.messages = True
-        intents.reactions = True
 
         super().__init__(command_prefix=self.prefix_manager, case_insensitive=True, intents=intents,
                          activity=discord.Game(name=self.version))

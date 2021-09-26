@@ -90,32 +90,25 @@ class CalendarCog(commands.Cog):
 
 
     def calendar_embed(self, guild_id):
-        time_cog = self.bot.get_cog('TimeCog')
         conn = self.bot.conn
-        server_tz = time_cog.get_server_time(guild_id)
         raids = select_order(conn, 'Raids', ['channel_id', 'raid_id', 'name', 'tier', 'time'], 'time', ['guild_id'],
                              [guild_id])
 
         title = _("Scheduled runs:")
-        desc = _("Time displayed in server time.\nClick the link to sign up!")
+        desc = _("Click the link to sign up!")
         embed = discord.Embed(title=title, description=desc, colour=discord.Colour(0x3498db))
-        fmt_24hr = time_cog.get_24hr_fmt(guild_id)
         for raid in raids[:20]:
             timestamp = int(raid[4])
-            time = datetime.utcfromtimestamp(timestamp)
-            server_time = time_cog.local_time(time, server_tz)
-            time_string = time_cog.calendar_time(server_time, fmt_24hr)
             msg = "[{name} {tier}](<https://discord.com/channels/{guild}/{channel}/{msg}>)\n".format(
                 guild=guild_id, channel=raid[0], msg=raid[1], name=raid[2], tier=raid[3])
-            embed.add_field(name=time_string, value=msg, inline=False)
-        time = datetime.now()
+            embed.add_field(name=f"<t:{timestamp}:F>", value=msg, inline=False)
         embed.set_footer(text=_("Last updated"))
-        embed.timestamp = time
+        embed.timestamp = datetime.now()
         return embed
 
     def get_events(self):
-        current_time  = datetime.now(pytz.timezone("America/New_York"))
-        if self.cached_events_at and self.cached_events_at > current_time - timedelta(days=1):
+        current_time = datetime.now().timestamp()
+        if self.cached_events_at and self.cached_events_at + 86400 > current_time:
             return self.upcoming_events
 
         s = requests.Session()
@@ -132,44 +125,30 @@ class CalendarCog(commands.Cog):
         result = prog.search(stripped)
         data  = [line for line in result.group(2).splitlines() if line]
         events = [chunk for chunk in chunks(data, 3)]
-        parsed_events = [(event[0], *self.parse_event_time(*event[1:])) for event in events]
+        parsed_events = [(event[0], self.parse_event_time(event[1]), self.parse_event_time(event[2])) for event in events]
 
-        cutoff_past = current_time - timedelta(days=1)
-        cutoff_future = current_time + timedelta(days=90)
+        cutoff_past = current_time - 86400
+        cutoff_future = current_time + 90 * 86400
         upcoming_events = [event for event in parsed_events if cutoff_past < event[2] < cutoff_future]
         self.cached_events_at = current_time
         self.upcoming_events = upcoming_events
         return upcoming_events
 
-    def events_embed(self, user_id, guild_id):
+    def events_embed(self, guild_id):
         events = self.get_events()
 
-        time_cog = self.time_cog
-        fmt_24hr = time_cog.get_24hr_fmt(guild_id)
-        timezone = time_cog.get_user_timezone(user_id, guild_id)
-        tz = pytz.timezone(timezone)
-        city = timezone.rpartition("/")[2]
-
         title = _("Upcoming events:")
-        desc = _("All times for {0}.").format(city)
-        embed = discord.Embed(title=title, description=desc, colour=discord.Colour(0x3498db))
+        embed = discord.Embed(title=title, colour=discord.Colour(0x3498db))
         for e in events:
-            time_str = "{0} -- {1}".format(*self.format_event_time(*e[1:], tz, fmt_24hr))
+            time_str = f"<t:{e[1]}> -- <t:{e[2]}>"
             embed.add_field(name=e[0], value=time_str, inline=False)
         embed.set_footer(text=_("Last updated"))
-        embed.timestamp = self.cached_events_at
+        embed.timestamp = datetime.fromtimestamp(self.cached_events_at)
         return embed
 
-    def parse_event_time(self, start, end):
-        useastern = pytz.timezone("America/New_York")
-        start = useastern.localize(dateparser.parse(start))
-        end = useastern.localize(dateparser.parse(end))
-        return start, end
-
-    def format_event_time(self, start, end, tz, fmt_24hr):
-        start = self.time_cog.calendar_time(start.astimezone(tz), fmt_24hr)
-        end = self.time_cog.calendar_time(end.astimezone(tz), fmt_24hr)
-        return start, end
+    def parse_event_time(self, time):
+        time = pytz.timezone("America/New_York").localize(dateparser.parse(time)).timestamp()
+        return int(time)
 
 
 def setup(bot):
