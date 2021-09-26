@@ -25,7 +25,6 @@ class Bot(commands.Bot):
             config = json.load(f)
         self.token = config['BOT_TOKEN']
         self.server_tz = config['SERVER_TZ']
-        self.display_times = config['TIMEZONES']
         self.default_prefix = config['PREFIX']
         role_names = config['CLASSES']
         self.role_names = tuple(role_names)
