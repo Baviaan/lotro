@@ -77,38 +77,40 @@ You can paste the code directly in the discord app when clicking the join server
 
 ------------------------------------
 
-## Legacy Command overview
-
-These commands have all been replaced by an equivalent slash command.
+## Command overview
 
 ### Configuration commands
 | Command | Requirement | Example | Notes |
 | ------- |:-----------:| ------- | ----- |
-| **!prefix** \<prefix\> | Admin | !prefix ? | Changes the prefix for all commands. |
-| **!leader** \<role_name \>| Admin | !leader Officer | Set to "Raid Leader" by default. Case sensitive. Raid leaders can edit raids posted by others. |
-| **!servertime** \<timezone\> | Raid Leader | !servertime europe/paris | Set to US Eastern by default. See `!help servertime` for timezone format. This timezone is used in the header of a scheduled raid and is also the default timezone for interpretation of raid commands. |
-| **!displaytimes** \[timezones...\] | Raid Leader | !displaytimes america/chicago america/los_angeles | Set to Sydney, London and Los Angeles by default. See `!help displaytimes` for timezone format. |
-|  **!format** \<format\> | Raid Leader | !format 12, !format 24 | Switches to 12h or 24h time format for your server. |
+| **/leader** \<role\>| Admin | /leader Officer | Specify "Raid Leader" role. Raid leaders can edit raids posted by others. |
+| **/time_zones server** \<timezone\> | Raid Leader | /time_zones server europe/paris | Set to US Eastern by default. This timezone is the default timezone for interpretation of raid commands. |
+| **/kin** \<role\>| Admin | /kin Kin | Specify "kin" role. If specified kin members will be marked on the sign up sheet. |
 
 ### Scheduling commands
 
-| Command | Alias | Example | Notes |
-| ------- |:-----:| ------- | ----- |
-| **!calendar** | | !calendar | Provides an overview of all scheduled runs for the upcoming week, with direct links to the raid posts. This command will only have to be run once as the calendar will automatically populate with new runs. |
-| **!raid** \<name\> \[tier\] \<time\> | **!instance**, **!r** | !raid anvil t3 friday 8pm | Schedules a custom raid. Name must be quoted if multiple words. Tier argument is optional. If omitted, it attempts to parse tier information from the channel name and defaults to t1 otherwise. If a timezone is omitted it will default to the user's preferred timezone (which is server time by default). |
-| **!fastraid** \[tier\] \<time\> | **!rem**, **!ad**, etc | !rem  friday 8pm, !ad t3 friday 8pm | Faster way to schedule a raid. **Invoke this command with an alias.** Use `!help fastraid` for the full list of aliases. |
-| **!meetup** \<name\> \<time\> | **!meet**, **!m** | !meetup "kin house" friday 8pm | Similar to `!raid` but without a tier argument. |
+| Command | Example | Notes |
+| ------- | ------- | ----- |
+| **/calendar** | /calendar | Provides an overview of all scheduled runs for the upcoming week, with direct links to the raid posts. This command will only have to be run once as the calendar will automatically populate with new runs. |
+| **/\<raid_name\>** \<tier\> \<time\> | /rem t2 tomorrow 8pm, /ad t3 friday 8pm | Fastest way to schedule a raid. |
+| **/custom** \<name\> \<time\> \[tier\] | /custom my big event friday 8pm | Schedules a custom event. Tier argument is optional. |
+| **/list_players** | /list_players | Lists the signed up players for a raid in order of sign up time. |
 
 ### User specific commands
 | Command | Example | Notes |
 | ------- | ------- | ----- |
-| **!roles** | !roles | Shows the class roles you have and lets you reset them. |
-| **!timezone** \<timezone\> | !timezone europe/london | Set to server time by default. See `!help timezone` for timezone format. This timezone is used to interpret *your* raid commands. |
+| **/remove_roles** | !roles | Removes the class roles you have. |
+| **!time_zones personal** \<timezone\> | /time_zones personal europe/london | Set to server time by default. This timezone is used to interpret *your* raid commands. |
+
+### Info commands
+
+| Command | Notes |
+| ------- | ----- |
+| **/server_time** | Returns the current server time. |
+| **/events** | Returns the upcoming official LotRO events. |
+| **/about** | Shows some basic information about the bot. |
 
 ### Miscellaneous commands
 | Command | Notes |
 | ------- | ----- |
-| **!privacy** | Displays information on data collection and retention. |
-| **!welcome** | Resends the welcome message. |
-| **!about** | Shows some basic information about the bot. |
-| **!help** [command] | The command argument is optional. If omitted it will show the list of all commands. If provided it will show detailed help for that command. |
+| **/privacy** | Displays information on data collection and retention. |
+| **/welcome** | Resends the welcome message. |
