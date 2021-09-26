@@ -6,7 +6,7 @@ The bot will add class emojis to this embed for users to interact with.
 When a user clicks on a class emoji it will update the embed, listing the user's discord nickname and available classes.
 Moreover it will add tools, pickaxe, check mark and cross mark emojis.
 A user can sign up with all his (previously used) classes by clicking the green check mark and cancel his sign up by clicking the red cross mark.
-One can reset the classes for the green check mark sign up via the `/roles` command.
+One can reset the classes for the green check mark sign up via the `/remove_roles` command.
 The tools emoji can only be used by raid leaders to update the raid bosses, raid tier, raid time or roster settings.
 The pickaxe emoji can be used by raid leaders to pick people for the raid from available sign ups.
 
@@ -98,7 +98,7 @@ You can paste the code directly in the discord app when clicking the join server
 ### User specific commands
 | Command | Example | Notes |
 | ------- | ------- | ----- |
-| **/remove_roles** | /roles | Removes the class roles you have. |
+| **/remove_roles** | /remove_roles | Removes the class roles you have. |
 | **/time_zones personal** \<timezone\> | /time_zones personal europe/london | Set to server time by default. This timezone is used to interpret *your* raid commands. |
 
 ### Info commands
