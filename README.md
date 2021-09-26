@@ -53,7 +53,6 @@ CLASSES: The classes in your game. Note your discord server must have custom emo
 LANGUAGE: The language of the bot. Currently only English "en" and French "fr" are supported.\
 LINEUP: A sequence of zeroes and ones indicating for each slot whether the class should be present, in the order as specified under CLASSES. This will **ABSOLUTELY BREAK THE UI** if you specify too many ones. Please contain yourself.\
 SERVER_TZ: The raid time in the header of the embed will be posted in this time zone. (Requires TZ database name.)\
-TIMEZONES: The raid time will be displayed in these time zones additionally to server time. (Requires canonical TZ database names.)\
 PREFIX: The prefix that will be used to start a command. (legacy)
 
 See [es/messages.po](./source/locale/es/LC_MESSAGES/messages.po) if you wish to help translate to Spanish.
