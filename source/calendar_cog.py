@@ -79,8 +79,9 @@ class CalendarCog(commands.Cog):
         except discord.Forbidden:
             logger.warning("Calendar access restricted for guild {0}.".format(guild_id))
             return
-        except discord.HTTPException:
+        except discord.HTTPException as e:
             logger.warning("Failed to update calendar for guild {0}.".format(guild_id))
+            logger.warning(e)
             return
         if new_run:
             try:
