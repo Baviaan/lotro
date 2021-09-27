@@ -576,11 +576,6 @@ class RaidView(discord.ui.View):
     async def green_check(self, button: discord.ui.Button, interaction: discord.Interaction):
         await self.sign_up_all(interaction)
 
-    @discord.ui.button(label="\U0001D4D1", custom_id='raid_view:brawler')
-    async def brawler(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await interaction.response.send_message("You will have to wait for this...", ephemeral=True)
-        #await self.sign_up_class(interaction, 'Brawler')
-
     async def sign_up_class(self, i, class_name):
         raid_id = i.message.id
         timestamp = int(time.time())
