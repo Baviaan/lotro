@@ -50,7 +50,7 @@ class SlashCog(commands.Cog):
         post_events = False
         guild = self.bot.get_guild(guild_id)
         channel_required_commands = self.raid_cog.nicknames[:]
-        channel_required_commands.extend(['custom', 'calendar'])
+        channel_required_commands.extend(['custom', 'calendar', 'twitter'])
         if name in channel_required_commands:
             channel = interaction.channel
             if not channel.permissions_for(guild.me).send_messages:
@@ -72,12 +72,21 @@ class SlashCog(commands.Cog):
             if not channel:
                 content = _("Missing permissions to access this channel.")
             else:
-                allowed = self.is_raid_leader(user, guild_id)
-                if allowed:
+                if self.is_raid_leader(user, guild_id):
                     content = _("The calendar will be updated in this channel.")
                     post_new_calendar = True
                 else:
                     content = _("You must be a raid leader to set the calendar.")
+        elif name == 'twitter':
+            if not channel:
+                content = _("Missing permissions to access this channel.")
+            else:
+                if user.guild_permissions.administrator:
+                    content = _("@lotro tweets will be posted to this channel.")
+                    res = upsert(self.conn, 'Settings', ['twitter'], [channel.id], ['guild_id'], [guild_id])
+                    self.conn.commit()
+                else:
+                    content = _("You must be an admin to set up tweets.")
         elif name == 'events':
             ephemeral = False
             content = _("Waiting for lotro.com to respond...")

@@ -35,6 +35,14 @@ class Bot(commands.Bot):
         except KeyError:
             self.host_id = None
 
+        # Check for twitter auth
+        try:
+            config['TWITTER_TOKEN']
+        except KeyError:
+            self.twitter = False
+        else:
+            self.twitter = True
+
         logfile = 'raid_bot.log'
         logging.basicConfig(filename=logfile, level=logging.WARNING, format='%(asctime)s %(levelname)s: %(message)s',
                             datefmt='%Y-%m-%d %H:%M:%S')
@@ -111,6 +119,9 @@ class Bot(commands.Bot):
             # Load slash cog
             self.load_extension('slash_cog')
             self.load_extension('register_cog')
+            # Load twitter cog
+            if self.twitter:
+                self.load_extension('twitter_cog')
             # Load custom cog
             self.load_extension('custom_cog')
         except commands.ExtensionAlreadyLoaded:

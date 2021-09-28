@@ -220,6 +220,15 @@ class RegisterCog(commands.Cog):
         r = requests.post(self.command_url, headers=self.headers, json=json)
         return r.status_code == requests.codes.ok
 
+    def add_twitter_slash_command(self):
+        json = {
+            "name": 'twitter',
+            "description": _("Post @lotro tweets in this channel."),
+        }
+
+        r = requests.post(self.command_url, headers=self.headers, json=json)
+        return r.status_code == requests.codes.ok
+
     def add_about_slash_command(self):
         json = {
             "name": 'about',
@@ -315,6 +324,7 @@ class RegisterCog(commands.Cog):
                     'roles': self.add_roles_slash_command,
                     'calendar': self.add_calendar_slash_command,
                     'events': self.add_events_slash_command,
+                    'twitter': self.add_twitter_slash_command,
                     'about': self.add_about_slash_command,
                     'privacy': self.add_privacy_slash_command,
                     'welcome': self.add_welcome_slash_command,

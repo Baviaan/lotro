@@ -74,15 +74,19 @@ def table_sqls(table):
             'settings': "create table if not exists Settings ("
                         "guild_id integer primary key, "
                         "server text, "
-                        "display text[], "
                         "prefix text, "
                         "raid_leader integer, "
                         "priority integer, "
                         "calendar text, "
-                        "fmt_24hr boolean, "
+                        "twitter integer, "
                         "last_command integer, "
                         "command_count integer, "
                         "slash_count integer"
+                        ");",
+
+            'twitter':  "create table if not exists Twitter ("
+                        "user_id integer primary key,"
+                        "tweet_id integer"
                         ");"
     }
     return sql_dict[table]
