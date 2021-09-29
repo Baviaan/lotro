@@ -169,10 +169,9 @@ class SlashCog(commands.Cog):
             self.process_events_command(guild_id, token)
 
         timestamp = int(datetime.datetime.now().timestamp())
+        upsert(self.conn, 'Settings', ['last_command'], [timestamp], ['guild_id'], [guild_id])
         increment(self.conn, 'Settings', 'slash_count', ['guild_id'], [guild_id])
-        res = upsert(self.conn, 'Settings', ['last_command'], [timestamp], ['guild_id'], [guild_id])
-        if res:
-            self.conn.commit()
+        self.conn.commit()
 
     def is_raid_leader(self, user, guild_id):
         if user.guild_permissions.administrator:

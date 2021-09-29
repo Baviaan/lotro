@@ -138,8 +138,7 @@ class Bot(commands.Bot):
 
     async def on_command_completion(self, ctx):
         timestamp = int(datetime.now().timestamp())
+        upsert(self.conn, 'Settings', ['last_command'], [timestamp], ['guild_id'], [ctx.guild.id])
         increment(self.conn, 'Settings', 'command_count', ['guild_id'], [ctx.guild.id])
-        res = upsert(self.conn, 'Settings', ['last_command'], [timestamp], ['guild_id'], [ctx.guild.id])
-        if res:
-            self.conn.commit()
+        self.conn.commit()
         await ctx.send(_("**DEPRECATED**: Consider using the new / command."), delete_after=60)
