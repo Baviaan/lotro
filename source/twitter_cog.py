@@ -79,6 +79,7 @@ class TwitterCog(commands.Cog):
     async def twitter_task(self):
         last_tweet_id = select_one(self.conn, 'Twitter', ['tweet_id'], ['user_id'], [self.twitter_id])
         await self.get_new_tweets(self.twitter_id, last_tweet_id)
+        logger.debug("Completed twitter background task.")
 
     @twitter_task.before_loop
     async def before_twitter_task(self):
