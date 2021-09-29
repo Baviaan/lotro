@@ -36,11 +36,9 @@ class TwitterCog(commands.Cog):
         }
         response = requests.request("GET", url, headers=headers, params=params)
         if response.status_code != 200:
-            raise Exception(
-                "Request returned an error: {} {}".format(
-                    response.status_code, response.text
-                )
-            )
+            logger.error("Twitter endpoint status: {0}.".format(response.status_code))
+            logger.error(response.text)
+            return None
         return response.json()
 
     async def get_new_tweets(self, user_id, last_tweet_id=None):
@@ -51,6 +49,8 @@ class TwitterCog(commands.Cog):
         if last_tweet_id:
             params["since_id"] = last_tweet_id
         json_response = self.connect_to_endpoint(url, params)
+        if not json_response:
+            return
         count = json_response['meta']['result_count']
         if count:
             for i in range(count-1, -1, -1):
