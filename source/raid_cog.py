@@ -280,7 +280,10 @@ class RaidCog(commands.Cog):
         except asyncio.TimeoutError:
             return
         else:
-            await response.delete()
+            try:
+                await response.delete()
+            except discord.NotFound:
+                pass
         finally:
             try:
                 await msg.delete()
@@ -307,7 +310,10 @@ class RaidCog(commands.Cog):
         except asyncio.TimeoutError:
             return
         else:
-            await response.delete()
+            try:
+                await response.delete()
+            except discord.NotFound:
+                pass
         finally:
             try:
                 await msg.delete()
@@ -333,7 +339,10 @@ class RaidCog(commands.Cog):
         except asyncio.TimeoutError:
             return
         else:
-            await response.delete()
+            try:
+                await response.delete()
+            except discord.NotFound:
+                pass
         finally:
             try:
                 await msg.delete()
