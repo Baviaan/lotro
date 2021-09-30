@@ -1,5 +1,5 @@
 dateparser>=1.0.0
-discord.py>=2.0
+discord.py @ git+https://github.com/Rapptz/discord.py@45d498c1b76deaf3b394d17ccf56112fa691d160
 fuzzywuzzy>=0.18.0
 psutil>=5.7.0
 requests>=2.25.1
