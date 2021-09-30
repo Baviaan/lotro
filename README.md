@@ -85,6 +85,7 @@ You can paste the code directly in the discord app when clicking the join server
 | **/leader** \<role\>| Admin | /leader Officer | Specify "Raid Leader" role. Raid leaders can edit raids posted by others. |
 | **/time_zones server** \<timezone\> | Raid Leader | /time_zones server europe/paris | Set to US Eastern by default. This timezone is the default timezone for interpretation of raid commands. |
 | **/kin** \<role\>| Admin | /kin Kin | Specify "kin" role. If specified kin members will be marked on the sign up sheet. |
+| **/twitter on/off** \<role\>| Admin | /twitter on | Post @lotro tweets to this channel. |
 
 ### Scheduling commands
 

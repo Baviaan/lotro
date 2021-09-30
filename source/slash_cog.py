@@ -33,7 +33,7 @@ class SlashCog(commands.Cog):
         name = d['name']
         try:
             if d['options'][0]['type'] == 1:
-                name = d['options'][0]['name']
+                name = "_".join([name, d['options'][0]['name']])
                 options = {option['name']: option['value'] for option in d['options'][0]['options']}
             else:
                 options = {option['name']: option['value'] for option in d['options']}
@@ -50,7 +50,7 @@ class SlashCog(commands.Cog):
         post_events = False
         guild = self.bot.get_guild(guild_id)
         channel_required_commands = self.raid_cog.nicknames[:]
-        channel_required_commands.extend(['custom', 'calendar', 'twitter'])
+        channel_required_commands.extend(['custom', 'calendar', 'twitter_on', 'twitter_off'])
         if name in channel_required_commands:
             channel = interaction.channel
             if not channel.permissions_for(guild.me).send_messages:
@@ -77,13 +77,20 @@ class SlashCog(commands.Cog):
                     post_new_calendar = True
                 else:
                     content = _("You must be a raid leader to set the calendar.")
-        elif name == 'twitter':
+        elif name.startswith('twitter'):
             if not channel:
                 content = _("Missing permissions to access this channel.")
             else:
                 if user.guild_permissions.administrator:
-                    content = _("@lotro tweets will be posted to this channel.")
-                    res = upsert(self.conn, 'Settings', ['twitter'], [channel.id], ['guild_id'], [guild_id])
+                    if name == 'twitter_on':
+                        value = channel.id
+                        content = _("@lotro tweets will be posted to this channel.")
+                    elif name == 'twitter_off':
+                        value = None
+                        content = _("Tweets will no longer be posted to this channel.")
+                    else:
+                        return
+                    res = upsert(self.conn, 'Settings', ['twitter'], [value], ['guild_id'], [guild_id])
                     self.conn.commit()
                 else:
                     content = _("You must be an admin to set up tweets.")
@@ -97,9 +104,9 @@ class SlashCog(commands.Cog):
         elif name == 'remove_roles':
             content = _("Removing your class roles...")
             update_roles = True
-        elif name == 'personal':
+        elif name == 'time_zones_personal':
             content = self.process_time_zones_personal(user.id, options)
-        elif name == 'server':
+        elif name == 'time_zones_server':
             ephemeral = False
             content = self.process_time_zones_server(user, guild_id, options)
         elif name == 'about':

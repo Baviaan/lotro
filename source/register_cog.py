@@ -223,7 +223,19 @@ class RegisterCog(commands.Cog):
     def add_twitter_slash_command(self):
         json = {
             "name": 'twitter',
-            "description": _("Post @lotro tweets in this channel."),
+            "description": _("Manage twitter settings."),
+            "options": [
+                {
+                    "name": "on",
+                    "description": "Turn on tweets in this channel.",
+                    "type": 1,
+                },
+                {
+                    "name": "off",
+                    "description": "Turn off tweets in this channel.",
+                    "type": 1,
+                }
+            ]
         }
 
         r = requests.post(self.command_url, headers=self.headers, json=json)
