@@ -185,6 +185,7 @@ class SlashCog(commands.Cog):
             return True
         raid_leader_id = select_one(self.conn, 'Settings', ['raid_leader'], ['guild_id'], [guild_id])
         if raid_leader_id:
+            guild = self.bot.get_guild(guild_id)
             raid_leader = guild.get_role(raid_leader_id)
             if raid_leader in user.roles:
                 return True
