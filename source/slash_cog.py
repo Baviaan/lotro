@@ -53,7 +53,8 @@ class SlashCog(commands.Cog):
         channel_required_commands.extend(['custom', 'calendar', 'twitter_on', 'twitter_off'])
         if name in channel_required_commands:
             channel = interaction.channel
-            if not channel.permissions_for(guild.me).send_messages:
+            perms = channel.permissions_for(guild.me)
+            if not (perms.send_messages and perms.embed_links):
                  channel = None
 
         if name in self.raid_cog.nicknames or name == 'custom':
