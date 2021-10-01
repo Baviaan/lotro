@@ -131,10 +131,10 @@ class Bot(commands.Bot):
         if isinstance(error, commands.NoPrivateMessage):
             await ctx.send(_("Please use this command in a server."))
         else:
-            await ctx.send(error, delete_after=10)
             if not isinstance(error, commands.CommandNotFound):
                 self.logger.warning("Error for command: " + ctx.message.content)
                 self.logger.warning(error)
+            await ctx.send(error, delete_after=10)
 
     async def on_command_completion(self, ctx):
         timestamp = int(datetime.now().timestamp())
