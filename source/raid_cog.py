@@ -284,6 +284,8 @@ class RaidCog(commands.Cog):
                 await response.delete()
             except discord.NotFound:
                 pass
+            except discord.Forbidden:
+                await channel.send(_("Missing permissions to clean up your response. Please grant me the 'Manage messages' permission in this channel."))
         finally:
             try:
                 await msg.delete()
@@ -314,6 +316,8 @@ class RaidCog(commands.Cog):
                 await response.delete()
             except discord.NotFound:
                 pass
+            except discord.Forbidden:
+                await channel.send(_("Missing permissions to clean up your response. Please grant me the 'Manage messages' permission in this channel."))
         finally:
             try:
                 await msg.delete()
@@ -343,6 +347,8 @@ class RaidCog(commands.Cog):
                 await response.delete()
             except discord.NotFound:
                 pass
+            except discord.Forbidden:
+                await channel.send(_("Missing permissions to clean up your response. Please grant me the 'Manage messages' permission in this channel."))
         finally:
             try:
                 await msg.delete()
