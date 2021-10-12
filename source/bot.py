@@ -21,6 +21,15 @@ class Bot(commands.Bot):
             version = re.search(regex, f.read(), re.MULTILINE).group(1)
         self.version = version
 
+        logfile = 'raid_bot.log'
+        logging.basicConfig(filename=logfile, level=logging.WARNING, format='%(asctime)s %(levelname)s: %(message)s',
+                            datefmt='%Y-%m-%d %H:%M:%S')
+        logger = logging.getLogger(__name__)
+        logger.setLevel(logging.INFO)
+        self.logger = logger
+
+        self.logger.info("Running version " + self.version)
+
         with open('config.json', 'r') as f:
             config = json.load(f)
         self.token = config['BOT_TOKEN']
@@ -40,17 +49,9 @@ class Bot(commands.Bot):
             config['TWITTER_TOKEN']
         except KeyError:
             self.twitter = False
+            self.logger.info("No twitter credentials found. Twitter cog will not be loaded.")
         else:
             self.twitter = True
-
-        logfile = 'raid_bot.log'
-        logging.basicConfig(filename=logfile, level=logging.WARNING, format='%(asctime)s %(levelname)s: %(message)s',
-                            datefmt='%Y-%m-%d %H:%M:%S')
-        logger = logging.getLogger(__name__)
-        logger.setLevel(logging.INFO)
-        self.logger = logger
-
-        self.logger.info("Running version " + self.version)
 
         language = config['LANGUAGE']
         if language == 'fr':
