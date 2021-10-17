@@ -135,7 +135,10 @@ class Bot(commands.Bot):
             if not isinstance(error, commands.CommandNotFound):
                 self.logger.warning("Error for command: " + ctx.message.content)
                 self.logger.warning(error)
-            await ctx.send(error, delete_after=10)
+            try:
+                await ctx.send(error, delete_after=10)
+            except discord.Forbidden:
+                self.logger.warning("Missing Send messages permission for channel {0}".format(ctx.channel.id))
 
     async def on_command_completion(self, ctx):
         timestamp = int(datetime.now().timestamp())
