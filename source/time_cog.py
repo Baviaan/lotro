@@ -15,10 +15,10 @@ logger.setLevel(logging.INFO)
 
 class Time(commands.Converter):
     async def convert(self, ctx, argument):
-        return await self.converter(ctx.bot, ctx.guild.id, ctx.author.id, argument)
+        return self.converter(ctx.bot, ctx.guild.id, ctx.author.id, argument)
 
     @staticmethod
-    async def converter(bot, guild_id, author_id, argument):
+    def converter(bot, guild_id, author_id, argument):
         time_cog = bot.get_cog('TimeCog')
         parse_settings = {'PREFER_DATES_FROM': 'future'}
         argument_lower = argument.lower()
@@ -40,12 +40,11 @@ class Time(commands.Converter):
             tz = time.tzinfo
         # Parse again with time zone specific relative base as workaround for upstream issue
         # Upstream always checks if the time has passed in UTC, not in the specified timezone
-        parse_settings['RELATIVE_BASE'] = datetime.datetime.now().astimezone(tz).replace(tzinfo=None)
+        parse_settings['RELATIVE_BASE'] = datetime.datetime.now(tz=tz).replace(tzinfo=None)
         time = dateparser.parse(argument, settings=parse_settings)
 
-        time = TimeCog.local_time(time, 'Etc/UTC')
-        time = time.replace(tzinfo=None)  # Strip tz info
-        return time
+        timestamp = int(time.timestamp())
+        return timestamp
 
 
 class TimeCog(commands.Cog):

@@ -63,7 +63,7 @@ class SlashCog(commands.Cog):
             else:
                 time_arg = options['time']
                 try:
-                    time = await Time().converter(self.bot, guild_id, user.id, time_arg)
+                    timestamp = Time().converter(self.bot, guild_id, user.id, time_arg)
                 except commands.BadArgument as e:
                     content = str(e)
                 else:
@@ -168,7 +168,7 @@ class SlashCog(commands.Cog):
         r = requests.post(url, json=json)
 
         if post_new_raid:
-            await self.raid_command(name, guild_id, channel, user.id, time, options)
+            await self.raid_command(name, guild_id, channel, user.id, timestamp, options)
         elif post_new_calendar:
             await self.post_calendar(guild_id, channel)
         elif update_roles:

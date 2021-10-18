@@ -192,27 +192,26 @@ class RaidCog(commands.Cog):
                 name = match[0]
         return name
 
-    async def raid_command(self, ctx, name, tier, boss, time, roster=False):
-        await self.post_raid(name, tier, boss, time, roster, ctx.guild.id, ctx.channel, ctx.author.id)
+    async def raid_command(self, ctx, name, tier, boss, timestamp, roster=False):
+        await self.post_raid(name, tier, boss, timestamp, roster, ctx.guild.id, ctx.channel, ctx.author.id)
 
-    async def post_raid(self, name, tier, boss, time, roster, guild_id, channel, author_id):
+    async def post_raid(self, name, tier, boss, timestamp, roster, guild_id, channel, author_id):
         full_name = self.get_raid_name(name)
+        raid_time = datetime.datetime.utcfromtimestamp(timestamp)
         # Check if time is in near future. Otherwise parsed date was likely unintended.
-        current_time = datetime.datetime.utcnow()
-        delta_time = datetime.timedelta(days=7)
-        if current_time + delta_time < time:
+        current_time = int(time.time())
+        if current_time + 604800 < timestamp:
             error_message = _("Please check the date <@{0}>. You are posting a raid for: {1} UTC.").format(
-                author_id, time)
+                author_id, raid_time)
             await channel.send(error_message, delete_after=30)
         post = await channel.send('\u200B')
         raid_id = post.id
-        timestamp = int(time.replace(tzinfo=datetime.timezone.utc).timestamp())  # Do not use local tz.
         raid_columns = ['channel_id', 'guild_id', 'organizer_id', 'name', 'tier', 'boss', 'time', 'roster']
         raid_values = [channel.id, guild_id, author_id, full_name, tier, boss, timestamp, roster]
         upsert(self.conn, 'Raids', raid_columns, raid_values, ['raid_id'], [raid_id])
         self.roster_init(raid_id)
         self.conn.commit()
-        logger.info("Created new raid: {0} at {1}".format(full_name, time))
+        logger.info("Created new raid: {0} at {1} for guild {2}.".format(full_name, raid_time, guild_id))
         embed = self.build_raid_message(raid_id, "\u200B", None)
         await post.edit(embed=embed, view=RaidView(self))
         self.raids.append(raid_id)
@@ -355,12 +354,11 @@ class RaidCog(commands.Cog):
             except discord.NotFound:
                 pass
         try:
-            time = await Time().converter(bot, channel.guild.id, author.id, response.content)
+            timestamp = Time().converter(bot, channel.guild.id, author.id, response.content)
         except commands.BadArgument:
             error_msg = _("Failed to parse time argument: ") + response.content
             await channel.send(error_msg, delete_after=20)
         else:
-            timestamp = int(time.replace(tzinfo=datetime.timezone.utc).timestamp())  # Do not use local tz.
             upsert(self.conn, 'Raids', ['time'], [timestamp], ['raid_id'], [raid_id])
         return
 
