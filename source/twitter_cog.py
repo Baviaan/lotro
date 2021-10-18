@@ -88,7 +88,7 @@ class TwitterCog(commands.Cog):
     @twitter_task.error
     async def handle_error(self, exception):
         logger.error("Twitter task failed.")
-        logger.error(exception)
+        logger.error(exception, exc_info=True)
 
 def setup(bot):
     bot.add_cog(TwitterCog(bot))

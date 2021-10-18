@@ -515,7 +515,11 @@ class RaidCog(commands.Cog):
                         player_msg = " ".join(["<@{0}>".format(player[0]) for player in players if player[0]])
                         raid_start_msg = " ".join([raid_start_msg, player_msg])
                     raid_start_msg = raid_start_msg + _("? We are forming for the raid now.")
-                    await channel.send(raid_start_msg, delete_after=notify_time * 2)
+                    try:
+                        await channel.send(raid_start_msg, delete_after=notify_time * 2)
+                    except discord.Forbidden:
+                        self.logger.warning("Missing permissions to send raid notification to channel {0}".format(channel.id))
+
         self.conn.commit()
         logger.debug("Completed raid background task.")
 
@@ -538,8 +542,8 @@ class RaidCog(commands.Cog):
 
     @background_task.error
     async def handle_error(self, exception):
-        logger.error("Background task failed.")
-        logger.error(exception)
+        logger.error("Raid background task failed.")
+        logger.error(exception, exc_info=True)
 
 
 class RaidView(discord.ui.View):
