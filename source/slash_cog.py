@@ -292,9 +292,9 @@ class SlashCog(commands.Cog):
         return content
 
     def process_server_time(self, guild_id):
-        time = datetime.datetime.utcnow()
-        server_tz = self.time_cog.get_server_time(guild_id)
-        server_time = self.time_cog.local_time(time, server_tz)
+        tz_str = self.time_cog.get_server_time(guild_id)
+        server_tz = pytz.timezone(tz_str)
+        server_time = datetime.datetime.now(tz=server_tz)
 
         formatted_time = server_time.strftime("%A %H:%M")
         content = _("Current server time: {0}").format(formatted_time)
