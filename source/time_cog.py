@@ -143,14 +143,6 @@ class TimeCog(commands.Cog):
             result = self.bot.server_tz
         return result
 
-    @staticmethod
-    def local_time(time, timezone):
-        if not time.tzinfo:
-            time = pytz.utc.localize(time)  # time is stored as UTC
-        tz = pytz.timezone(timezone)
-        local_time = time.astimezone(tz)  # Convert to local time
-        return local_time
-
 
 def setup(bot):
     bot.add_cog(TimeCog(bot))
