@@ -292,7 +292,7 @@ class SlashCog(commands.Cog):
         return content
 
     def process_server_time(self, guild_id):
-        tz_str = self.time_cog.get_server_time(guild_id)
+        tz_str = self.time_cog.get_server_timezone(guild_id)
         server_tz = pytz.timezone(tz_str)
         server_time = datetime.datetime.now(tz=server_tz)
 

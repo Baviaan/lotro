@@ -20,28 +20,28 @@ class Time(commands.Converter):
     @staticmethod
     async def converter(bot, guild_id, author_id, argument):
         time_cog = bot.get_cog('TimeCog')
-        my_settings = {'PREFER_DATES_FROM': 'future'}
+        parse_settings = {'PREFER_DATES_FROM': 'future'}
         argument_lower = argument.lower()
         server = _("server")
         if server in argument_lower:
             # Strip off server (time) and return as server time
             argument = argument_lower.partition(server)[0]
-            my_settings['TIMEZONE'] = time_cog.get_server_time(guild_id)
-            my_settings['RETURN_AS_TIMEZONE_AWARE'] = True
-        time = dateparser.parse(argument, settings=my_settings)
+            parse_settings['TIMEZONE'] = time_cog.get_server_timezone(guild_id)
+            parse_settings['RETURN_AS_TIMEZONE_AWARE'] = True
+        time = dateparser.parse(argument, settings=parse_settings)
         if time is None:
             raise commands.BadArgument(_("Failed to parse time argument: ") + argument)
         if time.tzinfo is None:
             user_timezone = time_cog.get_user_timezone(author_id, guild_id)
-            my_settings['TIMEZONE'] = user_timezone
-            my_settings['RETURN_AS_TIMEZONE_AWARE'] = True
-            tz = pytz.timezone(my_settings['TIMEZONE'])
+            parse_settings['TIMEZONE'] = user_timezone
+            parse_settings['RETURN_AS_TIMEZONE_AWARE'] = True
+            tz = pytz.timezone(parse_settings['TIMEZONE'])
         else:
             tz = time.tzinfo
         # Parse again with time zone specific relative base as workaround for upstream issue
         # Upstream always checks if the time has passed in UTC, not in the specified timezone
-        my_settings['RELATIVE_BASE'] = datetime.datetime.now().astimezone(tz).replace(tzinfo=None)
-        time = dateparser.parse(argument, settings=my_settings)
+        parse_settings['RELATIVE_BASE'] = datetime.datetime.now().astimezone(tz).replace(tzinfo=None)
+        time = dateparser.parse(argument, settings=parse_settings)
 
         time = TimeCog.local_time(time, 'Etc/UTC')
         time = time.replace(tzinfo=None)  # Strip tz info
@@ -134,10 +134,10 @@ class TimeCog(commands.Cog):
         conn = self.bot.conn
         result = select_one(conn, 'Timezone', ['timezone'], ['player_id'], [user_id])
         if result is None:
-            result = self.get_server_time(guild_id)
+            result = self.get_server_timezone(guild_id)
         return result
 
-    def get_server_time(self, guild_id):
+    def get_server_timezone(self, guild_id):
         conn = self.bot.conn
         result = select_one(conn, 'Settings', ['server'], ['guild_id'], [guild_id])
         if result is None:
