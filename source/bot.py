@@ -6,6 +6,7 @@ import json
 import locale
 import logging
 import re
+import os
 
 from database import create_connection, create_table, increment, select, upsert
 
@@ -30,9 +31,14 @@ class Bot(commands.Bot):
 
         self.logger.info("Running version " + self.version)
 
+
         with open('config.json', 'r') as f:
             config = json.load(f)
-        self.token = config['BOT_TOKEN']
+        if 'BOT_TOKEN' in os.environ:
+            self.token = os.environ['BOT_TOKEN']    
+        else:
+            self.token = config['BOT_TOKEN']       
+
         self.server_tz = config['SERVER_TZ']
         self.default_prefix = config['PREFIX']
         role_names = config['CLASSES']
