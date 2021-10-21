@@ -31,14 +31,14 @@ class Bot(commands.Bot):
 
         self.logger.info("Running version " + self.version)
 
-
-        with open('config.json', 'r') as f:
-            config = json.load(f)
         if 'BOT_TOKEN' in os.environ:
             self.token = os.environ['BOT_TOKEN']    
         else:
-            self.token = config['BOT_TOKEN']       
+            self.token = config['BOT_TOKEN'] 
 
+        with open('config.json', 'r') as f:
+            config = json.load(f)
+    
         self.server_tz = config['SERVER_TZ']
         self.default_prefix = config['PREFIX']
         role_names = config['CLASSES']
