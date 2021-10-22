@@ -5,6 +5,7 @@ import gettext
 import json
 import locale
 import logging
+import os
 import re
 
 from database import create_connection, create_table, increment, select, upsert
@@ -32,7 +33,14 @@ class Bot(commands.Bot):
 
         with open('config.json', 'r') as f:
             config = json.load(f)
-        self.token = config['BOT_TOKEN']
+        try:
+            self.token = config['BOT_TOKEN']
+        except KeyError:
+            try:
+                self.token = os.environ['BOT_TOKEN']
+            except KeyError:
+                logging.critical("Please supply a discord bot token.")
+                raise SystemExit
         self.server_tz = config['SERVER_TZ']
         self.default_prefix = config['PREFIX']
         role_names = config['CLASSES']
