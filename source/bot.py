@@ -33,12 +33,12 @@ class Bot(commands.Bot):
 
         with open('config.json', 'r') as f:
             config = json.load(f)
-        try:
+        if config['BOT_TOKEN'] != "Token goes here":
             self.token = config['BOT_TOKEN']
-        except KeyError:
+        else:
             try:
                 self.token = os.environ['BOT_TOKEN']
-            except KeyError:
+            except:
                 logging.critical("Please supply a discord bot token.")
                 raise SystemExit
         self.server_tz = config['SERVER_TZ']
