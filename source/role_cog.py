@@ -56,7 +56,6 @@ async def get_role(guild, role_name):
     role = discord.utils.get(guild.roles, name=role_name)
     if role is None:
         role = await guild.create_role(mentionable=True, name=role_name)
-        await asyncio.sleep(0.5)
     return role
 
 

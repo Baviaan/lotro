@@ -594,11 +594,6 @@ class RaidView(discord.ui.View):
         await self.sign_up_all(interaction)
 
     async def sign_up_class(self, i, class_name):
-        raid_id = i.message.id
-        timestamp = int(time.time())
-        byname = self.process_name(i.guild.id, i.user)
-        upsert(self.conn, 'Players', ['byname', 'timestamp', 'unavailable', class_name],
-               [byname, timestamp, False, True], ['player_id', 'raid_id'], [i.user.id, raid_id])
         try:
             role = await get_role(i.guild, class_name)
             if role not in i.user.roles:
@@ -608,6 +603,11 @@ class RaidView(discord.ui.View):
             await i.response.send_message(err_msg)
         else:
             await i.response.defer()
+        raid_id = i.message.id
+        timestamp = int(time.time())
+        byname = self.process_name(i.guild.id, i.user)
+        upsert(self.conn, 'Players', ['byname', 'timestamp', 'unavailable', class_name],
+               [byname, timestamp, False, True], ['player_id', 'raid_id'], [i.user.id, raid_id])
         self.conn.commit()
         await self.raid_cog.update_raid_post(raid_id, i.channel)
 
@@ -615,6 +615,7 @@ class RaidView(discord.ui.View):
         raid_id = i.message.id
         role_names = [role.name for role in i.user.roles if role.name in self.raid_cog.role_names]
         if role_names:
+            await i.response.defer()
             timestamp = int(time.time())
             columns = ['byname', 'timestamp', 'unavailable']
             columns.extend(role_names)
@@ -623,7 +624,6 @@ class RaidView(discord.ui.View):
             values.extend([True] * len(role_names))
             upsert(self.conn, 'Players', columns, values, ['player_id', 'raid_id'], [i.user.id, raid_id])
             self.conn.commit()
-            await i.response.defer()
             await self.raid_cog.update_raid_post(raid_id, i.channel)
         else:
             err_msg = _("You have not assigned yourself any class roles yet, please sign up with a class first.")
