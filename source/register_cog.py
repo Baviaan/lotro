@@ -25,6 +25,15 @@ class RegisterCog(commands.Cog):
         with open('common_timezones.txt', 'r') as f:
             self.timezones = f.read().splitlines()
 
+    @staticmethod
+    def parse_response(resp):
+        if resp.status_code in [requests.codes.ok, requests.codes.created]:
+            return True
+        else:
+            logger.info("Register response code: {0}".format(resp.status_code))
+            logger.info("Response body:\n{0}".format(resp.text))
+            return False
+
     def add_timezone_slash_commands(self):
         json = {
             "name": "time_zones",
@@ -33,7 +42,7 @@ class RegisterCog(commands.Cog):
         }
         
         r = requests.post(self.command_url, headers=self.headers, json=json)
-        return r.status_code == requests.codes.ok
+        return self.parse_response(r)
 
     def format_timezone_subcommands(self):
         timezone_options = self.format_timezone_options()
@@ -108,7 +117,7 @@ class RegisterCog(commands.Cog):
         }
 
         r = requests.post(self.command_url, headers=self.headers, json=json)
-        return r.status_code == requests.codes.ok
+        return self.parse_response(r)
 
     def add_custom_raid_slash_command(self):
         json = {
@@ -144,7 +153,7 @@ class RegisterCog(commands.Cog):
         }
 
         r = requests.post(self.command_url, headers=self.headers, json=json)
-        return r.status_code == requests.codes.ok
+        return self.parse_response(r)
 
     @staticmethod
     def format_tier_choices():
@@ -191,7 +200,7 @@ class RegisterCog(commands.Cog):
         }
 
         r = requests.post(self.command_url, headers=self.headers, json=json)
-        return r.status_code == requests.codes.ok
+        return self.parse_response(r)
 
     def add_roles_slash_command(self):
         json = {
@@ -200,7 +209,7 @@ class RegisterCog(commands.Cog):
         }
 
         r = requests.post(self.command_url, headers=self.headers, json=json)
-        return r.status_code == requests.codes.ok
+        return self.parse_response(r)
 
     def add_calendar_slash_command(self):
         json = {
@@ -209,7 +218,7 @@ class RegisterCog(commands.Cog):
         }
 
         r = requests.post(self.command_url, headers=self.headers, json=json)
-        return r.status_code == requests.codes.ok
+        return self.parse_response(r)
 
     def add_events_slash_command(self):
         json = {
@@ -218,7 +227,7 @@ class RegisterCog(commands.Cog):
         }
 
         r = requests.post(self.command_url, headers=self.headers, json=json)
-        return r.status_code == requests.codes.ok
+        return self.parse_response(r)
 
     def add_twitter_slash_command(self):
         json = {
@@ -239,7 +248,7 @@ class RegisterCog(commands.Cog):
         }
 
         r = requests.post(self.command_url, headers=self.headers, json=json)
-        return r.status_code == requests.codes.ok
+        return self.parse_response(r)
 
     def add_about_slash_command(self):
         json = {
@@ -248,7 +257,7 @@ class RegisterCog(commands.Cog):
         }
 
         r = requests.post(self.command_url, headers=self.headers, json=json)
-        return r.status_code == requests.codes.ok
+        return self.parse_response(r)
 
     def add_privacy_slash_command(self):
         json = {
@@ -257,7 +266,7 @@ class RegisterCog(commands.Cog):
         }
 
         r = requests.post(self.command_url, headers=self.headers, json=json)
-        return r.status_code == requests.codes.ok
+        return self.parse_response(r)
 
     def add_welcome_slash_command(self):
         json = {
@@ -266,7 +275,7 @@ class RegisterCog(commands.Cog):
         }
 
         r = requests.post(self.command_url, headers=self.headers, json=json)
-        return r.status_code == requests.codes.ok
+        return self.parse_response(r)
 
     def add_server_time_slash_command(self):
         json = {
@@ -275,7 +284,7 @@ class RegisterCog(commands.Cog):
         }
 
         r = requests.post(self.command_url, headers=self.headers, json=json)
-        return r.status_code == requests.codes.ok
+        return self.parse_response(r)
 
     def add_list_players_slash_command(self):
         json = {
@@ -298,7 +307,7 @@ class RegisterCog(commands.Cog):
         }
 
         r = requests.post(self.command_url, headers=self.headers, json=json)
-        return r.status_code == requests.codes.ok
+        return self.parse_response(r)
 
     def add_priority_slash_command(self):
         json = {
@@ -315,7 +324,7 @@ class RegisterCog(commands.Cog):
         }
 
         r = requests.post(self.command_url, headers=self.headers, json=json)
-        return r.status_code == requests.codes.ok
+        return self.parse_response(r)
 
     @commands.command()
     @commands.is_owner()
@@ -326,7 +335,7 @@ class RegisterCog(commands.Cog):
                 if ok:
                     logger.info("Registered {0} slash command.".format(key))
                 else:
-                    logger.info("Failed to register {0} slash command.".format(key))
+                    logger.warning("Failed to register {0} slash command.".format(key))
                 await asyncio.sleep(5)  # Avoid rate limits
         else:
             func_dict = {
