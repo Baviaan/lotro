@@ -79,22 +79,22 @@ class SlashCog(commands.Cog):
                 else:
                     content = _("You must be a raid leader to set the calendar.")
         elif name.startswith('twitter'):
-            if not channel:
-                content = _("Missing permissions to access this channel.")
-            else:
-                if user.guild_permissions.administrator:
-                    if name == 'twitter_on':
-                        value = channel.id
-                        content = _("@lotro tweets will be posted to this channel.")
-                    elif name == 'twitter_off':
-                        value = None
-                        content = _("Tweets will no longer be posted to this channel.")
+            if user.guild_permissions.administrator:
+                channel_id = None
+                if name == 'twitter_on':
+                    try:
+                        channel_id = channel.id
+                    except AttributeError:
+                        content = _("Missing permissions to access this channel.")
                     else:
-                        return
-                    res = upsert(self.conn, 'Settings', ['twitter'], [value], ['guild_id'], [guild_id])
-                    self.conn.commit()
+                        content = _("@lotro tweets will be posted to this channel.")
+                elif name == 'twitter_off':
+                    content = _("Tweets will no longer be posted to this channel.")
                 else:
-                    content = _("You must be an admin to set up tweets.")
+                    return
+                res = upsert(self.conn, 'Settings', ['twitter'], [channel_id], ['guild_id'], [guild_id])
+            else:
+                content = _("You must be an admin to set up tweets.")
         elif name == 'events':
             ephemeral = False
             content = _("Waiting for lotro.com to respond...")
