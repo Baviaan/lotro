@@ -63,9 +63,9 @@ An example config file has been included for English and French.
 See this link how to create a bot user on discord, obtain your bot token and invite the bot to your server:
 https://discordpy.readthedocs.io/en/latest/discord.html#
 
-Please ensure the bot has the correct permissions: 268724304.
+Please ensure the bot has the correct permissions: 268462080.
 
-(Manage roles, manage channels, send messages, manage messages, embed links, use external emoji, add reactions.)
+(Manage roles, send messages, manage messages, embed links.)
 
 Please note the bot will automatically shut down if it is not in any discord servers.
 
