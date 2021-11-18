@@ -28,7 +28,11 @@ class SlashCog(commands.Cog):
     async def on_interaction(self, interaction):
         if interaction.type != discord.InteractionType.application_command:
             return
-        token = interaction.token
+        guild_id = interaction.guild_id
+        if not guild_id:
+            self.interaction_response(interaction, _("Use this command in a server."))
+            return
+        user = interaction.user
         d = interaction.data
         name = d['name']
         try:
@@ -39,10 +43,8 @@ class SlashCog(commands.Cog):
                 options = {option['name']: option['value'] for option in d['options']}
         except KeyError:
             options = None
-        guild_id = interaction.guild_id
-        user = interaction.user
         ephemeral = True
-        embeds = False
+        embed = None
 
         post_new_raid = False
         post_new_calendar = False
@@ -112,7 +114,6 @@ class SlashCog(commands.Cog):
             content = self.process_time_zones_server(user, guild_id, options)
         elif name == 'about':
             ephemeral = False
-            embeds = True
             embed = await self.config_cog.about_embed()
             embed = embed.to_dict()
             content = ''
@@ -141,18 +142,34 @@ class SlashCog(commands.Cog):
             content = self.process_server_time(guild_id)
         elif name == 'list_players':
             ephemeral = False
-            embed, success = self.process_list_players(user, guild_id, options)
+            player_msg, success = self.process_list_players(user, guild_id, options)
             if success:
-                embeds = True
-                embed = embed.to_dict()
+                embed = player_msg.to_dict()
                 content = ''
             else:
-                content = embed  # string
+                content = player_msg  # string
         elif name == 'kin':
             content = self.parse_priority_slash_command(guild_id, user, options)
         else:
             content = _("Slash command not yet supported.")
 
+        self.interaction_response(interaction, content, ephemeral=ephemeral, embed=embed)
+
+        if post_new_raid:
+            await self.raid_command(name, guild_id, channel, user.id, timestamp, options)
+        elif post_new_calendar:
+            await self.post_calendar(guild_id, channel)
+        elif update_roles:
+            await self.process_roles_command(guild, user, interaction.token)
+        elif post_events:
+            self.process_events_command(guild_id, interaction.token)
+
+        timestamp = int(datetime.datetime.now().timestamp())
+        upsert(self.conn, 'Settings', ['last_command'], [timestamp], ['guild_id'], [guild_id])
+        increment(self.conn, 'Settings', 'slash_count', ['guild_id'], [guild_id])
+        self.conn.commit()
+
+    def interaction_response(self, interaction, content, ephemeral=False, embed=None):
         json = {
             'type': 4,
             'data': {
@@ -161,25 +178,11 @@ class SlashCog(commands.Cog):
         }
         if ephemeral:
             json['data']['flags'] = 64
-        if embeds:
+        if embed:
             json['data']['embeds'] = [embed]
 
-        url = self.api + "interactions/{0}/{1}/callback".format(interaction.id, token)
+        url = self.api + "interactions/{0}/{1}/callback".format(interaction.id, interaction.token)
         r = requests.post(url, json=json)
-
-        if post_new_raid:
-            await self.raid_command(name, guild_id, channel, user.id, timestamp, options)
-        elif post_new_calendar:
-            await self.post_calendar(guild_id, channel)
-        elif update_roles:
-            await self.process_roles_command(guild, user, token)
-        elif post_events:
-            self.process_events_command(guild_id, token)
-
-        timestamp = int(datetime.datetime.now().timestamp())
-        upsert(self.conn, 'Settings', ['last_command'], [timestamp], ['guild_id'], [guild_id])
-        increment(self.conn, 'Settings', 'slash_count', ['guild_id'], [guild_id])
-        self.conn.commit()
 
     def is_raid_leader(self, user, guild_id):
         if user.guild_permissions.administrator:
