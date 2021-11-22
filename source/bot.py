@@ -84,7 +84,7 @@ class Bot(commands.Bot):
 
         intents = discord.Intents.none()
         intents.guilds = True
-        intents.messages = True
+        intents.guild_messages = True
 
         super().__init__(command_prefix=self.prefix_manager, case_insensitive=True, intents=intents,
                          activity=discord.Game(name=self.version))
