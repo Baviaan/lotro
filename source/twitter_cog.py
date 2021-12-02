@@ -69,11 +69,15 @@ class TwitterCog(commands.Cog):
     async def post_tweet(self, guild_id, chn_id, url):
         chn = self.bot.get_channel(chn_id)
         if chn:
-            await chn.send(url)
+            try:
+                await chn.send(url)
+            except discord.Forbidden:
+                logger.warning("Missing write access to Twitter channel for guild {0}.".format(guild_id))
+                upsert(self.conn, 'Settings', ['twitter'], [None], ['guild_id'], [guild_id])
+
         else:
             logger.warning("Twitter channel not found for guild {0}.".format(guild_id))
             upsert(self.conn, 'Settings', ['twitter'], [None], ['guild_id'], [guild_id])
-            self.conn.commit()
 
     @tasks.loop(seconds=300)
     async def twitter_task(self):
