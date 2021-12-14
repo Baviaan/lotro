@@ -14,7 +14,7 @@ import typing
 from database import create_table, count, delete, select, select_le, select_one, upsert
 from role_cog import get_role
 from time_cog import Time
-from utils import alphabet_emojis, get_match
+from utils import get_match
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
