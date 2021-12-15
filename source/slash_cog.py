@@ -7,6 +7,7 @@ import requests
 
 from database import increment, select_one, select_order, upsert
 from time_cog import Time
+from utils import get_partial_matches
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -25,7 +26,16 @@ class SlashCog(commands.Cog):
         self.calendar_cog = bot.get_cog('CalendarCog')
         self.time_cog = bot.get_cog('TimeCog')
 
+        with open('common_timezones.txt', 'r') as f:
+            self.common_timezones = f.read().splitlines()
+
+        with open('timezones.txt', 'r') as f:
+            self.timezones = f.read().splitlines()
+
     async def on_interaction(self, interaction):
+        if interaction.type == discord.InteractionType.application_command_autocomplete:
+            self.handle_autocomplete(interaction)
+            return
         if interaction.type != discord.InteractionType.application_command:
             return
         guild_id = interaction.guild_id
@@ -184,6 +194,48 @@ class SlashCog(commands.Cog):
         url = self.api + "interactions/{0}/{1}/callback".format(interaction.id, interaction.token)
         r = requests.post(url, json=json)
 
+    def handle_autocomplete(self, interaction):
+        d = interaction.data
+        name = d['name']
+        try:
+            if d['options'][0]['type'] == 1:
+                name = "_".join([name, d['options'][0]['name']])
+                options = {option['name']: option['value'] for option in d['options'][0]['options']}
+            else:
+                options = {option['name']: option['value'] for option in d['options']}
+        except KeyError:
+            options = None
+        if name == 'time_zones_personal':
+            self.autocomplete_tz_response(interaction, options)
+        elif name == 'time_zones_server':
+            self.autocomplete_tz_response(interaction, options)
+
+    def autocomplete_tz_response(self, interaction, options):
+        tz_suggestions = self.common_timezones
+        query = options['timezone']
+        if query:
+            result = get_partial_matches(query, self.timezones)
+            if result:
+                tz_suggestions = result
+        timezone_choices = list(map(self.format_timezone_choice, tz_suggestions))
+        json = {
+            'type': 8,
+            'data': {
+                'choices': timezone_choices
+                }
+            }
+
+        url = self.api + "interactions/{0}/{1}/callback".format(interaction.id, interaction.token)
+        r = requests.post(url, json=json)
+
+    @staticmethod
+    def format_timezone_choice(timezone):
+        choice = {
+            "name": "{0}".format(timezone),
+            "value": "{0}".format(timezone)
+        }
+        return choice
+
     def is_raid_leader(self, user, guild_id):
         if user.guild_permissions.administrator:
             return True
@@ -269,7 +321,7 @@ class SlashCog(commands.Cog):
             res = upsert(conn, 'Timezone', ['timezone'], [tz], ['player_id'], [user_id])
             if res:
                 conn.commit()
-                content = _("Set default time zone to {0}.").format(tz)
+                content = _("Set your time zone to {0}.").format(tz)
             else:
                 content = _("An error occurred.")
         return content

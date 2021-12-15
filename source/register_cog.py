@@ -22,9 +22,6 @@ class RegisterCog(commands.Cog):
         }
         self.raid_cog = bot.get_cog('RaidCog')
 
-        with open('common_timezones.txt', 'r') as f:
-            self.timezones = f.read().splitlines()
-
     @staticmethod
     def parse_response(resp):
         if resp.status_code in [requests.codes.ok, requests.codes.created]:
@@ -45,7 +42,15 @@ class RegisterCog(commands.Cog):
         return self.parse_response(r)
 
     def format_timezone_subcommands(self):
-        timezone_options = self.format_timezone_options()
+        timezone_options = [
+                        {
+                            "name": "timezone",
+                            "description": _("Select a city representing your time zone."),
+                            "type": 3,
+                            "required": True,
+                            "autocomplete": True
+                        }
+                    ]
 
         subcommands = [
             {
@@ -62,32 +67,6 @@ class RegisterCog(commands.Cog):
             }
         ]
         return subcommands
-
-    def format_timezone_options(self):
-        timezone_choices = list(map(self.format_timezone_choice, self.timezones))
-        timezone_options = [
-                        {
-                            "name": "timezone",
-                            "description": _("Select a city representing your time zone."),
-                            "type": 3,
-                            "required": True,
-                            "choices": timezone_choices
-                        },
-                        {
-                            "name": "custom_timezone",
-                            "description": _("Specify your time zone in the IANA tz database format. This will overwrite your previous choice."),
-                            "type": 3
-                        }
-                    ]
-        return timezone_options
-
-    @staticmethod
-    def format_timezone_choice(timezone):
-        choice = {
-            "name": "{0}".format(timezone),
-            "value": "{0}".format(timezone)
-        }
-        return choice
 
     def add_raid_slash_command(self, key, name):
         json = {

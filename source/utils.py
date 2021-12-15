@@ -54,3 +54,16 @@ def get_match(word: str, word_list: list, score_cutoff: int = 80):
     if not result:
         return None, None
     return result
+
+def get_partial_matches(word: str, word_list: list, score_cutoff: int = 75, limit: int = 25):
+    """Uses fuzzywuzzy to see if word is close to entries in word_list
+
+    Returns a list of best partial matches
+    """
+
+    result = process.extractBests(
+        word, word_list, scorer=fuzz.partial_ratio,
+        score_cutoff=score_cutoff, limit=limit)
+    if result:
+        return [match[0] for match in result]
+    return result
