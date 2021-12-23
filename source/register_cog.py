@@ -9,14 +9,12 @@ logger.setLevel(logging.INFO)
 
 class RegisterCog(commands.Cog):
 
-    api = "https://discord.com/api/v8/"
-
     def __init__(self, bot):
         self.bot = bot
         self.conn = bot.conn
-        self.guild_command_url = self.api + "applications/{0}/guilds/{1}/commands".format(bot.user.id, bot.host_id)
+        self.guild_command_url = bot.api + "applications/{0}/guilds/{1}/commands".format(bot.user.id, bot.host_id)
         # self.command_url = self.guild_command_url
-        self.command_url = self.api + "applications/{0}/commands".format(bot.user.id)
+        self.command_url = bot.api + "applications/{0}/commands".format(bot.user.id)
         self.headers = {
             "Authorization": "Bot {0}".format(bot.token)
         }
