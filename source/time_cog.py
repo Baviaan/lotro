@@ -44,6 +44,9 @@ class Time(commands.Converter):
         time = dateparser.parse(argument, settings=parse_settings)
 
         timestamp = int(time.timestamp())
+        # Avoid scheduling event in the past
+        if "now" in argument_lower:
+            return timestamp+5
         return timestamp
 
 

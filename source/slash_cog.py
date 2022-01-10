@@ -62,7 +62,7 @@ class SlashCog(commands.Cog):
         post_events = False
         guild = self.bot.get_guild(guild_id)
         channel_required_commands = self.raid_cog.nicknames[:]
-        channel_required_commands.extend(['custom', 'calendar', 'twitter_on', 'twitter_off'])
+        channel_required_commands.extend(['custom', 'calendar_channel', 'calendar_both', 'twitter_on'])
         if name in channel_required_commands:
             channel = interaction.channel
             perms = channel.permissions_for(guild.me)
@@ -81,15 +81,26 @@ class SlashCog(commands.Cog):
                 else:
                     content = _("Posting a new raid!")
                     post_new_raid = True
-        elif name == 'calendar':
-            if not channel:
-                content = _("Missing permissions to access this channel.")
-            else:
-                if self.is_raid_leader(user, guild_id):
-                    content = _("The calendar will be updated in this channel.")
-                    post_new_calendar = True
+        elif name.startswith('calendar'):
+            if self.is_raid_leader(user, guild_id):
+                if name in ['calendar_channel', 'calendar_both']:
+                    if not channel:
+                        content = _("Missing permissions to access this channel.")
+                    else:
+                        content = _("Events will be posted to this channel.")
+                        post_new_calendar = True
                 else:
-                    content = _("You must be a raid leader to set the calendar.")
+                    upsert(self.conn, 'Settings', ['calendar'], [None], ['guild_id'], [guild_id])
+                if name == 'calendar_discord':
+                    content = _("Events will be posted as discord guild events.")
+                if name == 'calendar_both':
+                    content = _("Events will be posted to this channel and as discord guild events.")
+                if name == 'calendar_off':
+                    content = _("Events will not be posted to a calendar.")
+                guild_events = name in ['calendar_discord', 'calendar_both']
+                upsert(self.conn, 'Settings', ['guild_events'], [guild_events], ['guild_id'], [guild_id])
+            else:
+                content = _("You must be a raid leader to set the calendar.")
         elif name.startswith('twitter'):
             if user.guild_permissions.administrator:
                 channel_id = None
@@ -104,7 +115,7 @@ class SlashCog(commands.Cog):
                     content = _("Tweets will no longer be posted to this channel.")
                 else:
                     return
-                res = upsert(self.conn, 'Settings', ['twitter'], [channel_id], ['guild_id'], [guild_id])
+                upsert(self.conn, 'Settings', ['twitter'], [channel_id], ['guild_id'], [guild_id])
             else:
                 content = _("You must be an admin to set up tweets.")
         elif name == 'events':

@@ -39,7 +39,8 @@ class RegisterCog(commands.Cog):
         r = requests.post(self.command_url, headers=self.headers, json=json)
         return self.parse_response(r)
 
-    def format_timezone_subcommands(self):
+    @staticmethod
+    def format_timezone_subcommands():
         timezone_options = [
                         {
                             "name": "timezone",
@@ -192,6 +193,28 @@ class RegisterCog(commands.Cog):
         json = {
             "name": 'calendar',
             "description": _("Post and update the calendar in this channel."),
+            "options": [
+                {
+                    "name": "off",
+                    "description": "Turn off calendars.",
+                    "type": 1,
+                },
+                {
+                    "name": "channel",
+                    "description": "Post events to calendar in this channel.",
+                    "type": 1,
+                },
+                {
+                    "name": "discord",
+                    "description": "Post events to discord calendar.",
+                    "type": 1,
+                },
+                {
+                    "name": "both",
+                    "description": "Post events to both discord and channel calendar.",
+                    "type": 1,
+                }
+            ]
         }
 
         r = requests.post(self.command_url, headers=self.headers, json=json)

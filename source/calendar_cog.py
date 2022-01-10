@@ -22,6 +22,9 @@ class CalendarCog(commands.Cog):
         self.time_cog = bot.get_cog('TimeCog')
         self.upcoming_events = None
         self.cached_events_at = None
+        self.headers = {
+            "Authorization": "Bot {0}".format(bot.token)
+        }
 
     async def is_raid_leader(self, ctx):
         conn = self.bot.conn
@@ -94,7 +97,6 @@ class CalendarCog(commands.Cog):
             except discord.Forbidden:
                 logger.warning("No write access to calendar channel for guild {0}.".format(guild_id))
 
-
     def calendar_embed(self, guild_id):
         conn = self.bot.conn
         raids = select_order(conn, 'Raids', ['channel_id', 'raid_id', 'name', 'tier', 'time'], 'time', ['guild_id'],
@@ -111,6 +113,66 @@ class CalendarCog(commands.Cog):
         embed.set_footer(text=_("Last updated"))
         embed.timestamp = datetime.now()
         return embed
+
+    def create_guild_event(self, raid_id):
+        conn = self.bot.conn
+        channel_id, guild_id, name, tier, description, timestamp = select_one(conn, 'Raids', ['channel_id', 'guild_id', 'name', 'tier', 'boss', 'time'], ['raid_id'], [raid_id])
+        res = select_one(conn, 'Settings', ['guild_events'], ['guild_id'], [guild_id])
+        if not res:
+            return
+
+        metadata = {"location": f"https://discord.com/channels/{guild_id}/{channel_id}/{raid_id}"}
+        start_time = datetime.utcfromtimestamp(timestamp).isoformat() + 'Z'
+        end_time = datetime.utcfromtimestamp(timestamp+7200).isoformat() + 'Z'
+        data = {
+            "entity_metadata": metadata,
+            'name': " ".join([name, tier]),
+            "privacy_level": 2,
+            "scheduled_start_time": start_time,
+            "scheduled_end_time": end_time,
+            "description": description,
+            "entity_type": 3
+            }
+        url = self.bot.api + f"guilds/{guild_id}/scheduled-events"
+        r = requests.post(url, headers=self.headers, json=data)
+        r.raise_for_status()
+        event = r.json()
+        event_id = event['id']
+        return event_id
+
+    def modify_guild_event(self, raid_id):
+        conn = self.bot.conn
+        guild_id, event_id, name, tier, description, timestamp = select_one(conn, 'Raids', ['guild_id', 'event_id', 'name', 'tier', 'boss', 'time'], ['raid_id'], [raid_id])
+        res = select_one(conn, 'Settings', ['guild_events'], ['guild_id'], [guild_id])
+        if not res:
+            return
+
+        start_time = datetime.utcfromtimestamp(timestamp).isoformat() + 'Z'
+        end_time = datetime.utcfromtimestamp(timestamp+7200).isoformat() + 'Z'
+        data = {
+                'name': " ".join([name, tier]),
+                'description': description,
+                'scheduled_start_time': start_time,
+                'scheduled_end_time': end_time
+                }
+        url = self.bot.api + f"guilds/{guild_id}/scheduled-events/{event_id}"
+        r = requests.patch(url, headers=self.headers, json=data)
+        r.raise_for_status()
+
+    def delete_guild_event(self, raid_id):
+        conn = self.bot.conn
+        try:
+            guild_id, event_id = select_one(conn, 'Raids', ['guild_id', 'event_id'], ['raid_id'], [raid_id])
+        except TypeError:
+            logger.info("Raid already deleted from database.")
+            return
+        res = select_one(conn, 'Settings', ['guild_events'], ['guild_id'], [guild_id])
+        if not res:
+            return
+
+        url = self.bot.api + f"guilds/{guild_id}/scheduled-events/{event_id}"
+        r = requests.delete(url, headers=self.headers)
+        r.raise_for_status()
 
     def get_events(self):
         current_time = datetime.now().timestamp()
