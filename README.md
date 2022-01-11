@@ -90,7 +90,8 @@ You can paste the code directly in the discord app when clicking the join server
 
 | Command | Example | Notes |
 | ------- | ------- | ----- |
-| **/calendar** | /calendar | Provides an overview of all scheduled runs for the upcoming week, with direct links to the raid posts. This command will only have to be run once as the calendar will automatically populate with new runs. |
+| **/calendar channel** | /calendar channel | Provides an overview of all scheduled runs for the upcoming week, with direct links to the raid posts. This command will only have to be run once as the calendar will automatically populate with new runs. |
+| **/calendar discord** | /calendar discord | Adds each run as guild scheduled event to discord's built-in calendar. |
 | **/\<raid_name\>** \<tier\> \<time\> | /rem t2 tomorrow 8pm, /ad t3 friday 8pm | Fastest way to schedule a raid. |
 | **/custom** \<name\> \<time\> \[tier\] | /custom my big event friday 8pm | Schedules a custom event. Tier argument is optional. |
 | **/list_players** | /list_players | Lists the signed up players for a raid in order of sign up time. |
