@@ -143,8 +143,7 @@ class CalendarCog(commands.Cog):
     def modify_guild_event(self, raid_id):
         conn = self.bot.conn
         guild_id, event_id, name, tier, description, timestamp = select_one(conn, 'Raids', ['guild_id', 'event_id', 'name', 'tier', 'boss', 'time'], ['raid_id'], [raid_id])
-        res = select_one(conn, 'Settings', ['guild_events'], ['guild_id'], [guild_id])
-        if not res:
+        if not event_id:
             return
 
         start_time = datetime.utcfromtimestamp(timestamp).isoformat() + 'Z'
@@ -166,8 +165,7 @@ class CalendarCog(commands.Cog):
         except TypeError:
             logger.info("Raid already deleted from database.")
             return
-        res = select_one(conn, 'Settings', ['guild_events'], ['guild_id'], [guild_id])
-        if not res:
+        if not event_id:
             return
 
         url = self.bot.api + f"guilds/{guild_id}/scheduled-events/{event_id}"
