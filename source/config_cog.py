@@ -17,22 +17,6 @@ class ConfigCog(commands.Cog):
         self.bot = bot
         self.conn = self.bot.conn
 
-    @commands.command()
-    async def prefix(self, ctx, prefix):
-        """Sets the command prefix to be used in this guild."""
-        conn = self.bot.conn
-        if not ctx.author.guild_permissions.administrator:
-            await ctx.send(_("You must be an admin to change the command prefix."))
-            return
-        res = upsert(conn, 'Settings', ['prefix'], [prefix], ['guild_id'], [ctx.guild.id])
-        if res:
-            conn.commit()
-            self.bot.prefixes[ctx.guild.id] = prefix
-            await ctx.send(_("Command prefix set to `{0}`.").format(prefix))
-        else:
-            await ctx.send(_("An error occurred."))
-        return
-
     @staticmethod
     def td_format(td_object):
         seconds = int(td_object.total_seconds())

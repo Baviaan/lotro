@@ -75,7 +75,6 @@ def table_sqls(table):
             'settings': "create table if not exists Settings ("
                         "guild_id integer primary key, "
                         "server text, "
-                        "prefix text, "
                         "raid_leader integer, "
                         "priority integer, "
                         "calendar text, "

@@ -76,10 +76,7 @@ class Bot(commands.Bot):
         if conn:
             self.logger.info("Bot connected to raid database.")
             create_table(conn, 'settings')
-            results = select(conn, 'Settings', ['guild_id', 'prefix'])
-            self.prefixes = dict(results)
         else:
-            self.prefixes = {}
             self.logger.error("main could not create database connection!")
         self.conn = conn
 
@@ -99,15 +96,7 @@ class Bot(commands.Bot):
         super().add_check(globally_block_dms)
 
     def prefix_manager(self, bot, message):
-        """Returns a guild specific prefix if it has been set. Default prefix otherwise."""
-        try:
-            guild_id = message.guild.id
-        except AttributeError:  # If the command is used in dm there is no guild attribute
-            prefix = self.default_prefix
-        else:
-            prefix = self.prefixes.get(guild_id, self.default_prefix)
-            if not prefix:
-                prefix = self.default_prefix
+        prefix = self.default_prefix
         return commands.when_mentioned_or(prefix)(bot, message)
 
     async def on_ready(self):
