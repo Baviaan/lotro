@@ -66,7 +66,10 @@ class ConfigCog(commands.Cog):
         code = "dGcBzPN"
         server = "https://discord.gg/"+code
         app_info = await self.bot.application_info()
-        host = app_info.owner.name
+        try:
+            host = app_info.team.name
+        except AttributeError:
+            host = app_info.owner.name
         uptime = datetime.datetime.utcnow() - self.bot.launch_time
         uptime = self.td_format(uptime)
 
