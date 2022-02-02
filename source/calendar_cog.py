@@ -178,8 +178,8 @@ class CalendarCog(commands.Cog):
             return self.upcoming_events
 
         s = requests.Session()
-        s.mount("https://www.lotro.com", ECDHEAdapter())
-        r = s.get("https://www.lotro.com/forums/showthread.php?646193-LOTRO-Events-Schedule&s=37ca62f1171274310d6709145d372d3f&p=7646830#post7646830")
+        s.mount("https://forums.lotro.com", ECDHEAdapter())
+        r = s.get("https://forums.lotro.com/forums/showthread.php?646193-LOTRO-Events-Schedule&s=37ca62f1171274310d6709145d372d3f&p=7646830#post7646830")
         if not r.ok:
             logger.warning("Could not connect to lotro.com")
             return self.upcoming_events
