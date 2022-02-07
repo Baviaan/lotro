@@ -517,7 +517,9 @@ class RaidView(discord.ui.View):
 
     async def sign_up_class(self, i, class_name):
         try:
-            role = await get_role(i.guild, class_name)
+            role = discord.utils.get(i.guild.roles, name=class_name)
+            if role is None:
+                role = await guild.create_role(mentionable=True, name=role_name)
             if role not in i.user.roles:
                 await i.user.add_roles(role)
         except discord.Forbidden:
