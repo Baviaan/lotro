@@ -55,7 +55,6 @@ class RaidCog(commands.Cog):
     with open('config.json', 'r') as f:
         config = json.load(f)
 
-    prefix = config['PREFIX']
     # Line up
     default_lineup = []
     for string in config['LINEUP']:
@@ -118,25 +117,6 @@ class RaidCog(commands.Cog):
             await self.cleanup_old_raid(raid_id, "Raid manually deleted.")
             self.conn.commit()
 
-    @commands.command()
-    async def leader(self, ctx, *raid_leader):
-        """Sets the role to be used as raid leader in this guild."""
-        if not ctx.author.guild_permissions.administrator:
-            await ctx.send(_("You must be an admin to change the raid leader role."))
-            return
-        raid_leader = " ".join(raid_leader)
-        leader_role = discord.utils.get(ctx.guild.roles, name=raid_leader)
-        if leader_role:
-            upsert(self.conn, 'Settings', ['raid_leader'], [leader_role.id], ['guild_id'], [ctx.guild.id])
-            await ctx.send(_("Raid Leader role set to `{0}`.").format(leader_role))
-        else:
-            if raid_leader:
-                await ctx.send(_("No role `{0}` found.").format(raid_leader))
-            else:
-                upsert(self.conn, 'Settings', ['raid_leader'], [None], ['guild_id'], [ctx.guild.id])
-                await ctx.send(_("Raid leader role deleted."))
-        self.conn.commit()
-
     async def check_event_limit(self, channel):
         res = count(self.conn, 'Raids', 'raid_id', ['guild_id'], [channel.guild.id])
         if self.bot.host_id and res >= self.event_limit:  # host_id will not be set for private bots
@@ -144,51 +124,6 @@ class RaidCog(commands.Cog):
             await channel.send(msg)
             return False
         return True
-
-    meet_brief = _("Schedules a meetup.")
-    meet_description = _("Schedules a meetup. Day/timezone will default to today/server if not specified. Usage:")
-    meet_example = _("Examples:\n{0}meetup scourges Friday 4pm\n{0}meetup \"kin house\" 21:00 UTC").format(prefix)
-
-    @commands.command(aliases=['meet', 'm'], help=meet_example, brief=meet_brief, description=meet_description)
-    async def meetup(self, ctx, name, *, time: Time()):
-        """Schedules a meetup"""
-        if not await self.check_event_limit(ctx.channel):
-            return
-        await self.raid_command(ctx, name, "", "", time)
-
-    raid_brief = _("Schedules a raid.")
-    raid_description = _("Schedules a raid. Day/timezone will default to today/server if not specified. Usage:")
-    raid_example = _("Examples:\n{0}raid Anvil Friday 4pm\n{0}raid throne t3 21:00 UTC").format(prefix)
-
-    @commands.command(aliases=['instance', 'r'], help=raid_example, brief=raid_brief, description=raid_description)
-    async def raid(self, ctx, name, tier: typing.Optional[Tier], *, time: Time()):
-        """Schedules a raid"""
-        if not await self.check_event_limit(ctx.channel):
-            return
-        if tier is None:
-            tier = await Tier.channel_converter(ctx.channel)
-        await self.raid_command(ctx, name, tier, "", time)
-
-    fast_brief = _("Shortcut to schedule a raid (use the aliases).")
-    fast_description = _("Schedules a raid with the name of the command. "
-                         "Day/timezone will default to today/server if not specified. Usage:")
-    fast_example = _("Examples:\n{0}anvil Friday 4pm\n{0}anvil 21:00 UTC").format(prefix)
-
-    @commands.command(aliases=nicknames[:-2], help=fast_example, brief=fast_brief, description=fast_description)
-    async def aliasraid(self, ctx, tier: typing.Optional[Tier], *, time: Time()):
-        """Shortcut to schedule a raid"""
-        if not await self.check_event_limit(ctx.channel):
-            return
-        name = ctx.invoked_with
-        if name == "aliasraid":
-            name = _("unknown raid")
-        if tier is None:
-            tier = await Tier.channel_converter(ctx.channel)
-        if '1' in tier or '2' in tier:
-            roster = False
-        else:
-            roster = True
-        await self.raid_command(ctx, name, tier, "", time, roster=roster)
 
     def get_raid_name(self, name):
         try:
@@ -199,9 +134,6 @@ class RaidCog(commands.Cog):
             if match[0]:
                 name = match[0]
         return name
-
-    async def raid_command(self, ctx, name, tier, boss, timestamp, roster=False):
-        await self.post_raid(name, tier, boss, timestamp, roster, ctx.guild.id, ctx.channel, ctx.author.id)
 
     async def post_raid(self, name, tier, boss, timestamp, roster, guild_id, channel, author_id):
         full_name = self.get_raid_name(name)
