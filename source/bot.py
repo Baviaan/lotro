@@ -46,6 +46,16 @@ class Bot(commands.Bot):
         self.default_prefix = config['PREFIX']
         role_names = config['CLASSES']
         self.role_names = tuple(role_names)
+        # Line up
+        default_lineup = []
+        for string in config['LINEUP']:
+            bitmask = [int(char) for char in string]
+            default_lineup.append(bitmask)
+        slots_class_names = []
+        for bitmask in default_lineup:
+            class_names = list(compress(role_names, bitmask))
+            slots_class_names.append(class_names)
+        self.slots_class_names = slots_class_names
 
         # Get id for discord server hosting custom emoji.
         try:
@@ -58,7 +68,7 @@ class Bot(commands.Bot):
             self.twitter_token = config['TWITTER_TOKEN']
             self.twitter_id = config['TWITTER_ID']
         except KeyError:
-            self.twitter = False
+            self.twitter_token = False
             self.logger.info("No twitter credentials found. Twitter cog will not be loaded.")
 
         language = config['LANGUAGE']
@@ -118,7 +128,7 @@ class Bot(commands.Bot):
             self.load_extension('slash_cog')
             self.load_extension('register_cog')
             # Load twitter cog
-            if self.twitter:
+            if self.twitter_token:
                 self.load_extension('twitter_cog')
             # Load custom cog
             self.load_extension('custom_cog')

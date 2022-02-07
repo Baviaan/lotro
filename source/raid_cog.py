@@ -52,30 +52,17 @@ class Tier(commands.Converter):
 
 
 class RaidCog(commands.Cog):
-    with open('config.json', 'r') as f:
-        config = json.load(f)
 
-    # Line up
-    default_lineup = []
-    for string in config['LINEUP']:
-        bitmask = [int(char) for char in string]
-        default_lineup.append(bitmask)
-    role_names = config['CLASSES']
-    slots_class_names = []
-    for bitmask in default_lineup:
-        class_names = list(compress(role_names, bitmask))
-        slots_class_names.append(class_names)
     # Load raid (nick)names
     with open('list-of-raids.csv', 'r') as f:
         reader = csv.reader(f)
         raid_lookup = dict(reader)
-    nicknames = list(raid_lookup.keys())
-    event_limit = 10
 
     def __init__(self, bot):
         self.bot = bot
-        self.conn = self.bot.conn
-        self.role_names = self.bot.role_names
+        self.conn = bot.conn
+        self.role_names = bot.role_names
+        self.slots_class_names = bot.slots_class_names
         self.time_cog = bot.get_cog('TimeCog')
         self.calendar_cog = bot.get_cog('CalendarCog')
 
@@ -116,14 +103,6 @@ class RaidCog(commands.Cog):
             # Handle clean up on bot side
             await self.cleanup_old_raid(raid_id, "Raid manually deleted.")
             self.conn.commit()
-
-    async def check_event_limit(self, channel):
-        res = count(self.conn, 'Raids', 'raid_id', ['guild_id'], [channel.guild.id])
-        if self.bot.host_id and res >= self.event_limit:  # host_id will not be set for private bots
-            msg = _("Due to limited resources you may only post up to {0} concurrent raids.").format(self.event_limit)
-            await channel.send(msg)
-            return False
-        return True
 
     def get_raid_name(self, name):
         try:
