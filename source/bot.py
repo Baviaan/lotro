@@ -122,7 +122,6 @@ class Bot(commands.Bot):
         try:
             self.load_extension('config_cog')
             self.load_extension('dev_cog')
-            self.load_extension('role_cog')
             self.load_extension('time_cog')
             # Load after time cog
             self.load_extension('calendar_cog')

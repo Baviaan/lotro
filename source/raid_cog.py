@@ -10,7 +10,6 @@ import requests
 import time
 
 from database import create_table, count, delete, select, select_le, select_one, upsert
-from role_cog import get_role
 from time_cog import Time
 from utils import get_match
 
