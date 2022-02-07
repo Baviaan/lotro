@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import sqlite3
 
 logger = logging.getLogger(__name__)
@@ -7,7 +8,14 @@ logger.setLevel(logging.INFO)
 
 with open('config.json', 'r') as f:
     config = json.load(f)
-classes = config['CLASSES']
+try:
+    classes = config['CLASSES']
+except KeyError:
+    try:
+        classes = os.environ['CLASSES']
+    except KeyError:
+        logging.critical("Please supply a config value for CLASSES.")
+        raise SystemExit
 classes_str = " boolean, ".join(classes) + " boolean, "
 
 

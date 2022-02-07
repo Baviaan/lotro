@@ -1,6 +1,7 @@
 from datetime import datetime
 import discord
 from discord.ext import commands
+from itertools import compress
 import gettext
 import json
 import locale
@@ -32,23 +33,30 @@ class Bot(commands.Bot):
 
         self.logger.info("Running version " + self.version)
 
+        def read_config_key(config, key, required):
+            try:
+                value = config[key]
+            except KeyError:
+                try:
+                    value = os.environ[key]
+                except KeyError:
+                    if required:
+                        logging.critical(f"Please supply a config value for {key}.")
+                        raise SystemExit
+                    else:
+                        value = None
+            return value
+
         with open('config.json', 'r') as f:
             config = json.load(f)
-        try:
-            self.token = config['BOT_TOKEN']
-        except KeyError:
-            try:
-                self.token = os.environ['BOT_TOKEN']
-            except KeyError:
-                logging.critical("Please supply a discord bot token.")
-                raise SystemExit
-        self.server_tz = config['SERVER_TZ']
-        self.default_prefix = config['PREFIX']
-        role_names = config['CLASSES']
+        self.token = read_config_key(config, 'BOT_TOKEN', True)
+        self.server_tz = read_config_key(config, 'SERVER_TZ', True)
+        role_names = read_config_key(config, 'CLASSES', True)
         self.role_names = tuple(role_names)
         # Line up
+        lineup = read_config_key(config, 'LINEUP', True)
         default_lineup = []
-        for string in config['LINEUP']:
+        for string in lineup:
             bitmask = [int(char) for char in string]
             default_lineup.append(bitmask)
         slots_class_names = []
@@ -58,20 +66,13 @@ class Bot(commands.Bot):
         self.slots_class_names = slots_class_names
 
         # Get id for discord server hosting custom emoji.
-        try:
-            self.host_id = int(config['HOST'])
-        except KeyError:
-            self.host_id = None
+        self.host_id = int(read_config_key(config, 'HOST', False))
 
         # Check for twitter auth
-        try:
-            self.twitter_token = config['TWITTER_TOKEN']
-            self.twitter_id = config['TWITTER_ID']
-        except KeyError:
-            self.twitter_token = False
-            self.logger.info("No twitter credentials found. Twitter cog will not be loaded.")
+        self.twitter_token = read_config_key(config, 'TWITTER_TOKEN', False)
+        self.twitter_id = read_config_key(config, 'TWITTER_ID', False)
 
-        language = config['LANGUAGE']
+        language = read_config_key(config, 'LANGUAGE', False)
         if language == 'fr':
             locale.setlocale(locale.LC_TIME, "fr_FR.UTF-8")
         localization = gettext.translation('messages', localedir='locale', languages=[language], fallback=True)
@@ -105,8 +106,7 @@ class Bot(commands.Bot):
         super().add_check(globally_block_dms)
 
     def prefix_manager(self, bot, message):
-        prefix = self.default_prefix
-        return commands.when_mentioned_or(prefix)(bot, message)
+        return commands.when_mentioned_or("!")(bot, message)
 
     async def on_ready(self):
         self.logger.info("We have logged in as {0}.".format(self.user))
@@ -130,6 +130,8 @@ class Bot(commands.Bot):
             # Load twitter cog
             if self.twitter_token:
                 self.load_extension('twitter_cog')
+            else:
+                self.logger.info("No twitter credentials found. Twitter cog will not be loaded.")
             # Load custom cog
             self.load_extension('custom_cog')
         except commands.ExtensionAlreadyLoaded:

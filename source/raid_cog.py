@@ -4,13 +4,10 @@ import datetime
 import discord
 from discord.ext import commands
 from discord.ext import tasks
-from itertools import compress
-import json
 import logging
 import re
 import requests
 import time
-import typing
 
 from database import create_table, count, delete, select, select_le, select_one, upsert
 from role_cog import get_role
@@ -57,6 +54,7 @@ class RaidCog(commands.Cog):
     with open('list-of-raids.csv', 'r') as f:
         reader = csv.reader(f)
         raid_lookup = dict(reader)
+    nicknames = list(raid_lookup.keys())
 
     def __init__(self, bot):
         self.bot = bot
