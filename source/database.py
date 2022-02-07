@@ -6,11 +6,11 @@ import sqlite3
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-with open('config.json', 'r') as f:
-    config = json.load(f)
 try:
+    with open('config.json', 'r') as f:
+        config = json.load(f)
     classes = config['CLASSES']
-except KeyError:
+except (FileNotFoundError, KeyError):
     try:
         classes = os.environ['CLASSES']
     except KeyError:

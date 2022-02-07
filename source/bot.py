@@ -36,7 +36,7 @@ class Bot(commands.Bot):
         def read_config_key(config, key, required):
             try:
                 value = config[key]
-            except KeyError:
+            except (TypeError, KeyError):
                 try:
                     value = os.environ[key]
                 except KeyError:
@@ -47,8 +47,11 @@ class Bot(commands.Bot):
                         value = None
             return value
 
-        with open('config.json', 'r') as f:
-            config = json.load(f)
+        try:
+            with open('config.json', 'r') as f:
+                config = json.load(f)
+        except FileNotFoundError:
+            config = None
         self.token = read_config_key(config, 'BOT_TOKEN', True)
         self.server_tz = read_config_key(config, 'SERVER_TZ', True)
         role_names = read_config_key(config, 'CLASSES', True)
