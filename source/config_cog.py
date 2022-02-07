@@ -38,12 +38,6 @@ class ConfigCog(commands.Cog):
 
         return ", ".join(strings)
 
-    @commands.command()
-    async def about(self, ctx):
-        """Shows info about the bot."""
-        embed = await self.about_embed()
-        await ctx.send(embed=embed)
-
     async def about_embed(self):
         dev = "Baviaan#4862"
         repo = "https://github.com/Baviaan/lotro"
@@ -92,19 +86,6 @@ class ConfigCog(commands.Cog):
         embed = discord.Embed(title=title, colour=discord.Colour(0x3498db), description=content)
         return embed
 
-    @commands.command()
-    async def privacy(self, ctx):
-        """ Information on data collection. """
-        msg = _("**PII:**\n"
-                "When you sign up for a raid the bot stores the time, your discord id, discord nickname and the class(es) you "
-                "sign up with. This information is automatically deleted 2 hours after the scheduled raid time or "
-                "immediately when you cancel your sign up.\n"
-                "If you set a default time zone for yourself, "
-                "the bot will additionally store your time zone along with your discord "
-                "id such that it can parse times provided in your commands in your preferred time zone.")
-        await ctx.send(msg)
-        return
-
     @staticmethod
     def welcome_msg(guild_name):
         msg = _("Greetings {0}! I am confined to Orthanc and here to spend my days doing your raid admin.\n\n"
@@ -118,13 +99,6 @@ class ConfigCog(commands.Cog):
                 "you can designate a raid leader role with `/leader`, which allows non-admins to edit raids."
                 ).format(guild_name)
         return msg
-
-    @commands.command()
-    async def welcome(self, ctx):
-        """ Resend the welcome message. """
-        msg = self.welcome_msg(ctx.guild.name)
-        await ctx.send(msg)
-        return
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
