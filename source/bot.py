@@ -55,12 +55,11 @@ class Bot(commands.Bot):
 
         # Check for twitter auth
         try:
-            config['TWITTER_TOKEN']
+            self.twitter_token = config['TWITTER_TOKEN']
+            self.twitter_id = config['TWITTER_ID']
         except KeyError:
             self.twitter = False
             self.logger.info("No twitter credentials found. Twitter cog will not be loaded.")
-        else:
-            self.twitter = True
 
         language = config['LANGUAGE']
         if language == 'fr':

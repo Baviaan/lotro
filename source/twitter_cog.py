@@ -13,15 +13,11 @@ logger.setLevel(logging.INFO)
 
 
 class TwitterCog(commands.Cog):
-    with open('config.json', 'r') as f:
-        config = json.load(f)
-
-    bearer = config['TWITTER_TOKEN']
-    twitter_id = config['TWITTER_ID']
 
     def __init__(self, bot):
         self.bot = bot
-        self.conn = self.bot.conn
+        self.conn = bot.conn
+        self.twitter_id = bot.twitter_id
         create_table(self.conn, 'twitter')
 
         # Run background task
@@ -32,7 +28,7 @@ class TwitterCog(commands.Cog):
 
     def connect_to_endpoint(self, url, params):
         headers = {
-            "Authorization": "Bearer {0}".format(self.bearer)
+            "Authorization": "Bearer {0}".format(self.bot.twitter_token)
         }
         response = requests.request("GET", url, headers=headers, params=params)
         if response.status_code != 200:
