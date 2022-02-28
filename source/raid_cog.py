@@ -437,7 +437,7 @@ class RaidCog(commands.Cog):
                     try:
                         await channel.send(raid_start_msg, delete_after=notify_time * 2)
                     except discord.Forbidden:
-                        self.logger.warning("Missing permissions to send raid notification to channel {0}".format(channel.id))
+                        logger.warning("Missing permissions to send raid notification to channel {0}".format(channel.id))
 
         self.conn.commit()
         logger.debug("Completed raid background task.")
