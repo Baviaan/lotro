@@ -95,13 +95,13 @@ class Bot(commands.Bot):
 
         intents = discord.Intents.none()
         intents.guilds = True
-        intents.guild_messages = True
+        intents.dm_messages = True
 
         super().__init__(command_prefix=self.prefix_manager, case_insensitive=True, intents=intents,
                          activity=discord.Game(name=self.version))
 
         def globally_block_dms(ctx):
-            if ctx.guild is None:
+            if ctx.guild is None and not ctx.bot.is_owner(ctx.author):
                 raise commands.NoPrivateMessage("No dm allowed!")
             else:
                 return True
@@ -150,10 +150,3 @@ class Bot(commands.Bot):
                 await ctx.send(error, delete_after=10)
             except discord.Forbidden:
                 self.logger.warning("Missing Send messages permission for channel {0}".format(ctx.channel.id))
-
-    async def on_command_completion(self, ctx):
-        timestamp = int(datetime.now().timestamp())
-        upsert(self.conn, 'Settings', ['last_command'], [timestamp], ['guild_id'], [ctx.guild.id])
-        increment(self.conn, 'Settings', 'command_count', ['guild_id'], [ctx.guild.id])
-        self.conn.commit()
-        await ctx.send(_("**DEPRECATED**: Consider using the new / command."), delete_after=60)
