@@ -33,7 +33,7 @@ class SlashCog(commands.Cog):
             self.timezones = f.read().splitlines()
 
     async def on_interaction(self, interaction):
-        if interaction.type == discord.InteractionType.application_command_autocomplete:
+        if interaction.type == discord.InteractionType.autocomplete:
             self.handle_autocomplete(interaction)
             return
         if interaction.type != discord.InteractionType.application_command:
@@ -216,9 +216,7 @@ class SlashCog(commands.Cog):
                 options = {option['name']: option['value'] for option in d['options']}
         except KeyError:
             options = None
-        if name == 'time_zones_personal':
-            self.autocomplete_tz_response(interaction, options)
-        elif name == 'time_zones_server':
+        if name == 'time_zones_personal' or name == 'time_zones_server':
             self.autocomplete_tz_response(interaction, options)
 
     def autocomplete_tz_response(self, interaction, options):
