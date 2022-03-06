@@ -14,10 +14,10 @@ logger.setLevel(logging.INFO)
 
 
 class SlashCog(commands.Cog):
-    api = "https://discord.com/api/v8/"
 
     def __init__(self, bot):
         self.bot = bot
+        self.api = bot.api
         self.conn = bot.conn
         self.host_id = bot.host_id
         bot.add_listener(self.on_interaction)
