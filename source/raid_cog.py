@@ -17,36 +17,6 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-class Tier(commands.Converter):
-    async def convert(self, ctx, argument):
-        tier = re.match(r'[tT][1-5]', argument)  # match tier argument
-        if tier:
-            tier = "T{0}".format(tier.group()[1])
-        else:
-            raise commands.BadArgument(_("Failed to parse tier argument: ") + argument)
-        return tier
-
-    @staticmethod
-    def converter(argument):
-        tier = re.search(r'\d+', argument)  # Filter out non-numbers
-        if tier:
-            tier = "T{0}".format(tier.group())
-        else:
-            raise commands.BadArgument(_("Failed to parse tier argument: ") + argument)
-        return tier
-
-    @staticmethod
-    async def channel_converter(channel):
-        tier = re.search(r'\d+', channel.name)  # Filter out non-numbers
-        if tier:
-            tier = "T{0}".format(tier.group())
-        else:
-            msg = _("Channel name does not specify tier.\nDefaulting to tier 1.")
-            await channel.send(msg, delete_after=10)
-            tier = "T1"
-        return tier
-
-
 class RaidCog(commands.Cog):
 
     # Load raid (nick)names
@@ -187,101 +157,6 @@ class RaidCog(commands.Cog):
             error_msg = "\n".join([msg, embed.title, embed.description, str(embed.fields)])
             logger.warning(error_msg)
             await channel.send(_("That's an error. Check the logs."))
-
-    async def name_configure(self, author, channel, raid_id):
-        bot = self.bot
-
-        def check(msg):
-            return author == msg.author
-
-        msg = await channel.send(_("Please specify the new raid name."))
-        try:
-            response = await bot.wait_for('message', check=check, timeout=30)
-        except asyncio.TimeoutError:
-            return
-        else:
-            try:
-                await response.delete()
-            except discord.NotFound:
-                pass
-            except discord.Forbidden:
-                await channel.send(_("Missing permissions to clean up your response. Please grant me the 'Manage messages' permission in this channel."))
-        finally:
-            try:
-                await msg.delete()
-            except discord.NotFound:
-                pass
-        name = response.content
-        char_limit = 255
-        if len(name) > char_limit:
-            await channel.send(_("Please use less than {0} characters.").format(char_limit), delete_after=20)
-            return
-        full_name = self.get_raid_name(name)
-        upsert(self.conn, 'Raids', ['name'], [full_name], ['raid_id'], [raid_id])
-        return
-
-    async def boss_configure(self, author, channel, raid_id):
-        bot = self.bot
-
-        def check(msg):
-            return author == msg.author
-
-        msg = await channel.send(_("Please specify the new aim."))
-        try:
-            response = await bot.wait_for('message', check=check, timeout=30)
-        except asyncio.TimeoutError:
-            return
-        else:
-            try:
-                await response.delete()
-            except discord.NotFound:
-                pass
-            except discord.Forbidden:
-                await channel.send(_("Missing permissions to clean up your response. Please grant me the 'Manage messages' permission in this channel."))
-        finally:
-            try:
-                await msg.delete()
-            except discord.NotFound:
-                pass
-        boss = response.content
-        char_limit = 255
-        if len(boss) > char_limit:
-            await channel.send(_("Please use less than {0} characters.").format(char_limit), delete_after=20)
-            return
-        upsert(self.conn, 'Raids', ['boss'], [boss], ['raid_id'], [raid_id])
-        return
-
-    async def time_configure(self, author, channel, raid_id):
-        bot = self.bot
-
-        def check(msg):
-            return author == msg.author
-
-        msg = await channel.send(_("Please specify the new raid time."))
-        try:
-            response = await bot.wait_for('message', check=check, timeout=30)
-        except asyncio.TimeoutError:
-            return
-        else:
-            try:
-                await response.delete()
-            except discord.NotFound:
-                pass
-            except discord.Forbidden:
-                await channel.send(_("Missing permissions to clean up your response. Please grant me the 'Manage messages' permission in this channel."))
-        finally:
-            try:
-                await msg.delete()
-            except discord.NotFound:
-                pass
-        try:
-            timestamp = Time().converter(bot, channel.guild.id, author.id, response.content)
-        except commands.BadArgument:
-            error_msg = _("Failed to parse time argument: ") + response.content
-            await channel.send(error_msg, delete_after=20)
-        else:
-            upsert(self.conn, 'Raids', ['time'], [timestamp], ['raid_id'], [raid_id])
-        return
 
     def build_raid_message(self, raid_id, embed_texts_av, embed_texts_unav):
         try:
@@ -481,8 +356,8 @@ class RaidView(discord.ui.View):
             return
         msg = _("Please select the setting to update or delete the raid.\n") \
             + _("(This selection message is ephemeral and will cease to work after 60s without interaction.)")
-        view = ConfigureView(self.raid_cog, interaction.message.id)
-        await interaction.response.send_message(msg, view=view, ephemeral=True)
+        modal = ConfigureModal(self.raid_cog, interaction.message.id)
+        await interaction.response.send_modal(modal)
 
     @discord.ui.button(emoji="\u26CF\uFE0F", style=discord.ButtonStyle.blurple, custom_id='raid_view:select')
     async def select(self, button: discord.ui.Button, interaction: discord.Interaction):
@@ -699,50 +574,99 @@ class ClassSelect(discord.ui.Select):
         await self.view.raid_cog.update_raid_post(raid_id, interaction.channel)
 
 
-class ConfigureView(discord.ui.View):
+#class TierSelect(discord.ui.Select):
+#    def __init__(self):
+#        options = [
+#                discord.SelectOption(label="1", value="T1"),
+#                discord.SelectOption(label="2", value="T2"),
+#                discord.SelectOption(label="2c", value="T2c"),
+#                discord.SelectOption(label="3", value="T3"),
+#                discord.SelectOption(label="4", value="T4"),
+#                discord.SelectOption(label="5", value="T5")
+#        ]
+#        super().__init__(placeholder=_("Tier"), options=options)
+#
+#    async def callback(self, interaction: discord.Interaction):
+#        tier = self.values[0]
+#        upsert(self.view.conn, 'Raids', ['tier'], [tier], ['raid_id'], [self.view.raid_id])
+#        await self.view.raid_cog.update_raid_post(self.view.raid_id, interaction.channel)
+#        await self.view.calendar_cog.update_calendar(interaction.guild.id, new_run=False)
+#        try:
+#            self.view.calendar_cog.modify_guild_event(self.view.raid_id)
+#        except requests.HTTPError as e:
+#            logger.warning(e.response.text)
+
+
+class ConfigureModal(discord.ui.Modal):
+
     def __init__(self, raid_cog, raid_id):
-        super().__init__(timeout=60)
+        super().__init__(title='Raid Settings')
         self.raid_cog = raid_cog
         self.calendar_cog = raid_cog.bot.get_cog('CalendarCog')
         self.raid_id = raid_id
         self.conn = raid_cog.conn
+        try:
+            name, tier, aim, = select_one(self.conn, 'Raids', ['name', 'tier', 'boss'],
+                                            ['raid_id'], [raid_id])
+        except TypeError:
+            logger.info("The raid has been deleted during editing.")
+            return
+        name_field = discord.ui.TextInput(custom_id='name', label='Name', default=name, max_length=256)
+        tier_field = discord.ui.TextInput(custom_id='tier', label='Tier', required=False, default=tier, max_length=8)
+        aim_field = discord.ui.TextInput(custom_id='boss', label='Aim', required=False, default=aim, max_length=1024)
+        time_field = discord.ui.TextInput(custom_id='time', label='Time', required=False, placeholder=_("Leave blank to keep the existing time."), max_length=64)
+        delete_field = discord.ui.TextInput(custom_id='delete', label='Delete', required=False, placeholder=_("Type 'delete' here to delete the raid."), max_length=8)
+        self.add_item(name_field)
+        self.add_item(tier_field)
+        self.add_item(aim_field)
+        self.add_item(time_field)
+        self.add_item(delete_field)
 
-        self.add_item(TierSelect())
-
-    @discord.ui.button(label="Name", style=discord.ButtonStyle.secondary, custom_id='configure_view:name')
-    async def update_name(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await interaction.response.defer()
-        await self.raid_cog.name_configure(interaction.user, interaction.channel, self.raid_id)
+    async def on_submit(self, interaction: discord.Interaction):
+        text_fields = interaction.data['components']
+        raid_columns = [field['components'][0]['custom_id'] for field in text_fields]
+        raid_values = [field['components'][0]['value'] for field in text_fields]
+        # delete parsing
+        delete_index = raid_columns.index('delete')
+        delete_input = raid_values[delete_index]
+        if delete_input.lower() == 'delete':
+            await self.delete_raid(interaction)
+            self.stop()
+            return
+        raid_columns.pop(delete_index)
+        raid_values.pop(delete_index)
+        # default response
+        resp_msg = _("The raid settings have been successfully updated!")
+        # time parsing
+        time_index = raid_columns.index('time')
+        time_input = raid_values[time_index]
+        if time_input:
+            try:
+                timestamp = Time().converter(self.raid_cog.bot, interaction.guild_id, interaction.user.id, time_input)
+            except commands.BadArgument:
+                resp_msg = _("Failed to parse time argument: ") + time_input
+                raid_columns.pop(time_index)
+                raid_values.pop(time_index)
+            else:
+                raid_values[time_index] = timestamp
+        else:
+            raid_columns.pop(time_index)
+            raid_values.pop(time_index)
+        # write to database
+        upsert(self.conn, 'Raids', raid_columns, raid_values, ['raid_id'], [self.raid_id])
+        self.conn.commit()
+        # respond
+        await interaction.response.send_message(resp_msg, ephemeral=True)
+        # Update corresponding discord posts and events
         await self.raid_cog.update_raid_post(self.raid_id, interaction.channel)
         await self.calendar_cog.update_calendar(interaction.guild.id, new_run=False)
         try:
             self.calendar_cog.modify_guild_event(self.raid_id)
         except requests.HTTPError as e:
             logger.warning(e.response.text)
+        self.stop()
 
-    @discord.ui.button(label="Aim", style=discord.ButtonStyle.secondary, custom_id='configure_view:aim')
-    async def update_aim(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await interaction.response.defer()
-        await self.raid_cog.boss_configure(interaction.user, interaction.channel, self.raid_id)
-        await self.raid_cog.update_raid_post(self.raid_id, interaction.channel)
-        try:
-            self.calendar_cog.modify_guild_event(self.raid_id)
-        except requests.HTTPError as e:
-            logger.warning(e.response.text)
-
-    @discord.ui.button(label="Time", style=discord.ButtonStyle.secondary, custom_id='configure_view:time')
-    async def update_time(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await interaction.response.defer()
-        await self.raid_cog.time_configure(interaction.user, interaction.channel, self.raid_id)
-        await self.raid_cog.update_raid_post(self.raid_id, interaction.channel)
-        await self.calendar_cog.update_calendar(interaction.guild.id, new_run=False)
-        try:
-            self.calendar_cog.modify_guild_event(self.raid_id)
-        except requests.HTTPError as e:
-            logger.warning(e.response.text)
-
-    @discord.ui.button(label="Delete", style=discord.ButtonStyle.red, custom_id='configure_view:delete')
-    async def red_cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def delete_raid(self, interaction: discord.Interaction):
         await interaction.response.defer()
         # Delete the guild event
         try:
@@ -757,32 +681,6 @@ class ConfigureView(discord.ui.View):
             await post.delete()
         except discord.NotFound:
             pass
-
-    async def on_timeout(self):
-        self.conn.commit()
-
-
-class TierSelect(discord.ui.Select):
-    def __init__(self):
-        options = [
-                discord.SelectOption(label="1", value="T1"),
-                discord.SelectOption(label="2", value="T2"),
-                discord.SelectOption(label="2c", value="T2c"),
-                discord.SelectOption(label="3", value="T3"),
-                discord.SelectOption(label="4", value="T4"),
-                discord.SelectOption(label="5", value="T5")
-        ]
-        super().__init__(placeholder=_("Tier"), options=options)
-
-    async def callback(self, interaction: discord.Interaction):
-        tier = self.values[0]
-        upsert(self.view.conn, 'Raids', ['tier'], [tier], ['raid_id'], [self.view.raid_id])
-        await self.view.raid_cog.update_raid_post(self.view.raid_id, interaction.channel)
-        await self.view.calendar_cog.update_calendar(interaction.guild.id, new_run=False)
-        try:
-            self.view.calendar_cog.modify_guild_event(self.view.raid_id)
-        except requests.HTTPError as e:
-            logger.warning(e.response.text)
 
 
 def setup(bot):
