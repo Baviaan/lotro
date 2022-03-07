@@ -69,7 +69,11 @@ class Bot(commands.Bot):
         self.slots_class_names = slots_class_names
 
         # Get id for discord server hosting custom emoji.
-        self.host_id = int(read_config_key(config, 'HOST', False))
+        host_id = read_config_key(config, 'HOST', False)
+        if host_id:
+            self.host_id = int(host_id)
+        else:
+            self.host_id = None
 
         # Check for twitter auth
         self.twitter_token = read_config_key(config, 'TWITTER_TOKEN', False)
