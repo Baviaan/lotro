@@ -89,7 +89,6 @@ def table_sqls(table):
                         "guild_events integer, "
                         "twitter integer, "
                         "last_command integer, "
-                        "command_count integer, "
                         "slash_count integer"
                         ");",
 
