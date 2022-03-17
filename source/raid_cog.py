@@ -535,16 +535,8 @@ class ClassSelect(discord.ui.Select):
             await interaction.response.send_message(msg, ephemeral=True)
             return
 
-        slot = select_one(self.view.conn, 'Assignment', ['slot_id', 'byname'], ['player_id', 'raid_id'],
-                          [self.view.player, raid_id])
-        if slot is not None:
-            assignment_columns = ['player_id', 'byname', 'class_name']
-            class_names = ','.join(self.view.raid_cog.slots_class_names[slot[0]])
-            assignment_values = [None, _("<Open>"), class_names]
-            upsert(self.view.conn, 'Assignment', assignment_columns, assignment_values, ['raid_id', 'slot_id'],
-                   [raid_id, slot[0]])
-
         if self.values[0] == 'remove':
+            self.clear_assignment()
             await self.view.raid_cog.update_raid_post(raid_id, interaction.channel)
             return
 
@@ -567,11 +559,22 @@ class ClassSelect(discord.ui.Select):
             await interaction.response.send_message(msg, ephemeral=True)
             return
 
+        self.clear_assignment()
         assignment_columns = ['player_id', 'byname', 'class_name']
         assignment_values = [self.view.player, signup[1], self.values[0]]
         upsert(self.view.conn, 'Assignment', assignment_columns, assignment_values, ['raid_id', 'slot_id'],
                [raid_id, slot_id])
         await self.view.raid_cog.update_raid_post(raid_id, interaction.channel)
+
+    def clear_assignment(self):
+        slot = select_one(self.view.conn, 'Assignment', ['slot_id', 'byname'], ['player_id', 'raid_id'],
+                          [self.view.player, self.view.raid_id])
+        if slot is not None:
+            assignment_columns = ['player_id', 'byname', 'class_name']
+            class_names = ','.join(self.view.raid_cog.slots_class_names[slot[0]])
+            assignment_values = [None, _("<Open>"), class_names]
+            upsert(self.view.conn, 'Assignment', assignment_columns, assignment_values, ['raid_id', 'slot_id'],
+                   [self.view.raid_id, slot[0]])
 
 
 #class TierSelect(discord.ui.Select):

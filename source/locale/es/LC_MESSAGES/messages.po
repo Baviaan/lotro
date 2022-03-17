@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2022-03-12 12:23+GMT\n"
+"POT-Creation-Date: 2022-03-17 16:57+GMT\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: SPANISH <LL@li.org>\n"
@@ -151,7 +151,7 @@ msgstr ""
 msgid "Invalid response from Discord."
 msgstr ""
 
-#: raid_cog.py:121 raid_cog.py:444 raid_cog.py:543
+#: raid_cog.py:121 raid_cog.py:444 raid_cog.py:575
 msgid "<Open>"
 msgstr ""
 
@@ -247,29 +247,29 @@ msgstr ""
 msgid "Please select a player first."
 msgstr ""
 
-#: raid_cog.py:554
+#: raid_cog.py:546
 msgid "{0} did not sign up with {1}."
 msgstr ""
 
-#: raid_cog.py:565
+#: raid_cog.py:557
 msgid ""
 "There are no slots available for the selected class. Please select the slot "
 "manually or pick a different class."
 msgstr ""
 
-#: raid_cog.py:617
+#: raid_cog.py:620
 msgid "Leave blank to keep the existing time."
 msgstr ""
 
-#: raid_cog.py:618
+#: raid_cog.py:621
 msgid "Type 'delete' here to delete the raid."
 msgstr ""
 
-#: raid_cog.py:639
+#: raid_cog.py:642
 msgid "The raid settings have been successfully updated!"
 msgstr ""
 
-#: raid_cog.py:647 time_cog.py:31
+#: raid_cog.py:650 time_cog.py:31
 msgid "Failed to parse time argument: "
 msgstr ""
 
