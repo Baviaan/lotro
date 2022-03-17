@@ -504,6 +504,7 @@ class SlotSelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         self.view.slot = int(self.values[0])
+        await interaction.response.defer()
 
 
 class PlayerSelect(discord.ui.Select):
@@ -518,6 +519,7 @@ class PlayerSelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         self.view.player = self.values[0]
+        await interaction.response.defer()
 
 
 class ClassSelect(discord.ui.Select):
@@ -537,6 +539,7 @@ class ClassSelect(discord.ui.Select):
 
         if self.values[0] == 'remove':
             self.clear_assignment()
+            await interaction.response.defer()
             await self.view.raid_cog.update_raid_post(raid_id, interaction.channel)
             return
 
@@ -564,6 +567,7 @@ class ClassSelect(discord.ui.Select):
         assignment_values = [self.view.player, signup[1], self.values[0]]
         upsert(self.view.conn, 'Assignment', assignment_columns, assignment_values, ['raid_id', 'slot_id'],
                [raid_id, slot_id])
+        await interaction.response.defer()
         await self.view.raid_cog.update_raid_post(raid_id, interaction.channel)
 
     def clear_assignment(self):
