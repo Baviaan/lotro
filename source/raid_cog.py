@@ -393,7 +393,7 @@ class RaidView(discord.ui.View):
         try:
             role = discord.utils.get(i.guild.roles, name=class_name)
             if role is None:
-                role = await guild.create_role(mentionable=True, name=role_name)
+                role = await i.guild.create_role(mentionable=True, name=class_name)
             if role not in i.user.roles:
                 await i.user.add_roles(role)
         except discord.Forbidden:
@@ -543,9 +543,9 @@ class ClassSelect(discord.ui.Select):
             assignment_values = [None, _("<Open>"), class_names]
             upsert(self.view.conn, 'Assignment', assignment_columns, assignment_values, ['raid_id', 'slot_id'],
                    [raid_id, slot[0]])
-            await self.view.raid_cog.update_raid_post(raid_id, interaction.channel)
 
         if self.values[0] == 'remove':
+            await self.view.raid_cog.update_raid_post(raid_id, interaction.channel)
             return
 
         signup = select_one(self.view.conn, 'Players', [self.values[0], 'byname'], ['player_id', 'raid_id'],
