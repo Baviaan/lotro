@@ -28,13 +28,17 @@ See details further below how to specify your configuration file and then simply
 
 ------------------------------------
 **Instructions for Windows.**\
-Python does not come pre-installed on Windows so you will need to install it yourself. Go to https://www.python.org/downloads/ and click the big yellow button to download Python 3.9. Simply run the downloaded file to install Python. Now to save yourself a world of pain, BEFORE you click the 'Install Now' button, make sure you check the box **'Add Python 3.9 to PATH'**. This will allow you to use the python command in your terminal (command prompt).
+Python does not come pre-installed on Windows so you will need to install it yourself.
+Go to https://www.python.org/downloads/ and click the big yellow button to download Python 3.10.
+Simply run the downloaded file to install Python.
+Now to save yourself a world of pain, BEFORE you click the 'Install Now' button, make sure you check the box **'Add Python 3.10 to PATH'**.
+This will allow you to use the python command in your terminal (command prompt).
 
-To check installation was successful open a terminal and type `python --version`, it will return (as of writing) Python 3.9.6, assuming you do not have Python 2 installed.
+To check installation was successful open a terminal and type `python --version`, it will return (as of writing) Python 3.10.3, assuming you do not have Python 2 installed.
 (Search for cmd and press enter to open a terminal.)
 Download the latest release from https://github.com/Baviaan/lotro/releases/latest by clicking on the zip version and extract the folder on your computer.
 In your terminal change directory to wherever you extracted the files.
-(For example type `cd Desktop\lotro-5.0.0` if you downloaded version 5.0.0 and extracted the folder to your desktop.)
+(For example type `cd Desktop\lotro-5.5.0` if you downloaded version 5.5.0 and extracted the folder to your desktop.)
 Now you can install the required Python libraries with `python -m pip install -U -r requirements.txt`.
 Before you run the bot you will need to edit your configuration file.
 See below for further instructions what to put in the configuration file.
@@ -52,7 +56,6 @@ CLASSES: The classes in your game. Note your discord server must have custom emo
 LANGUAGE: The language of the bot. Currently only English "en" and French "fr" are supported.\
 LINEUP: A sequence of zeroes and ones indicating for each slot whether the class should be present, in the order as specified under CLASSES. This will **ABSOLUTELY BREAK THE UI** if you specify too many ones. Please contain yourself.\
 SERVER_TZ: The raid time in the header of the embed will be posted in this time zone. (Requires TZ database name.)\
-PREFIX: The prefix that will be used to start a command. (legacy)
 
 See [es/messages.po](./source/locale/es/LC_MESSAGES/messages.po) if you wish to help translate to Spanish.
 An example config file has been included for English and French.
@@ -63,9 +66,9 @@ An example config file has been included for English and French.
 See this link how to create a bot user on discord, obtain your bot token and invite the bot to your server:
 https://discordpy.readthedocs.io/en/latest/discord.html#
 
-Please ensure the bot has the correct permissions: 268462080.
+Please ensure the bot has the correct permissions: 268453888.
 
-(Manage roles, send messages, manage messages, embed links.)
+(Manage roles, send messages, embed links.)
 
 Please note the bot will automatically shut down if it is not in any discord servers.
 
