@@ -124,22 +124,22 @@ class Bot(commands.Bot):
         for guild in self.guilds:
             self.logger.info('Welcome to {0}.'.format(guild))
         try:
-            self.load_extension('config_cog')
-            self.load_extension('dev_cog')
-            self.load_extension('time_cog')
+            await self.load_extension('config_cog')
+            await self.load_extension('dev_cog')
+            await self.load_extension('time_cog')
             # Load after time cog
-            self.load_extension('calendar_cog')
-            self.load_extension('raid_cog')
+            await self.load_extension('calendar_cog')
+            await self.load_extension('raid_cog')
             # Load slash cog
-            self.load_extension('slash_cog')
-            self.load_extension('register_cog')
+            await self.load_extension('slash_cog')
+            await self.load_extension('register_cog')
             # Load twitter cog
             if self.twitter_token:
-                self.load_extension('twitter_cog')
+                await self.load_extension('twitter_cog')
             else:
                 self.logger.info("No twitter credentials found. Twitter cog will not be loaded.")
             # Load custom cog
-            self.load_extension('custom_cog')
+            await self.load_extension('custom_cog')
         except commands.ExtensionAlreadyLoaded:
             pass
 

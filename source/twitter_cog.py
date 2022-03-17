@@ -20,10 +20,10 @@ class TwitterCog(commands.Cog):
         self.twitter_id = bot.twitter_id
         create_table(self.conn, 'twitter')
 
-        # Run background task
+    async def cog_load(self):
         self.twitter_task.start()
 
-    def cog_unload(self):
+    async def cog_unload(self):
         self.twitter_task.cancel()
 
     def connect_to_endpoint(self, url, params):
@@ -90,6 +90,7 @@ class TwitterCog(commands.Cog):
         logger.error("Twitter task failed.")
         logger.error(exception, exc_info=True)
 
-def setup(bot):
-    bot.add_cog(TwitterCog(bot))
+
+async def setup(bot):
+    await bot.add_cog(TwitterCog(bot))
     logger.info("Loaded Twitter Cog.")

@@ -49,13 +49,13 @@ class RaidCog(commands.Cog):
         self.class_emojis = [emoji for emoji in host_guild.emojis if emoji.name in self.role_names]
         self.class_emojis_dict = {emoji.name: str(emoji) for emoji in self.class_emojis}
 
-        # Run background task
-        self.background_task.start()
-
         # Add raid view
         self.bot.add_view(RaidView(self))
 
-    def cog_unload(self):
+    async def cog_load(self):
+        self.background_task.start()
+
+    async def cog_unload(self):
         self.background_task.cancel()
 
 #    @commands.Cog.listener()
@@ -686,6 +686,6 @@ class ConfigureModal(discord.ui.Modal):
             pass
 
 
-def setup(bot):
-    bot.add_cog(RaidCog(bot))
+async def setup(bot):
+    await bot.add_cog(RaidCog(bot))
     logger.info("Loaded Raid Cog.")

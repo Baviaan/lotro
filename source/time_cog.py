@@ -68,6 +68,6 @@ class TimeCog(commands.Cog):
         return result
 
 
-def setup(bot):
-    bot.add_cog(TimeCog(bot))
+async def setup(bot):
+    await bot.add_cog(TimeCog(bot))
     logger.info("Loaded Time Cog.")

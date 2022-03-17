@@ -22,10 +22,10 @@ class DevCog(commands.Cog):
     async def load(self, ctx, ext):
         ext = ext + "_cog"
         try:
-            self.bot.load_extension(ext)
+            await self.bot.load_extension(ext)
             await ctx.send(_('Extension loaded.'))
         except commands.ExtensionAlreadyLoaded:
-            self.bot.reload_extension(ext)
+            await self.bot.reload_extension(ext)
             await ctx.send(_('Extension reloaded.'))
         except commands.ExtensionNotFound:
             await ctx.send(_('Extension not found.'))
@@ -132,6 +132,6 @@ class DevCog(commands.Cog):
         await ctx.send("Deleted guild count: {0}".format(deleted))
 
 
-def setup(bot):
-    bot.add_cog(DevCog(bot))
+async def setup(bot):
+    await bot.add_cog(DevCog(bot))
     logger.info("Loaded Dev Cog.")

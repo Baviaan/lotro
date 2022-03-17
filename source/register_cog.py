@@ -364,6 +364,6 @@ class RegisterCog(commands.Cog):
                     logger.error("Failed to register {0} slash command.".format(command))
 
 
-def setup(bot):
-    bot.add_cog(RegisterCog(bot))
+async def setup(bot):
+    await bot.add_cog(RegisterCog(bot))
     logger.info("Loaded Register Cog.")

@@ -185,6 +185,6 @@ class CalendarCog(commands.Cog):
         return int(time)
 
 
-def setup(bot):
-    bot.add_cog(CalendarCog(bot))
+async def setup(bot):
+    await bot.add_cog(CalendarCog(bot))
     logger.info("Loaded Calendar Cog.")

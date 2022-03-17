@@ -432,6 +432,6 @@ class SlashCog(commands.Cog):
         content = _("Successfully updated the kin role!")
         return content
 
-def setup(bot):
-    bot.add_cog(SlashCog(bot))
+async def setup(bot):
+    await bot.add_cog(SlashCog(bot))
     logger.info("Loaded Slash Cog.")

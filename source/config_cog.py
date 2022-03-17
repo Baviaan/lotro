@@ -121,6 +121,6 @@ class ConfigCog(commands.Cog):
             await channel.send(msg)
 
 
-def setup(bot):
-    bot.add_cog(ConfigCog(bot))
+async def setup(bot):
+    await bot.add_cog(ConfigCog(bot))
     logger.info("Loaded Config Cog.")

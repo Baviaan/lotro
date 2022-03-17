@@ -15,6 +15,6 @@ class CustomCog(commands.Cog):
         self.bot = bot
 
 
-def setup(bot):
-    bot.add_cog(CustomCog(bot))
+async def setup(bot):
+    await bot.add_cog(CustomCog(bot))
     logger.info("Loaded Custom Cog.")
