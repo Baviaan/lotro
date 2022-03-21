@@ -145,7 +145,7 @@ class Bot(commands.Bot):
 
     async def on_command_error(self, ctx, error):
         if isinstance(error, commands.NoPrivateMessage):
-            await ctx.send(_("Please use this command in a server."))
+            await ctx.send(_("You are not the bot owner."))
         else:
             if not isinstance(error, commands.CommandNotFound):
                 self.logger.warning("Error for command: " + ctx.message.content)
