@@ -104,8 +104,8 @@ class Bot(commands.Bot):
         super().__init__(command_prefix=self.prefix_manager, case_insensitive=True, intents=intents,
                          activity=discord.Game(name=self.version))
 
-        def globally_block_dms(ctx):
-            if ctx.guild is None and not ctx.bot.is_owner(ctx.author):
+        async def globally_block_dms(ctx):
+            if ctx.guild is None and not await ctx.bot.is_owner(ctx.author):
                 raise commands.NoPrivateMessage("No dm allowed!")
             else:
                 return True
