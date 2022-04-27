@@ -1,3 +1,4 @@
+## Introduction
 This is a discord bot aimed at making it easy to schedule raids in a discord server. It is developed for LotRO but could work for any game if you edit the class names in the config file.
 
 When a raid command is called the bot will create an embed specifying the raid time formatted in the local time for everyone looking at it.
@@ -15,9 +16,71 @@ If you would like to use the public bot please join our
 [discord server](https://discord.gg/5YqSzuV)
 to find the bot invite link.
 
-If you would like to host your own instance, continue reading below.
+If you would like to host your own instance, consult the self-hosting section below.
 
-------------------------------------
+## Terms of Service
+Effective: 27 May 2022
+
+Last Updated: 27 April 2022
+
+**By interacting with the application and using this service, you accept and agree to be bound by the terms and provisions of this agreement.**
+
+We also have a Privacy Policy that applies to your use of our service and is incorporated into these terms.
+
+The service is provided for free and may be terminated without notice.
+Use of the service is at your own risk and we will not be responsible for any inconvenience caused by malfunction, outage or termination of the service.
+
+You agree not to misuse or abuse the service.
+Examples include, but are not limited to, spamming the service with interactions or submitting interactions containing inappropriate or offensive language.
+We reserve the right to restrict your access to the service, without cause or notice, at our sole discretion.
+
+We reserve the right to modify these conditions as we see fit and your continued usage of the service will signify your acceptance of any adjustments to these terms and provisions.
+Any changes in your favour will take effect immediately and any other changes will take effect 30 days after publishing the updated Terms of Service.
+For your convenience, a notification of changes will be posted to the application's official support server on Discord.
+
+## Privacy Policy
+Effective: 27 May 2022
+
+Last Updated: 27 April 2022
+
+This Privacy Policy explains how we collect, use, store, protect, and share your personal information through our services.
+
+We care about privacy and try to limit the data we collect as much as possible.
+Some information is required for core functionality and some information is optional for your convenience.
+We describe our data collection more in detail below.
+We do not sell your data.
+
+**Data collection**
+
+When you sign up for an event the service stores the time, your discord id, discord nickname and the class(es) you sign up with.
+This data is collected to provide the core functionality of the service and is automatically deleted two hours after the scheduled event started, or immediately if you cancel your sign up for the event.
+
+Optionally, you may submit your preferred time zone to the service, it will be stored alongside your discord id such that the service parses your commands in your preferred time zone without having to include the time zone for each command.
+You can reset your time zone back to the default at any time using the same command.
+If for any reason the service becomes permanently unavailable to users, we will delete all time zone data for you.
+
+**Data Protection**
+
+All data submitted to us is transmitted via discord and thus should be considered public as it is not end to end encrypted.
+
+**Data location**
+
+Our servers are based in the U.S. and your data will be stored there.
+
+**Exercising your rights**
+
+You can delete all data held about you yourself as described in the "Data collection" section.
+If you encounter a problem, reach out to us in our official support server.
+
+**Changes to this Privacy Policy**
+
+We will update this Privacy Policy from time to time.
+Any changes in your favour will take effect immediately and any other changes will take effect 30 days after publishing the updated Privacy Policy.
+For your convenience, a notification of changes will be posted to the application's official support server on Discord.
+If changes are significant we will provide a more prominent notice such as an announcement.
+
+
+## Self-hosting
 
 Prerequisites:\
 python >= 3.8\
@@ -25,24 +88,6 @@ Check the requirements.txt file for required libraries.\
 You can get all of them with: `python3 -m pip install -U -r requirements.txt`, assuming requirements.txt is in your current directory.
 
 See details further below how to specify your configuration file and then simply run with `python3 main.py`
-
-------------------------------------
-**Instructions for Windows.**\
-Python does not come pre-installed on Windows so you will need to install it yourself.
-Go to https://www.python.org/downloads/ and click the big yellow button to download Python 3.10.
-Simply run the downloaded file to install Python.
-Now to save yourself a world of pain, BEFORE you click the 'Install Now' button, make sure you check the box **'Add Python 3.10 to PATH'**.
-This will allow you to use the python command in your terminal (command prompt).
-
-To check installation was successful open a terminal and type `python --version`, it will return (as of writing) Python 3.10.3, assuming you do not have Python 2 installed.
-(Search for cmd and press enter to open a terminal.)
-Download the latest release from https://github.com/Baviaan/lotro/releases/latest by clicking on the zip version and extract the folder on your computer.
-In your terminal change directory to wherever you extracted the files.
-(For example type `cd Desktop\lotro-5.5.0` if you downloaded version 5.5.0 and extracted the folder to your desktop.)
-Now you can install the required Python libraries with `python -m pip install -U -r requirements.txt`.
-Before you run the bot you will need to edit your configuration file.
-See below for further instructions what to put in the configuration file.
-Once you are done you can run the bot by typing `python main.py` in your terminal.
 
 ------------------------------------
 
