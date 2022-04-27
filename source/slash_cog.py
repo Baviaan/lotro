@@ -140,13 +140,15 @@ class SlashCog(commands.Cog):
             content = ''
         elif name == 'privacy':
             ephemeral = False
-            content = _("**PII:**\n"
+            content = _("**Summary:**\n"
                         "When you sign up for a raid the bot stores the time, your discord id, discord nickname and the class("
                         "es) you sign up with. This information is automatically deleted 2 hours after the scheduled "
-                        "raid time or immediately when you cancel your sign up.\n "
+                        "raid time or immediately when you cancel your sign up.\n"
                         "If you set a default time zone for yourself, the bot will additionally store your time zone "
                         "along with your discord id such that it can parse times provided in your commands in your "
-                        "preferred time zone.")
+                        "preferred time zone.\n"
+                        "**Please find the full privacy policy here:**\n"
+                        "https://github.com/Baviaan/lotro#privacy-policy")
         elif name == 'welcome':
             ephemeral = False
             content = _("Greetings {0}! I am confined to Orthanc and here to spend my days doing your raid admin.\n\n"
