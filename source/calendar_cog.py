@@ -100,8 +100,13 @@ class CalendarCog(commands.Cog):
         embed = discord.Embed(title=title, description=desc, colour=discord.Colour(0x3498db))
         for raid in raids[:20]:
             timestamp = int(raid[4])
-            msg = "[{name} {tier}](<https://discord.com/channels/{guild}/{channel}/{msg}>)\n".format(
+            tier = raid[3]
+            if tier:
+                msg = "[{name} {tier}](<https://discord.com/channels/{guild}/{channel}/{msg}>)\n".format(
                 guild=guild_id, channel=raid[0], msg=raid[1], name=raid[2], tier=raid[3])
+            else:
+                msg = "[{name}](<https://discord.com/channels/{guild}/{channel}/{msg}>)\n".format(
+                guild=guild_id, channel=raid[0], msg=raid[1], name=raid[2])
             embed.add_field(name=f"<t:{timestamp}:F>", value=msg, inline=False)
         embed.set_footer(text=_("Last updated"))
         embed.timestamp = datetime.now()
