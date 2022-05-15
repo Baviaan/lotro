@@ -69,7 +69,7 @@ class RaidCog(commands.Cog):
             await self.handle_raid_command(interaction, interaction.command.name, tier.value, time, aim)
 
         for key, full_name in self.raid_lookup.items():
-            description = _("Schedule {0}.".format(full_name))
+            description = _("Schedule {0}.").format(full_name)
             command = app_commands.Command(name=key, description=description, callback=raid_respond)
             self.bot.tree.add_command(command)
 
@@ -132,7 +132,7 @@ class RaidCog(commands.Cog):
             res = upsert(self.conn, 'Settings', ['raid_leader'], [role_id], ['guild_id'], [interaction.guild_id])
             self.conn.commit()
             if role:
-                await interaction.response.send_message(_("Set the raid leader role to {0}.".format(role.mention)), allowed_mentions=discord.AllowedMentions.none())
+                await interaction.response.send_message(_("Set the raid leader role to {0}.").format(role.mention), allowed_mentions=discord.AllowedMentions.none())
             else:
                 await interaction.response.send_message(_("Deleted the raid leader role."))
 
@@ -150,7 +150,7 @@ class RaidCog(commands.Cog):
             res = upsert(self.conn, 'Settings', ['priority'], [role_id], ['guild_id'], [interaction.guild_id])
             self.conn.commit()
             if role:
-                await interaction.response.send_message(_("Set the kin role to {0}.".format(role.mention)), allowed_mentions=discord.AllowedMentions.none())
+                await interaction.response.send_message(_("Set the kin role to {0}.").format(role.mention), allowed_mentions=discord.AllowedMentions.none())
             else:
                 await interaction.response.send_message(_("Deleted the kin role."))
 
