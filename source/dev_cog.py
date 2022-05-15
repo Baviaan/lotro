@@ -131,6 +131,12 @@ class DevCog(commands.Cog):
         await ctx.send("Inactive guild count: {0}".format(inactive))
         await ctx.send("Deleted guild count: {0}".format(deleted))
 
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def sync(self, ctx):
+        await self.bot.tree.sync()
+        logger.info("Synced bot commands.")
+        await ctx.send("Synced bot commands.")
 
 async def setup(bot):
     await bot.add_cog(DevCog(bot))

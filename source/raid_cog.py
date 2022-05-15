@@ -2,14 +2,16 @@ import asyncio
 import csv
 import datetime
 import discord
+from discord import app_commands
 from discord.ext import commands
 from discord.ext import tasks
 import logging
 import re
 import requests
 import time
+from typing import Optional
 
-from database import create_table, count, delete, select, select_le, select_one, upsert
+from database import create_table, count, delete, select, select_le, select_one, select_order, upsert
 from time_cog import Time
 from utils import get_match
 
@@ -52,24 +54,167 @@ class RaidCog(commands.Cog):
         # Add raid view
         self.bot.add_view(RaidView(self))
 
+        # Add raid commands to tree
+        @app_commands.guild_only()
+        @app_commands.choices(tier=[
+            app_commands.Choice(name='1', value='T1'),
+            app_commands.Choice(name='2', value='T2'),
+            app_commands.Choice(name='2c', value='T2c'),
+            app_commands.Choice(name='3', value='T3'),
+            app_commands.Choice(name='4', value='T4'),
+            app_commands.Choice(name='5', value='T5'),
+        ])
+        @app_commands.describe(tier=_("The raid tier."), time=_("When the raid should be scheduled."), aim=_("A short description of your objective."))
+        async def raid_respond(interaction: discord.Interaction, tier: app_commands.Choice[str], time: str, aim: Optional[str]):
+            await self.handle_raid_command(interaction, interaction.command.name, tier.value, time, aim)
+
+        for key, full_name in self.raid_lookup.items():
+            description = _("Schedule {0}.".format(full_name))
+            command = app_commands.Command(name=key, description=description, callback=raid_respond)
+            self.bot.tree.add_command(command)
+
     async def cog_load(self):
         self.background_task.start()
 
     async def cog_unload(self):
         self.background_task.cancel()
 
-#    @commands.Cog.listener()
-#    async def on_raw_message_delete(self, payload):
-#        raid_id = payload.message_id
-#        if raid_id in self.raids:
-#            # Delete the guild event
-#            try:
-#                self.calendar_cog.delete_guild_event(raid_id)
-#            except requests.HTTPError as e:
-#                logger.warning(e.response.text)
-#            # Handle clean up on bot side
-#            await self.cleanup_old_raid(raid_id, "Raid manually deleted.")
-#            self.conn.commit()
+    async def handle_raid_command(self, interaction, name, tier, time, aim):
+            new_raid = False
+            channel = interaction.channel
+            guild = interaction.guild
+            perms = channel.permissions_for(guild.me)
+            if not (perms.send_messages and perms.embed_links):
+                content = _("Missing permissions to access this channel.")
+            else:
+                try:
+                    timestamp = Time().converter(self.bot, guild.id, interaction.user.id, time)
+                except commands.BadArgument as e:
+                    content = str(e)
+                else:
+                    content = _("Posting a new raid!")
+                    new_raid = True
+            await interaction.response.send_message(content, ephemeral=True)
+            if new_raid:
+                if tier and int(tier[1]) > 2:
+                    roster = True
+                else:
+                    roster = False
+                await self.post_raid(name, tier, aim, timestamp, roster, guild.id, channel, interaction.user.id)
+
+    @app_commands.command(name=_("custom"), description=_("Schedule a custom raid or meetup."))
+    @app_commands.describe(name=_("The name of the raid or meetup."), tier=_("The raid tier."), time=_("When the raid should be scheduled."), aim=_("A short description of your objective."))
+    @app_commands.choices(tier=[
+        app_commands.Choice(name='1', value='T1'),
+        app_commands.Choice(name='2', value='T2'),
+        app_commands.Choice(name='2c', value='T2c'),
+        app_commands.Choice(name='3', value='T3'),
+        app_commands.Choice(name='4', value='T4'),
+        app_commands.Choice(name='5', value='T5'),
+    ])
+    @app_commands.guild_only()
+    async def custom_respond(self, interaction: discord.Interaction, name: str, time: str, tier: Optional[app_commands.Choice[str]], aim: Optional[str]):
+        if tier:
+            tier = tier.value
+        await self.handle_raid_command(interaction, name, tier, time, aim)
+
+    @app_commands.command(name=_("leader"), description=_("Specify the role which is permitted to edit raids."))
+    @app_commands.describe(role=_("Discord role."))
+    @app_commands.guild_only()
+    async def leader_respond(self, interaction: discord.Interaction, role: Optional[discord.Role]):
+        if not interaction.user.guild_permissions.administrator:
+            await interaction.response.send_message(_("You must be an admin to change the raid leader role."), ephemeral=True)
+        else:
+            if role:
+                role_id = role.id
+            else:
+                role_id = None
+            res = upsert(self.conn, 'Settings', ['raid_leader'], [role_id], ['guild_id'], [interaction.guild_id])
+            self.conn.commit()
+            if role:
+                await interaction.response.send_message(_("Set the raid leader role to {0}.".format(role.mention)), allowed_mentions=discord.AllowedMentions.none())
+            else:
+                await interaction.response.send_message(_("Deleted the raid leader role."))
+
+    @app_commands.command(name=_("kin"), description=_("Set your kin role to distinguish kin sign ups from non-kin."))
+    @app_commands.describe(role=_("Discord role."))
+    @app_commands.guild_only()
+    async def priority_respond(self, interaction: discord.Interaction, role: Optional[discord.Role]):
+        if not interaction.user.guild_permissions.administrator:
+            await interaction.response.send_message(_("You must be an admin to change the kin role."), ephemeral=True)
+        else:
+            if role:
+                role_id = role.id
+            else:
+                role_id = None
+            res = upsert(self.conn, 'Settings', ['priority'], [role_id], ['guild_id'], [interaction.guild_id])
+            self.conn.commit()
+            if role:
+                await interaction.response.send_message(_("Set the kin role to {0}.".format(role.mention)), allowed_mentions=discord.AllowedMentions.none())
+            else:
+                await interaction.response.send_message(_("Deleted the kin role."))
+
+    @app_commands.command(name=_("remove_roles"), description=_("Deletes your class roles (used when signing up)."))
+    @app_commands.guild_only()
+    async def roles_respond(self, interaction: discord.Interaction):
+        await interaction.response.send_message(_("Removing your class roles..."))
+        member = interaction.user
+        try:
+            await member.remove_roles(*[role for role in member.roles if role.name in self.bot.role_names])
+            content = _("Successfully removed your class roles.")
+        except discord.Forbidden:
+            content = _("I am missing permissions to manage the class roles!")
+        await interaction.edit_original_message(content=content)
+
+    @app_commands.command(name=_("list_players"), description=_("List the signed up players for a raid in order of sign up time."))
+    @app_commands.describe(raid_number=_("Specify the raid to list, e.g. 2 for the second upcoming raid. This defaults to 1 if omitted."), cut_off=_("Specify cut-off time in hours before raid time. This defaults to 24 hours if omitted."))
+    @app_commands.guild_only()
+    async def list_respond(self, interaction: discord.Interaction, raid_number: Optional[int]=1, cut_off: Optional[int]=24):
+        if not self.calendar_cog.is_raid_leader(interaction.user, interaction.guild):
+            await interaction.response.send_message(_("You must be a raid leader to list players."))
+            return
+        conn = self.conn
+        raids = select_order(conn, 'Raids', ['raid_id', 'name', 'time'], 'time', ['guild_id'], [interaction.guild_id])
+        if raid_number > len(raids):
+            await interaction.response.send_message(_("Cannot list raid {0}: only {1} raids exist.").format(raid_number, len(raids)))
+            return
+        elif raid_number < 1:
+            await interaction.response.send_message(_("Please provide a positive integer."))
+            return
+        raid_id, raid_name, raid_time = raids[raid_number-1]
+        player_data = select_order(conn, 'Players', ['byname', 'timestamp'], 'timestamp', ['raid_id', 'unavailable'], [raid_id, False])
+
+        # build the embed
+        cutoff_time = raid_time - 3600 * cut_off
+        embed_title = _("**Sign up list for {0} on <t:{1}>**").format(raid_name, raid_time)
+        embed = discord.Embed(title=embed_title, colour=discord.Colour(0x3498db))
+        players_on = ["\u200b"]
+        players_off = ["\u200b"]
+        times_on = ["\u200b"]
+        times_off = ["\u200b"]
+        for row in player_data:
+            if row[1]:
+                time = row[1]
+                if time < cutoff_time:
+                    players_on.append(row[0])
+                    times_on.append(f"<t:{time}:R>")
+                else:
+                    players_off.append(row[0])
+                    times_off.append(f"<t:{time}:R>")
+            else:
+                players_on.append(row[0])
+                times_on.append("\u200b")
+        players_on = "\n".join(players_on)
+        players_off = "\n".join(players_off)
+        times_on = "\n".join(times_on)
+        times_off = "\n".join(times_off)
+        embed.add_field(name=_("Players:"), value=players_on)
+        embed.add_field(name=_("Sign up time:"), value=times_on)
+        embed.add_field(name="\u200b", value="\u200b")
+        embed.add_field(name=_("Late players:"), value=players_off)
+        embed.add_field(name=_("Sign up time:"), value=times_off)
+        embed.add_field(name="\u200b", value="\u200b")
+        await interaction.response.send_message(embed=embed)
 
     def get_raid_name(self, name):
         try:

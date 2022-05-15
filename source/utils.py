@@ -1,6 +1,6 @@
-from fuzzywuzzy import fuzz
-from fuzzywuzzy import process
-from fuzzywuzzy import utils
+from thefuzz import fuzz
+from thefuzz import process
+from thefuzz import utils
 
 
 def chunks(lst, n):
@@ -44,7 +44,7 @@ def fp_ratio(s1, s2, force_ascii=True, full_process=True):
 
 
 def get_match(word: str, word_list: list, score_cutoff: int = 80):
-    """Uses fuzzywuzzy to see if word is close to entries in word_list
+    """Uses thefuzz to see if word is close to entries in word_list
 
     Returns a tuple of (MATCH, SCORE)
     """
@@ -56,7 +56,7 @@ def get_match(word: str, word_list: list, score_cutoff: int = 80):
     return result
 
 def get_partial_matches(word: str, word_list: list, score_cutoff: int = 75, limit: int = 25):
-    """Uses fuzzywuzzy to see if word is close to entries in word_list
+    """Uses thefuzz to see if word is close to entries in word_list
 
     Returns a list of best partial matches
     """

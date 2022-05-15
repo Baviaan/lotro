@@ -6,6 +6,7 @@ import re
 import requests
 
 from datetime import datetime, timedelta
+from discord import app_commands
 from discord.ext import commands
 
 from database import select_one, select_order, upsert
@@ -16,15 +17,39 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
+@app_commands.guild_only()
+class CalendarGroup(app_commands.Group):
+    def __init__(self):
+        super().__init__(name=_("calendar"), description=_("Manage the calendar settings."))
+
+
 class CalendarCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.conn = bot.conn
         self.time_cog = bot.get_cog('TimeCog')
         self.upcoming_events = None
         self.cached_events_at = None
         self.headers = {
             "Authorization": "Bot {0}".format(bot.token)
         }
+
+    def is_raid_leader(self, user, guild):
+        if user.guild_permissions.administrator:
+            return True
+        raid_leader_id = select_one(self.conn, 'Settings', ['raid_leader'], ['guild_id'], [guild.id])
+        if raid_leader_id:
+            raid_leader = guild.get_role(raid_leader_id)
+            if raid_leader in user.roles:
+                return True
+        return False
+
+    async def post_calendar(self, guild_id, channel):
+        embed = self.calendar_embed(guild_id)
+        msg = await channel.send(embed=embed)
+        ids = "{0}/{1}".format(channel.id, msg.id)
+        res = upsert(self.conn, 'Settings', ['calendar'], [ids], ['guild_id'], [guild_id])
+        self.conn.commit()
 
     async def update_calendar(self, guild_id, new_run=True):
         conn = self.bot.conn
@@ -183,6 +208,69 @@ class CalendarCog(commands.Cog):
     def parse_event_time(self, time):
         time = pytz.timezone("America/New_York").localize(dateparser.parse(time)).timestamp()
         return int(time)
+
+    @app_commands.command(name=_("events"), description=_("Shows upcoming official LotRO events in your local time."))
+    @app_commands.guild_only()
+    async def events_respond(self, interaction: discord.Interaction):
+        await interaction.response.send_message(_("Waiting for lotro.com to respond..."))
+        events = self.events_embed(interaction.guild_id)
+        await interaction.edit_original_message(content='', embed=events)
+
+    group = CalendarGroup()
+
+    @group.command(name=_("off"), description=("Turn off calendars."))
+    async def calendar_off(self, interaction: discord.Interaction):
+        if not self.is_raid_leader(interaction.user, interaction.guild):
+            await interaction.response.send_message(_("You must be a raid leader to change the calendar settings."), ephemeral=True)
+            return
+        upsert(self.conn, 'Settings', ['calendar', 'guild_events'], [None, False], ['guild_id'], [interaction.guild_id])
+        content = _("Events will not be posted to a calendar.")
+        await interaction.response.send_message(content, ephemeral=True)
+        self.conn.commit()
+
+    @group.command(name=_("channel"), description=("Post events to calendar in this channel."))
+    async def calendar_channel(self, interaction: discord.Interaction):
+        if not self.is_raid_leader(interaction.user, interaction.guild):
+            await interaction.response.send_message(_("You must be a raid leader to change the calendar settings."), ephemeral=True)
+            return
+        channel = interaction.channel
+        guild = interaction.guild
+        perms = channel.permissions_for(guild.me)
+        if not (perms.send_messages and perms.embed_links):
+            await interaction.response.send_message(_("Missing permissions to access this channel."))
+            return
+        upsert(self.conn, 'Settings', ['guild_events'], [False], ['guild_id'], [guild.id])
+        content = _("Events will be posted to this channel.")
+        await interaction.response.send_message(content, ephemeral=True)
+        # post calendar will commit
+        await self.post_calendar(guild.id, channel)
+
+    @group.command(name=_("discord"), description=("Post events to discord calendar."))
+    async def calendar_discord(self, interaction: discord.Interaction):
+        if not self.is_raid_leader(interaction.user, interaction.guild):
+            await interaction.response.send_message(_("You must be a raid leader to change the calendar settings."), ephemeral=True)
+            return
+        upsert(self.conn, 'Settings', ['calendar', 'guild_events'], [None, True], ['guild_id'], [interaction.guild_id])
+        content = _("Events will be posted as discord guild events.")
+        await interaction.response.send_message(content, ephemeral=True)
+        self.conn.commit()
+
+    @group.command(name=_("both"), description=("Post events to both discord and channel calendar."))
+    async def calendar_both(self, interaction: discord.Interaction):
+        if not self.is_raid_leader(interaction.user, interaction.guild):
+            await interaction.response.send_message(_("You must be a raid leader to change the calendar settings."), ephemeral=True)
+            return
+        channel = interaction.channel
+        guild = interaction.guild
+        perms = channel.permissions_for(guild.me)
+        if not (perms.send_messages and perms.embed_links):
+            await interaction.response.send_message(_("Missing permissions to access this channel."))
+            return
+        upsert(self.conn, 'Settings', ['guild_events'], [True], ['guild_id'], [guild.id])
+        content = _("Events will be posted to this channel and as discord guild events.")
+        await interaction.response.send_message(content, ephemeral=True)
+        # post calendar will commit
+        await self.post_calendar(guild.id, channel)
 
 
 async def setup(bot):

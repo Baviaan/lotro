@@ -129,10 +129,8 @@ class Bot(commands.Bot):
             await self.load_extension('time_cog')
             # Load after time cog
             await self.load_extension('calendar_cog')
+            # Load after calendar_cog
             await self.load_extension('raid_cog')
-            # Load slash cog
-            await self.load_extension('slash_cog')
-            await self.load_extension('register_cog')
             # Load twitter cog
             if self.twitter_token:
                 await self.load_extension('twitter_cog')

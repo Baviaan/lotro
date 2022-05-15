@@ -3,6 +3,7 @@ import discord
 import logging
 import requests
 
+from discord import app_commands
 from discord.ext import commands
 from discord.utils import find
 
@@ -119,6 +120,32 @@ class ConfigCog(commands.Cog):
         if channel and channel.permissions_for(guild.me).send_messages:
             msg = self.welcome_msg(guild.name)
             await channel.send(msg)
+
+    @app_commands.command(name=_("about"), description=_("Show information about this bot."))
+    @app_commands.guild_only()
+    async def about_respond(self, interaction: discord.Interaction):
+        about = await self.about_embed()
+        await interaction.response.send_message(embed=about)
+
+    @app_commands.command(name=_("welcome"), description=_("Resend the welcome message."))
+    @app_commands.guild_only()
+    async def welcome_respond(self, interaction: discord.Interaction):
+        welcome = self.welcome_msg(interaction.guild.name)
+        await interaction.response.send_message(welcome)
+
+    @app_commands.command(name=_("privacy"), description=_("Show information on data collection."))
+    @app_commands.guild_only()
+    async def privacy_respond(self, interaction: discord.Interaction):
+        privacy = _("**Summary:**\n"
+                     "When you sign up for a raid the bot stores the time, your discord id, discord nickname and the class("
+                    "es) you sign up with. This information is automatically deleted 2 hours after the scheduled "
+                    "raid time or immediately when you cancel your sign up.\n"
+                    "If you set a default time zone for yourself, the bot will additionally store your time zone "
+                    "along with your discord id such that it can parse times provided in your commands in your "
+                    "preferred time zone.\n"
+                    "**Please find the full privacy policy here:**\n"
+                    "https://github.com/Baviaan/lotro#privacy-policy")
+        await interaction.response.send_message(privacy)
 
 
 async def setup(bot):
