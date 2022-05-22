@@ -122,9 +122,13 @@ class CalendarCog(commands.Cog):
         metadata = {"location": f"https://discord.com/channels/{guild_id}/{channel_id}/{raid_id}"}
         start_time = datetime.utcfromtimestamp(timestamp).isoformat() + 'Z'
         end_time = datetime.utcfromtimestamp(timestamp+7200).isoformat() + 'Z'
+        if tier:
+            event_name = " ".join([name, tier])
+        else:
+            event_name = name
         data = {
             "entity_metadata": metadata,
-            'name': " ".join([name, tier]),
+            'name': event_name,
             "privacy_level": 2,
             "scheduled_start_time": start_time,
             "scheduled_end_time": end_time,
