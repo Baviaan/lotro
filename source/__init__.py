@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 """
-Saruman - A Discord bot for scheduling raids in Standing Stone Games' Lord of the Rings Online.
+TAG Raid Bot - A Discord bot for scheduling raids in Standing Stone Games' Lord of the Rings Online.
 
 """
 
-__author__ = "Baviaan"
+__author__ = "The Angry Gamer Show Productions"
 __license__ = "GNU General Public License v3.0"
-__version__ = "5.6.0"
+__version__ = "5.7.0"

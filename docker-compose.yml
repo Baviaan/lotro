@@ -1,0 +1,8 @@
+version: '3'
+services:
+   lotro-bot:
+     container_name: lotro-bot
+     hostname: lotro-bot
+     build: 
+      context: .
+     image: theangrygamershowproductions/lotro-bot

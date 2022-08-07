@@ -1,5 +1,6 @@
 config.json
 raid_db
+raid_db.db
 raid_bot.log
 __pycache__
 messages.mo
@@ -7,5 +8,6 @@ bot-env
 venv
 .venv
 source/venv
+source/env*
 source/.venv
 .idea

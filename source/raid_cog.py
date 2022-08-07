@@ -18,9 +18,11 @@ from utils import get_match
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+# Keep PyCharm happy.
+_ = _
+
 
 class RaidCog(commands.Cog):
-
     # Load raid (nick)names
     with open('list-of-raids.csv', 'r') as f:
         reader = csv.reader(f)
@@ -64,8 +66,10 @@ class RaidCog(commands.Cog):
             app_commands.Choice(name='4', value='T4'),
             app_commands.Choice(name='5', value='T5'),
         ])
-        @app_commands.describe(tier=_("The raid tier."), time=_("When the raid should be scheduled."), aim=_("A short description of your objective."))
-        async def raid_respond(interaction: discord.Interaction, tier: app_commands.Choice[str], time: str, aim: Optional[str]):
+        @app_commands.describe(tier=_("The raid tier."), time=_("When the raid should be scheduled."),
+                               aim=_("A short description of your objective."))
+        async def raid_respond(interaction: discord.Interaction, tier: app_commands.Choice[str], time: str,
+                               aim: Optional[str]):
             await self.handle_raid_command(interaction, interaction.command.name, tier.value, time, aim)
 
         for key, full_name in self.raid_lookup.items():
@@ -80,30 +84,32 @@ class RaidCog(commands.Cog):
         self.background_task.cancel()
 
     async def handle_raid_command(self, interaction, name, tier, time, aim):
-            new_raid = False
-            channel = interaction.channel
-            guild = interaction.guild
-            perms = channel.permissions_for(guild.me)
-            if not (perms.send_messages and perms.embed_links):
-                content = _("Missing permissions to access this channel.")
+        new_raid = False
+        channel = interaction.channel
+        guild = interaction.guild
+        perms = channel.permissions_for(guild.me)
+        if not (perms.send_messages and perms.embed_links):
+            content = _("Missing permissions to access this channel.")
+        else:
+            try:
+                timestamp = Time().converter(self.bot, guild.id, interaction.user.id, time)
+            except commands.BadArgument as e:
+                content = str(e)
             else:
-                try:
-                    timestamp = Time().converter(self.bot, guild.id, interaction.user.id, time)
-                except commands.BadArgument as e:
-                    content = str(e)
-                else:
-                    content = _("Posting a new raid!")
-                    new_raid = True
-            await interaction.response.send_message(content, ephemeral=True)
-            if new_raid:
-                if tier and int(tier[1]) > 2:
-                    roster = True
-                else:
-                    roster = False
-                await self.post_raid(name, tier, aim, timestamp, roster, guild.id, channel, interaction.user.id)
+                content = _("Posting a new raid!")
+                new_raid = True
+        await interaction.response.send_message(content, ephemeral=True)
+        if new_raid:
+            if tier and int(tier[1]) > 2:
+                roster = True
+            else:
+                roster = False
+            await self.post_raid(name, tier, aim, timestamp, roster, guild.id, channel, interaction.user.id)
 
     @app_commands.command(name=_("custom"), description=_("Schedule a custom raid or meetup."))
-    @app_commands.describe(name=_("The name of the raid or meetup."), tier=_("The raid tier."), time=_("When the raid should be scheduled."), aim=_("A short description of your objective."))
+    @app_commands.describe(name=_("The name of the raid or meetup."), tier=_("The raid tier."),
+                           time=_("When the raid should be scheduled."),
+                           aim=_("A short description of your objective."))
     @app_commands.choices(tier=[
         app_commands.Choice(name='1', value='T1'),
         app_commands.Choice(name='2', value='T2'),
@@ -113,7 +119,8 @@ class RaidCog(commands.Cog):
         app_commands.Choice(name='5', value='T5'),
     ])
     @app_commands.guild_only()
-    async def custom_respond(self, interaction: discord.Interaction, name: str, time: str, tier: Optional[app_commands.Choice[str]], aim: Optional[str]):
+    async def custom_respond(self, interaction: discord.Interaction, name: str, time: str,
+                             tier: Optional[app_commands.Choice[str]], aim: Optional[str]):
         if tier:
             tier = tier.value
         await self.handle_raid_command(interaction, name, tier, time, aim)
@@ -123,7 +130,8 @@ class RaidCog(commands.Cog):
     @app_commands.guild_only()
     async def leader_respond(self, interaction: discord.Interaction, role: Optional[discord.Role]):
         if not interaction.user.guild_permissions.administrator:
-            await interaction.response.send_message(_("You must be an admin to change the raid leader role."), ephemeral=True)
+            await interaction.response.send_message(_("You must be an admin to change the raid leader role."),
+                                                    ephemeral=True)
         else:
             if role:
                 role_id = role.id
@@ -132,7 +140,8 @@ class RaidCog(commands.Cog):
             res = upsert(self.conn, 'Settings', ['raid_leader'], [role_id], ['guild_id'], [interaction.guild_id])
             self.conn.commit()
             if role:
-                await interaction.response.send_message(_("Set the raid leader role to {0}.").format(role.mention), allowed_mentions=discord.AllowedMentions.none())
+                await interaction.response.send_message(_("Set the raid leader role to {0}.").format(role.mention),
+                                                        allowed_mentions=discord.AllowedMentions.none())
             else:
                 await interaction.response.send_message(_("Deleted the raid leader role."))
 
@@ -150,7 +159,8 @@ class RaidCog(commands.Cog):
             res = upsert(self.conn, 'Settings', ['priority'], [role_id], ['guild_id'], [interaction.guild_id])
             self.conn.commit()
             if role:
-                await interaction.response.send_message(_("Set the kin role to {0}.").format(role.mention), allowed_mentions=discord.AllowedMentions.none())
+                await interaction.response.send_message(_("Set the kin role to {0}.").format(role.mention),
+                                                        allowed_mentions=discord.AllowedMentions.none())
             else:
                 await interaction.response.send_message(_("Deleted the kin role."))
 
@@ -166,23 +176,29 @@ class RaidCog(commands.Cog):
             content = _("I am missing permissions to manage the class roles!")
         await interaction.edit_original_message(content=content)
 
-    @app_commands.command(name=_("list_players"), description=_("List the signed up players for a raid in order of sign up time."))
-    @app_commands.describe(raid_number=_("Specify the raid to list, e.g. 2 for the second upcoming raid. This defaults to 1 if omitted."), cut_off=_("Specify cut-off time in hours before raid time. This defaults to 24 hours if omitted."))
+    @app_commands.command(name=_("list_players"),
+                          description=_("List the signed up players for a raid in order of sign up time."))
+    @app_commands.describe(
+        raid_number=_("Specify the raid to list, e.g. 2 for the second upcoming raid. This defaults to 1 if omitted."),
+        cut_off=_("Specify cut-off time in hours before raid time. This defaults to 24 hours if omitted."))
     @app_commands.guild_only()
-    async def list_respond(self, interaction: discord.Interaction, raid_number: Optional[int]=1, cut_off: Optional[int]=24):
+    async def list_respond(self, interaction: discord.Interaction, raid_number: Optional[int] = 1,
+                           cut_off: Optional[int] = 24):
         if not self.calendar_cog.is_raid_leader(interaction.user, interaction.guild):
             await interaction.response.send_message(_("You must be a raid leader to list players."))
             return
         conn = self.conn
         raids = select_order(conn, 'Raids', ['raid_id', 'name', 'time'], 'time', ['guild_id'], [interaction.guild_id])
         if raid_number > len(raids):
-            await interaction.response.send_message(_("Cannot list raid {0}: only {1} raids exist.").format(raid_number, len(raids)))
+            await interaction.response.send_message(
+                _("Cannot list raid {0}: only {1} raids exist.").format(raid_number, len(raids)))
             return
         elif raid_number < 1:
             await interaction.response.send_message(_("Please provide a positive integer."))
             return
-        raid_id, raid_name, raid_time = raids[raid_number-1]
-        player_data = select_order(conn, 'Players', ['byname', 'timestamp'], 'timestamp', ['raid_id', 'unavailable'], [raid_id, False])
+        raid_id, raid_name, raid_time = raids[raid_number - 1]
+        player_data = select_order(conn, 'Players', ['byname', 'timestamp'], 'timestamp', ['raid_id', 'unavailable'],
+                                   [raid_id, False])
 
         # build the embed
         cutoff_time = raid_time - 3600 * cut_off
@@ -229,7 +245,7 @@ class RaidCog(commands.Cog):
     async def post_raid(self, name, tier, boss, timestamp, roster, guild_id, channel, author_id):
         full_name = self.get_raid_name(name)
         raid_time = datetime.datetime.utcfromtimestamp(timestamp)
-        # Check if time is in near future. Otherwise parsed date was likely unintended.
+        # Check if time is in near future. Otherwise, parsed date was likely unintended.
         current_time = int(time.time())
         if current_time + 604800 < timestamp:
             error_message = _("Please check the date <@{0}>. You are posting a raid for: {1} UTC.").format(
@@ -306,7 +322,7 @@ class RaidCog(commands.Cog):
     def build_raid_message(self, raid_id, embed_texts_av, embed_texts_unav):
         try:
             name, tier, time, boss, roster = select_one(self.conn, 'Raids', ['name', 'tier', 'time', 'boss', 'roster'],
-                                                    ['raid_id'], [raid_id])
+                                                        ['raid_id'], [raid_id])
         except TypeError:
             logger.info("The raid has been deleted during editing.")
             return
@@ -457,7 +473,8 @@ class RaidCog(commands.Cog):
                     try:
                         await channel.send(raid_start_msg, delete_after=notify_time * 2)
                     except discord.Forbidden:
-                        logger.warning("Missing permissions to send raid notification to channel {0}".format(channel.id))
+                        logger.warning(
+                            "Missing permissions to send raid notification to channel {0}".format(channel.id))
 
         self.conn.commit()
         logger.debug("Completed raid background task.")
@@ -500,7 +517,7 @@ class RaidView(discord.ui.View):
             await interaction.response.send_message(perm_msg, ephemeral=True)
             return
         msg = _("Please select the setting to update or delete the raid.\n") \
-            + _("(This selection message is ephemeral and will cease to work after 60s without interaction.)")
+              + _("(This selection message is ephemeral and will cease to work after 60s without interaction.)")
         modal = ConfigureModal(self.raid_cog, interaction.message.id)
         await interaction.response.send_modal(modal)
 
@@ -519,7 +536,7 @@ class RaidView(discord.ui.View):
             return
         msg = _("Please first select the player. The roster is updated when a class is selected. "
                 "You can select a slot manually or leave it on automatic.\n") \
-            + _("(This selection message is ephemeral and will cease to work after 60s without interaction.)")
+              + _("(This selection message is ephemeral and will cease to work after 60s without interaction.)")
         view = SelectView(self.raid_cog, raid_id)
         await interaction.response.send_message(msg, view=view, ephemeral=True)
         roster = select_one(self.conn, 'Raids', ['roster'], ['raid_id'], [raid_id])
@@ -641,10 +658,10 @@ class SelectView(discord.ui.View):
 class SlotSelect(discord.ui.Select):
     def __init__(self, number_of_slots):
         options = [
-                discord.SelectOption(label=_("Automatic"), value=-1)
+            discord.SelectOption(label=_("Automatic"), value=-1)
         ]
         for i in range(number_of_slots):
-            options.append(discord.SelectOption(label=i+1, value=i))
+            options.append(discord.SelectOption(label=i + 1, value=i))
         super().__init__(placeholder=_("Slot (automatic)"), options=options)
 
     async def callback(self, interaction: discord.Interaction):
@@ -726,7 +743,7 @@ class ClassSelect(discord.ui.Select):
                    [self.view.raid_id, slot[0]])
 
 
-#class TierSelect(discord.ui.Select):
+# class TierSelect(discord.ui.Select):
 #    def __init__(self):
 #        options = [
 #                discord.SelectOption(label="1", value="T1"),
@@ -759,15 +776,17 @@ class ConfigureModal(discord.ui.Modal):
         self.conn = raid_cog.conn
         try:
             name, tier, aim, = select_one(self.conn, 'Raids', ['name', 'tier', 'boss'],
-                                            ['raid_id'], [raid_id])
+                                          ['raid_id'], [raid_id])
         except TypeError:
             logger.info("The raid has been deleted during editing.")
             return
         name_field = discord.ui.TextInput(custom_id='name', label='Name', default=name, max_length=256)
         tier_field = discord.ui.TextInput(custom_id='tier', label='Tier', required=False, default=tier, max_length=8)
         aim_field = discord.ui.TextInput(custom_id='boss', label='Aim', required=False, default=aim, max_length=1024)
-        time_field = discord.ui.TextInput(custom_id='time', label='Time', required=False, placeholder=_("Leave blank to keep the existing time."), max_length=64)
-        delete_field = discord.ui.TextInput(custom_id='delete', label='Delete', required=False, placeholder=_("Type 'delete' here to delete the raid."), max_length=8)
+        time_field = discord.ui.TextInput(custom_id='time', label='Time', required=False,
+                                          placeholder=_("Leave blank to keep the existing time."), max_length=64)
+        delete_field = discord.ui.TextInput(custom_id='delete', label='Delete', required=False,
+                                            placeholder=_("Type 'delete' here to delete the raid."), max_length=8)
         self.add_item(name_field)
         self.add_item(tier_field)
         self.add_item(aim_field)

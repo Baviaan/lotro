@@ -12,6 +12,9 @@ from database import upsert
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+# Keep PyCharm happy.
+_ = _
+
 
 class ConfigCog(commands.Cog):
     def __init__(self, bot):
@@ -40,10 +43,10 @@ class ConfigCog(commands.Cog):
         return ", ".join(strings)
 
     async def about_embed(self):
-        dev = "Baviaan#4862"
-        repo = "https://github.com/Baviaan/lotro"
-        code = "dGcBzPN"
-        server = "https://discord.gg/"+code
+        dev = "Reesey275#4253"
+        repo = "https://github.com/theangrygamershowproductions/lotro"
+        code = "uqDv4RmAQ6"
+        server = "https://discord.gg/" + code
         app_info = await self.bot.application_info()
         try:
             host = app_info.team.name
@@ -54,7 +57,7 @@ class ConfigCog(commands.Cog):
 
         invite_link = "https://discord.com/api/oauth2/authorize?client_id={0}&permissions=268462080&scope=bot" \
                       "%20applications.commands".format(self.bot.user.id)
-        donate_link = "https://www.paypal.com/donate?hosted_button_id=WWPCUJVJPMT7W"
+        donate_link = "https://www.paypal.com/donate?hosted_button_id=YRATYZHS4G8T2"
         releases = repo + "/releases/latest"
         r = requests.get(releases, allow_redirects=False)
         if r.ok:
@@ -89,15 +92,16 @@ class ConfigCog(commands.Cog):
 
     @staticmethod
     def welcome_msg(guild_name):
-        msg = _("Greetings {0}! I am confined to Orthanc and here to spend my days doing your raid admin.\n\n"
-                "You can quickly schedule a raid with the `/rem` and `/ad` commands. Examples:\n"
-                "`/rem t2 Friday 8pm`\n"
-                "`/ad t3 26 July 1pm`\n"
-                "Use `/custom` to schedule a custom raid or meetup.\n\n"
-                "With `/calendar` you can get an (automatically updated) overview of all scheduled raids. "
-                "It is recommended you use a separate discord channel to display the calendar in.\n"
-                "Use `/time_zones` to change the default time settings and "
-                "you can designate a raid leader role with `/leader`, which allows non-admins to edit raids."
+        msg = _("Greetings {0}! I am confined to Mordor and here to spend my days doing your raid admin. \n"
+                "You can quickly schedule a raid with the `/rem` and `/ad` commands.\n" 
+                "Examples: \n"
+                "`/rem t2 Friday 8pm` \n"
+                "`/ad t3 26 July 1pm` \n"
+                "Use `/custom` to schedule a custom raid or meetup. \n"
+                "With `/calendar` you can get an (automatically updated) overview of all scheduled raids. \n"
+                "It is recommended you use a separate discord channel to display the calendar in. \n"
+                "Use `/time_zones` to change the default time settings and \n"
+                "you can designate a raid leader role with `/leader`, which allows non-admins to edit raids. \n"
                 ).format(guild_name)
         return msg
 
@@ -137,14 +141,14 @@ class ConfigCog(commands.Cog):
     @app_commands.guild_only()
     async def privacy_respond(self, interaction: discord.Interaction):
         privacy = _("**Summary:**\n"
-                     "When you sign up for a raid the bot stores the time, your discord id, discord nickname and the class("
-                    "es) you sign up with. This information is automatically deleted 2 hours after the scheduled "
-                    "raid time or immediately when you cancel your sign up.\n"
-                    "If you set a default time zone for yourself, the bot will additionally store your time zone "
-                    "along with your discord id such that it can parse times provided in your commands in your "
-                    "preferred time zone.\n"
-                    "**Please find the full privacy policy here:**\n"
-                    "https://github.com/Baviaan/lotro#privacy-policy")
+                    "When you sign up for a raid the bot stores the time, your discord id, "
+                    "discord nickname and the (classes) you sign up with. This information is"
+                    "automatically deleted 2 hours after the scheduled raid time or immediately"
+                    "when you cancel your sign up. If you set a default time zone for yourself, "
+                    "the bot will additionally store your time zone along with your discord id "
+                    "such that it can parse times provided in your commands in your preferred time zone. \n"
+                    "**Please find the full privacy policy here:** \n"
+                    "https://github.com/theangrygamershowproductions/lotro#privacy-policy")
         await interaction.response.send_message(privacy)
 
 
