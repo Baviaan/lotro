@@ -66,7 +66,7 @@ class RaidCog(commands.Cog):
             app_commands.Choice(name='4', value='T4'),
             app_commands.Choice(name='5', value='T5'),
         ])
-        @app_commands.describe(tier=_("The raid tier."), time=_("When the raid should be scheduled."),
+        @app_commands.describe(tier=_("The raid tier."), time=_("When the raid should be scheduled. Use data/time format 2022-08-08 18:00:00"),
                                aim=_("A short description of your objective."))
         async def raid_respond(interaction: discord.Interaction, tier: app_commands.Choice[str], time: str,
                                aim: Optional[str]):
