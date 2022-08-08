@@ -11,3 +11,6 @@ source/venv
 source/env*
 source/.venv
 .idea
+source/.env
+app/*/.env
+.env
