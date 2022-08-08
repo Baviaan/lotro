@@ -67,10 +67,10 @@ class RaidCog(commands.Cog):
             app_commands.Choice(name='5', value='T5'),
         ])
         @app_commands.describe(tier=_("The raid tier."), time=_("When the raid should be scheduled. Use data/time format 2022-08-08 18:00:00"),
-                               aim=_("A short description of your objective."))
+                               desc=_("A short description of your objective."))
         async def raid_respond(interaction: discord.Interaction, tier: app_commands.Choice[str], time: str,
-                               aim: Optional[str]):
-            await self.handle_raid_command(interaction, interaction.command.name, tier.value, time, aim)
+                               desc: Optional[str]):
+            await self.handle_raid_command(interaction, interaction.command.name, tier.value, time, desc)
 
         for key, full_name in self.raid_lookup.items():
             description = _("Schedule {0}.").format(full_name)
@@ -83,7 +83,7 @@ class RaidCog(commands.Cog):
     async def cog_unload(self):
         self.background_task.cancel()
 
-    async def handle_raid_command(self, interaction, name, tier, time, aim):
+    async def handle_raid_command(self, interaction, name, tier, time, desc):
         new_raid = False
         channel = interaction.channel
         guild = interaction.guild
@@ -104,12 +104,12 @@ class RaidCog(commands.Cog):
                 roster = True
             else:
                 roster = False
-            await self.post_raid(name, tier, aim, timestamp, roster, guild.id, channel, interaction.user.id)
+            await self.post_raid(name, tier, desc, timestamp, roster, guild.id, channel, interaction.user.id)
 
     @app_commands.command(name=_("custom"), description=_("Schedule a custom raid or meetup."))
     @app_commands.describe(name=_("The name of the raid or meetup."), tier=_("The raid tier."),
                            time=_("When the raid should be scheduled."),
-                           aim=_("A short description of your objective."))
+                           desc=_("A short description of your objective."))
     @app_commands.choices(tier=[
         app_commands.Choice(name='1', value='T1'),
         app_commands.Choice(name='2', value='T2'),
@@ -120,10 +120,10 @@ class RaidCog(commands.Cog):
     ])
     @app_commands.guild_only()
     async def custom_respond(self, interaction: discord.Interaction, name: str, time: str,
-                             tier: Optional[app_commands.Choice[str]], aim: Optional[str]):
+                             tier: Optional[app_commands.Choice[str]], desc: Optional[str]):
         if tier:
             tier = tier.value
-        await self.handle_raid_command(interaction, name, tier, time, aim)
+        await self.handle_raid_command(interaction, name, tier, time, desc)
 
     @app_commands.command(name=_("leader"), description=_("Specify the role which is permitted to edit raids."))
     @app_commands.describe(role=_("Discord role."))
@@ -334,7 +334,7 @@ class RaidCog(commands.Cog):
         else:
             embed_title = f"{name}\n<t:{timestamp}:F>"
         if boss:
-            embed_description = _("Aim: {0}").format(boss)
+            embed_description = _("desc: {0}").format(boss)
         else:
             embed_description = ""
 
@@ -775,21 +775,21 @@ class ConfigureModal(discord.ui.Modal):
         self.raid_id = raid_id
         self.conn = raid_cog.conn
         try:
-            name, tier, aim, = select_one(self.conn, 'Raids', ['name', 'tier', 'boss'],
+            name, tier, desc, = select_one(self.conn, 'Raids', ['name', 'tier', 'boss'],
                                           ['raid_id'], [raid_id])
         except TypeError:
             logger.info("The raid has been deleted during editing.")
             return
         name_field = discord.ui.TextInput(custom_id='name', label='Name', default=name, max_length=256)
         tier_field = discord.ui.TextInput(custom_id='tier', label='Tier', required=False, default=tier, max_length=8)
-        aim_field = discord.ui.TextInput(custom_id='boss', label='Aim', required=False, default=aim, max_length=1024)
+        desc_field = discord.ui.TextInput(custom_id='boss', label='desc', required=False, default=desc, max_length=1024)
         time_field = discord.ui.TextInput(custom_id='time', label='Time', required=False,
                                           placeholder=_("Leave blank to keep the existing time."), max_length=64)
         delete_field = discord.ui.TextInput(custom_id='delete', label='Delete', required=False,
                                             placeholder=_("Type 'delete' here to delete the raid."), max_length=8)
         self.add_item(name_field)
         self.add_item(tier_field)
-        self.add_item(aim_field)
+        self.add_item(desc_field)
         self.add_item(time_field)
         self.add_item(delete_field)
 
