@@ -24,6 +24,12 @@ class Bot(commands.Bot):
             version = re.search(regex, f.read(), re.MULTILINE).group(1)
         self.version = version
 
+        description = ""
+        with open('__init__.py') as f:
+            regex = r'^__description__\s*=\s*[\'"]([^\'"]*)[\'"]'
+            description = re.search(regex, f.read(), re.MULTILINE).group(1)
+        self.description = description
+
         logfile = 'raid_bot.log'
         logging.basicConfig(filename=logfile, level=logging.WARNING, format='%(asctime)s %(levelname)s: %(message)s',
                             datefmt='%Y-%m-%d %H:%M:%S')
@@ -32,6 +38,8 @@ class Bot(commands.Bot):
         self.logger = logger
 
         self.logger.info("Running version " + self.version)
+        
+        self.logger.info("Changelog : " + self.description)
 
         def read_config_key(config, key, required):
             try:

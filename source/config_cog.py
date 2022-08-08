@@ -72,7 +72,7 @@ class ConfigCog(commands.Cog):
 
         title = "{0}".format(self.bot.user)
         about = [
-            _("A bot for scheduling raids!"),
+            _("A Discord bot for scheduling LoTRO raids!"),
             _("**Developer:** {0}").format(dev),
             _("**[Source code]({0})**").format(repo),
             _("**[Support server]({0})**").format(server),
