@@ -41,7 +41,7 @@ class Bot(commands.Bot):
                     value = os.environ[key]
                 except KeyError:
                     if required:
-                        logging.critical(f"Please supply a config value for {key}.")
+                        self.logger.critical(f"Please supply a config value for {key}.")
                         raise SystemExit
                     else:
                         value = None

@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
-from bot import Bot
+import logging
 
+from bot import Bot
 
 def main():
     bot = Bot()
-    bot.run(bot.token)
+    handler = logging.FileHandler(filename='discordpy.log', encoding='utf-8', mode='w')
+    bot.run(bot.token, log_handler=handler)
     bot.logger.info("Shutting down.")
 
 

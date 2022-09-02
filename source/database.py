@@ -14,7 +14,7 @@ except (FileNotFoundError, KeyError):
     try:
         classes = os.environ['CLASSES']
     except KeyError:
-        logging.critical("Please supply a config value for CLASSES.")
+        logger.critical("Please supply a config value for CLASSES.")
         raise SystemExit
 classes_str = " boolean, ".join(classes) + " boolean, "
 
