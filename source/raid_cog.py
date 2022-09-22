@@ -164,7 +164,7 @@ class RaidCog(commands.Cog):
             content = _("Successfully removed your class roles.")
         except discord.Forbidden:
             content = _("I am missing permissions to manage the class roles!")
-        await interaction.edit_original_message(content=content)
+        await interaction.edit_original_response(content=content)
 
     @app_commands.command(name=_("list_players"), description=_("List the signed up players for a raid in order of sign up time."))
     @app_commands.describe(raid_number=_("Specify the raid to list, e.g. 2 for the second upcoming raid. This defaults to 1 if omitted."), cut_off=_("Specify cut-off time in hours before raid time. This defaults to 24 hours if omitted."))

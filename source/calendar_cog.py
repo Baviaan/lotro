@@ -223,7 +223,7 @@ class CalendarCog(commands.Cog):
     async def events_respond(self, interaction: discord.Interaction):
         await interaction.response.send_message(_("Waiting for lotro.com to respond..."))
         events = self.events_embed(interaction.guild_id)
-        await interaction.edit_original_message(content='', embed=events)
+        await interaction.edit_original_response(content='', embed=events)
 
     group = CalendarGroup()
 
