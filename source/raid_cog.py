@@ -25,7 +25,6 @@ class RaidCog(commands.Cog):
     with open('list-of-raids.csv', 'r') as f:
         reader = csv.reader(f)
         raid_lookup = dict(reader)
-    nicknames = list(raid_lookup.keys())
 
     def __init__(self, bot):
         self.bot = bot
