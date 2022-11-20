@@ -441,12 +441,13 @@ class RaidCog(commands.Cog):
                         i = i + 1
                         if row[i]:
                             spec_str = ""
-                            spec = specs[i-3]
-                            if spec:
-                                for emoji in ["\U0001F534", "\U0001F535", "\U0001F7E1"]:
-                                    if (spec % 2):
-                                        spec_str += emoji
-                                    spec = spec >> 1
+                            if specs:
+                                spec = specs[i-3]
+                                if spec:
+                                    for emoji in ["\U0001F534", "\U0001F535", "\U0001F7E1"]:
+                                        if (spec % 2):
+                                            spec_str += emoji
+                                        spec = spec >> 1
                             player_string += self.emojis_dict[name] + spec_str
                 else:
                     player_string = "\u274C " + row[i]
