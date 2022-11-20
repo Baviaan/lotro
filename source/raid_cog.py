@@ -48,10 +48,12 @@ class RaidCog(commands.Cog):
             host_guild = bot.guilds[0]
         logger.info("Using emoji from {0}.".format(host_guild))
         self.class_emojis = [emoji for emoji in host_guild.emojis if emoji.name in self.role_names]
-        self.class_emojis_dict = {emoji.name: str(emoji) for emoji in self.class_emojis}
+        self.creep_emojis = [emoji for emoji in host_guild.emojis if emoji.name in bot.creep_names]
+        self.emojis_dict = {emoji.name: str(emoji) for emoji in self.class_emojis + self.creep_emojis}
 
-        # Add raid view
+        # Add raid views
         self.bot.add_view(RaidView(self))
+        self.bot.add_view(CreepView(self))
 
         # Add raid commands to tree
         @app_commands.guild_only()
@@ -78,7 +80,7 @@ class RaidCog(commands.Cog):
     async def cog_unload(self):
         self.background_task.cancel()
 
-    async def handle_raid_command(self, interaction, name, tier, time, aim):
+    async def handle_raid_command(self, interaction, name, tier, time, aim, creep=False):
             new_raid = False
             channel = interaction.channel
             guild = interaction.guild
@@ -99,7 +101,7 @@ class RaidCog(commands.Cog):
                     roster = True
                 else:
                     roster = False
-                await self.post_raid(name, tier, aim, timestamp, roster, guild.id, channel, interaction.user.id)
+                await self.post_raid(name, tier, aim, timestamp, roster, guild.id, channel, interaction.user.id, creep)
 
     @app_commands.command(name=_("custom"), description=_("Schedule a custom raid or meetup."))
     @app_commands.describe(name=_("The name of the raid or meetup."), tier=_("The raid tier."), time=_("When the raid should be scheduled."), aim=_("A short description of your objective."))
@@ -116,6 +118,12 @@ class RaidCog(commands.Cog):
         if tier:
             tier = tier.value
         await self.handle_raid_command(interaction, name, tier, time, aim)
+
+    @app_commands.command(name=_("creep"), description=_("Schedule a creep raid or meetup."))
+    @app_commands.describe(time=_("When the raid should be scheduled."), aim=_("A short description of your objective."))
+    @app_commands.guild_only()
+    async def creep_respond(self, interaction: discord.Interaction, time: str, aim: Optional[str]):
+        await self.handle_raid_command(interaction, "Ettenmoors", "", time, aim, True)
 
     @app_commands.command(name=_("leader"), description=_("Specify the role which is permitted to edit raids."))
     @app_commands.describe(role=_("Discord role."))
@@ -159,7 +167,7 @@ class RaidCog(commands.Cog):
         await interaction.response.send_message(_("Removing your class roles..."))
         member = interaction.user
         try:
-            await member.remove_roles(*[role for role in member.roles if role.name in self.bot.role_names])
+            await member.remove_roles(*[role for role in member.roles if role.name in self.role_names])
             content = _("Successfully removed your class roles.")
         except discord.Forbidden:
             content = _("I am missing permissions to manage the class roles!")
@@ -225,7 +233,7 @@ class RaidCog(commands.Cog):
                 name = match[0]
         return name
 
-    async def post_raid(self, name, tier, boss, timestamp, roster, guild_id, channel, author_id):
+    async def post_raid(self, name, tier, boss, timestamp, roster, guild_id, channel, author_id, creep=False):
         full_name = self.get_raid_name(name)
         raid_time = datetime.datetime.utcfromtimestamp(timestamp)
         # Check if time is in near future. Otherwise parsed date was likely unintended.
@@ -239,9 +247,13 @@ class RaidCog(commands.Cog):
         raid_columns = ['channel_id', 'guild_id', 'organizer_id', 'name', 'tier', 'boss', 'time', 'roster']
         raid_values = [channel.id, guild_id, author_id, full_name, tier, boss, timestamp, roster]
         upsert(self.conn, 'Raids', raid_columns, raid_values, ['raid_id'], [raid_id])
-        self.roster_init(raid_id)
-        embed = self.build_raid_message(raid_id, "\u200B", None)
-        await post.edit(embed=embed, view=RaidView(self))
+        if not creep:
+            self.roster_init(raid_id)
+            embed = self.build_raid_message(raid_id, "\u200B", None)
+            await post.edit(embed=embed, view=RaidView(self))
+        else:
+            embed = self.build_raid_message(raid_id, "\u200B", None)
+            await post.edit(embed=embed, view=CreepView(self))
         self.raids.append(raid_id)
         await self.create_guild_event(channel, raid_id)
         self.conn.commit()
@@ -331,7 +343,7 @@ class RaidCog(commands.Cog):
             for row in result[:number_of_slots // 2]:
                 class_names = row[1].split(',')
                 for class_name in class_names:
-                    embed_text = embed_text + self.class_emojis_dict[class_name]
+                    embed_text = embed_text + self.emojis_dict[class_name]
                 embed_text = embed_text + ": " + row[0] + "\n"
             embed.add_field(name=embed_name, value=embed_text)
             # Add second half
@@ -340,7 +352,7 @@ class RaidCog(commands.Cog):
             for row in result[number_of_slots // 2:]:
                 class_names = row[1].split(',')
                 for class_name in class_names:
-                    embed_text = embed_text + self.class_emojis_dict[class_name]
+                    embed_text = embed_text + self.emojis_dict[class_name]
                 embed_text = embed_text + ": " + row[0] + "\n"
             embed.add_field(name=embed_name, value=embed_text)
             embed.add_field(name="\u200B", value="\u200B")
@@ -367,7 +379,7 @@ class RaidCog(commands.Cog):
     def build_raid_players(self, raid_id, available=True, block_size=6):
         columns = ['raid_id', 'player_id', 'byname']
         if available:
-            columns.extend(self.role_names)
+            columns.extend(self.emojis_dict.keys())
         unavailable = (int(available) + 1) % 2
         result = select(self.conn, 'Players', columns, ['raid_id', 'unavailable'], [raid_id, unavailable])
         player_strings = []
@@ -379,10 +391,10 @@ class RaidCog(commands.Cog):
                 i = 2
                 if available:
                     player_string = row[i] + " "
-                    for name in self.role_names:
+                    for name in self.emojis_dict:
                         i = i + 1
                         if row[i]:
-                            player_string = player_string + self.class_emojis_dict[name]
+                            player_string = player_string + self.emojis_dict[name]
                 else:
                     player_string = "\u274C " + row[i]
                 player_string = player_string + "\n"
@@ -417,6 +429,17 @@ class RaidCog(commands.Cog):
         if len(max(msg, key=len)) >= 1024 and block_size >= 2:
             msg = self.build_raid_players(raid_id, block_size=block_size // 2)
         return msg
+
+    def process_name(self, guild_id, user):
+        role_id = select_one(self.conn, 'Settings', ['priority'], ['guild_id'], [guild_id])
+        if role_id in [role.id for role in user.roles]:
+            byname = "\U0001F46A " + user.display_name
+        else:
+            if "\U0001F46A" in user.display_name:
+                byname = "iMAhACkEr"
+            else:
+                byname = user.display_name
+        return byname
 
     @tasks.loop(seconds=300)
     async def background_task(self):
@@ -498,8 +521,6 @@ class RaidView(discord.ui.View):
             perm_msg = _("You do not have permission to change the raid settings.")
             await interaction.response.send_message(perm_msg, ephemeral=True)
             return
-        msg = _("Please select the setting to update or delete the raid.\n") \
-            + _("(This selection message is ephemeral and will cease to work after 60s without interaction.)")
         modal = ConfigureModal(self.raid_cog, interaction.message.id)
         await interaction.response.send_modal(modal)
 
@@ -547,7 +568,7 @@ class RaidView(discord.ui.View):
             await i.response.defer()
         raid_id = i.message.id
         timestamp = int(time.time())
-        byname = self.process_name(i.guild.id, i.user)
+        byname = self.raid_cog.process_name(i.guild.id, i.user)
         upsert(self.conn, 'Players', ['byname', 'timestamp', 'unavailable', class_name],
                [byname, timestamp, False, True], ['player_id', 'raid_id'], [i.user.id, raid_id])
         self.conn.commit()
@@ -561,7 +582,7 @@ class RaidView(discord.ui.View):
             timestamp = int(time.time())
             columns = ['byname', 'timestamp', 'unavailable']
             columns.extend(role_names)
-            byname = self.process_name(i.guild.id, i.user)
+            byname = self.raid_cog.process_name(i.guild.id, i.user)
             values = [byname, timestamp, False]
             values.extend([True] * len(role_names))
             upsert(self.conn, 'Players', columns, values, ['player_id', 'raid_id'], [i.user.id, raid_id])
@@ -592,27 +613,66 @@ class RaidView(discord.ui.View):
         if r:
             delete(self.conn, 'Players', ['player_id', 'raid_id'], [i.user.id, raid_id])
         else:
-            byname = self.process_name(i.guild.id, i.user)
+            byname = self.raid_cog.process_name(i.guild.id, i.user)
             upsert(self.conn, 'Players', ['byname', 'timestamp', 'unavailable'], [byname, timestamp, True],
                    ['player_id', 'raid_id'], [i.user.id, raid_id])
         self.conn.commit()
         await self.raid_cog.update_raid_post(raid_id, i.channel)
 
-    def process_name(self, guild_id, user):
-        role_id = select_one(self.conn, 'Settings', ['priority'], ['guild_id'], [guild_id])
-        if role_id in [role.id for role in user.roles]:
-            byname = "\U0001F46A " + user.display_name
+
+class CreepView(discord.ui.View):
+    def __init__(self, raid_cog):
+        super().__init__(timeout=None)
+        self.raid_cog = raid_cog
+        self.conn = raid_cog.conn
+        # For better visual appearance divide creep classes equally over two rows
+        split = len(raid_cog.creep_emojis)//2 - 1
+        for emoji in raid_cog.creep_emojis[:split]:
+            self.add_item(EmojiButton(emoji, 0))
+        for emoji in raid_cog.creep_emojis[split:]:
+            self.add_item(EmojiButton(emoji, 1))
+
+    async def sign_up_class(self, i, creep_name):
+        await i.response.defer()
+        raid_id = i.message.id
+        timestamp = int(time.time())
+        byname = self.raid_cog.process_name(i.guild.id, i.user)
+        upsert(self.conn, 'Players', ['byname', 'timestamp', 'unavailable', creep_name],
+               [byname, timestamp, False, True], ['player_id', 'raid_id'], [i.user.id, raid_id])
+        self.conn.commit()
+        await self.raid_cog.update_raid_post(raid_id, i.channel)
+
+    async def sign_up_cancel(self, i):
+        await i.response.defer()
+        raid_id = i.message.id
+        timestamp = int(time.time())
+        r = select_one(self.conn, 'Players', ['byname'], ['player_id', 'raid_id'], [i.user.id, raid_id])
+        if r:
+            delete(self.conn, 'Players', ['player_id', 'raid_id'], [i.user.id, raid_id])
         else:
-            if "\U0001F46A" in user.display_name:
-                byname = "iMAhACkEr"
-            else:
-                byname = user.display_name
-        return byname
+            byname = self.raid_cog.process_name(i.guild.id, i.user)
+            upsert(self.conn, 'Players', ['byname', 'timestamp', 'unavailable'], [byname, timestamp, True],
+                   ['player_id', 'raid_id'], [i.user.id, raid_id])
+        self.conn.commit()
+        await self.raid_cog.update_raid_post(raid_id, i.channel)
+
+    @discord.ui.button(emoji="\U0001F6E0\uFE0F", style=discord.ButtonStyle.blurple, custom_id='creep_view:settings')
+    async def settings(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not await self.view.raid_cog.has_raid_permission(interaction.user, interaction.guild, interaction.message.id):
+            perm_msg = _("You do not have permission to change the raid settings.")
+            await interaction.response.send_message(perm_msg, ephemeral=True)
+            return
+        modal = ConfigureModal(self.view.raid_cog, interaction.message.id)
+        await interaction.response.send_modal(modal)
+
+    @discord.ui.button(emoji="\u274C", style=discord.ButtonStyle.red, custom_id='creep_view:cancel')
+    async def red_cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.sign_up_cancel(interaction)
 
 
 class EmojiButton(discord.ui.Button):
-    def __init__(self, emoji):
-        super().__init__(emoji=emoji, custom_id=emoji.name)
+    def __init__(self, emoji, row=None):
+        super().__init__(emoji=emoji, custom_id=emoji.name, row=row)
 
     async def callback(self, interaction: discord.Interaction):
         class_name = self.custom_id
@@ -723,29 +783,6 @@ class ClassSelect(discord.ui.Select):
             assignment_values = [None, _("<Open>"), class_names]
             upsert(self.view.conn, 'Assignment', assignment_columns, assignment_values, ['raid_id', 'slot_id'],
                    [self.view.raid_id, slot[0]])
-
-
-#class TierSelect(discord.ui.Select):
-#    def __init__(self):
-#        options = [
-#                discord.SelectOption(label="1", value="T1"),
-#                discord.SelectOption(label="2", value="T2"),
-#                discord.SelectOption(label="2c", value="T2c"),
-#                discord.SelectOption(label="3", value="T3"),
-#                discord.SelectOption(label="4", value="T4"),
-#                discord.SelectOption(label="5", value="T5")
-#        ]
-#        super().__init__(placeholder=_("Tier"), options=options)
-#
-#    async def callback(self, interaction: discord.Interaction):
-#        tier = self.values[0]
-#        upsert(self.view.conn, 'Raids', ['tier'], [tier], ['raid_id'], [self.view.raid_id])
-#        await self.view.raid_cog.update_raid_post(self.view.raid_id, interaction.channel)
-#        await self.view.calendar_cog.update_calendar(interaction.guild.id, new_run=False)
-#        try:
-#            self.view.calendar_cog.modify_guild_event(self.view.raid_id)
-#        except requests.HTTPError as e:
-#            logger.warning(e.response.text)
 
 
 class ConfigureModal(discord.ui.Modal):

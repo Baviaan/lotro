@@ -9,7 +9,7 @@ import logging
 import os
 import re
 
-from database import create_connection, create_table, increment, select, upsert
+from database import create_connection, create_table, increment, read_config_key, select, upsert
 
 
 class Bot(commands.Bot):
@@ -33,29 +33,18 @@ class Bot(commands.Bot):
 
         self.logger.info("Running version " + self.version)
 
-        def read_config_key(config, key, required):
-            try:
-                value = config[key]
-            except (TypeError, KeyError):
-                try:
-                    value = os.environ[key]
-                except KeyError:
-                    if required:
-                        self.logger.critical(f"Please supply a config value for {key}.")
-                        raise SystemExit
-                    else:
-                        value = None
-            return value
-
         try:
             with open('config.json', 'r') as f:
                 config = json.load(f)
         except FileNotFoundError:
-            config = None
+            self.logger.critical(f"Please create the file 'config.json', see GitHub for an example.")
+            raise SystemExit
+
         self.token = read_config_key(config, 'BOT_TOKEN', True)
         self.server_tz = read_config_key(config, 'SERVER_TZ', True)
         role_names = read_config_key(config, 'CLASSES', True)
         self.role_names = tuple(role_names)
+        self.creep_names = read_config_key(config, 'CREEPS', False)
         # Line up
         lineup = read_config_key(config, 'LINEUP', True)
         default_lineup = []

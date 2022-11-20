@@ -6,16 +6,34 @@ import sqlite3
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+def read_config_key(config, key, required):
+    try:
+        value = config[key]
+    except (TypeError, KeyError):
+        try:
+            value = os.environ[key]
+        except KeyError:
+            if required:
+                self.logger.critical(f"Please supply a config value for {key}.")
+                raise SystemExit
+            else:
+                self.logger.warning(f"Please supply a config value for {key}.")
+                value = None
+    return value
+
 try:
     with open('config.json', 'r') as f:
         config = json.load(f)
-    classes = config['CLASSES']
-except (FileNotFoundError, KeyError):
-    try:
-        classes = os.environ['CLASSES']
-    except KeyError:
-        logger.critical("Please supply a config value for CLASSES.")
-        raise SystemExit
+except (FileNotFoundError):
+    self.logger.critical(f"Please create the file 'config.json', see GitHub for an example.")
+    raise SystemExit
+
+
+classes = read_config_key(config, 'CLASSES', True)
+creeps = read_config_key(config, 'CREEPS', False)
+if creeps:
+    classes += creeps
+
 classes_str = " boolean, ".join(classes) + " boolean, "
 
 

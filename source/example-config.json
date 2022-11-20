@@ -1,6 +1,7 @@
 {
   "BOT_TOKEN": "Token goes here",
   "CLASSES": ["Beorning","Brawler","Burglar","Captain","Champion","Guardian","Hunter","Loremaster","Minstrel","Runekeeper","Warden"],
+  "CREEPS": ["Blackarrow", "Defiler", "Reaver", "Stalker", "Warleader", "Weaver"],
   "LANGUAGE": "en",
   "LINEUP": ["10000000110","10000000110","00000001000","00100000000","00010100000","10011100001","00010000000","00101010011","00101010011","00101010011","00101010011","11111111111"],
   "SERVER_TZ": "America/New_York"
