@@ -307,7 +307,6 @@ class RaidCog(commands.Cog):
         except KeyError:
             self.update_call[raid_id] = 0
         update_call = self.update_call[raid_id]
-        print(self.update_call)
         await asyncio.sleep(1)
         # If someone is spamming buttons only send the last update
         if update_call < self.update_call[raid_id]:
