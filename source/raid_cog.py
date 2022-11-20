@@ -675,11 +675,11 @@ class CreepView(discord.ui.View):
 
     @discord.ui.button(emoji="\U0001F6E0\uFE0F", style=discord.ButtonStyle.blurple, custom_id='creep_view:settings')
     async def settings(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if not await self.view.raid_cog.has_raid_permission(interaction.user, interaction.guild, interaction.message.id):
+        if not await self.raid_cog.has_raid_permission(interaction.user, interaction.guild, interaction.message.id):
             perm_msg = _("You do not have permission to change the raid settings.")
             await interaction.response.send_message(perm_msg, ephemeral=True)
             return
-        modal = ConfigureModal(self.view.raid_cog, interaction.message.id)
+        modal = ConfigureModal(self.raid_cog, interaction.message.id)
         await interaction.response.send_modal(modal)
 
     @discord.ui.button(emoji="\u274C", style=discord.ButtonStyle.red, custom_id='creep_view:cancel')
