@@ -5,18 +5,31 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from discord.ext import tasks
+from enum import Enum
+import json
 import logging
 import re
 import requests
 import time
 from typing import Optional
 
-from database import create_table, count, delete, select, select_le, select_one, select_order, upsert
+from database import create_table, count, delete, read_config_key, select, select_le, select_one, select_order, upsert
 from time_cog import Time
 from utils import get_match
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+# Create Enumerator class
+try:
+    with open('config.json', 'r') as f:
+        config = json.load(f)
+except FileNotFoundError:
+    self.logger.critical(f"Please create the file 'config.json', see GitHub for an example.")
+    raise SystemExit
+role_names = read_config_key(config, 'CLASSES', True)
+duo_spec = read_config_key(config, 'DUOSPEC', False)
+Classes = Enum("Classes", role_names)
 
 
 class RaidCog(commands.Cog):
@@ -37,6 +50,7 @@ class RaidCog(commands.Cog):
         create_table(self.conn, 'raid')
         create_table(self.conn, 'player')
         create_table(self.conn, 'assign')
+        create_table(self.conn, 'specs')
 
         raids = select(self.conn, 'Raids', ['raid_id'])
         self.raids = [raid[0] for raid in raids]
@@ -175,6 +189,25 @@ class RaidCog(commands.Cog):
         except discord.Forbidden:
             content = _("I am missing permissions to manage the class roles!")
         await interaction.edit_original_response(content=content)
+
+    @app_commands.command(name=_("specs"), description=_("Set a specialization for your class."))
+    @app_commands.guild_only()
+    @app_commands.describe(classes=_("The class to set your specialization for."), spec=_("Your chosen specialization."))
+    @app_commands.choices(spec=[
+        app_commands.Choice(name='Red \U0001F534', value=0b001),
+        app_commands.Choice(name='Blue \U0001F535', value=0b010),
+        app_commands.Choice(name='Yellow \U0001F7E1', value=0b100),
+        app_commands.Choice(name='Red \U0001F534 and Blue \U0001F535', value=0b011),
+        app_commands.Choice(name='Blue \U0001F535 and Yellow \U0001F7E1', value=0b110),
+        app_commands.Choice(name='Red \U0001F534 and Yellow \U0001F7E1', value=0b101),
+        app_commands.Choice(name='Clear specialization', value=0b000),
+    ])
+    async def specs_respond(self, interaction: discord.Interaction, classes: Classes, spec: app_commands.Choice[int]):
+        if duo_spec and classes.name in duo_spec and (spec.value >> 2 % 2):
+            await interaction.response.send_message(_("Invalid specialization.").format(classes.name))
+            return
+        upsert(self.conn, 'Specs', [classes.name], [spec.value], ['player_id'], [interaction.user.id])
+        await interaction.response.send_message(_("Updated your {0} specialization.").format(classes.name))
 
     @app_commands.command(name=_("list_players"), description=_("List the signed up players for a raid in order of sign up time."))
     @app_commands.describe(raid_number=_("Specify the raid to list, e.g. 2 for the second upcoming raid. This defaults to 1 if omitted."), cut_off=_("Specify cut-off time in hours before raid time. This defaults to 24 hours if omitted."))
@@ -402,11 +435,19 @@ class RaidCog(commands.Cog):
             for row in result:
                 i = 2
                 if available:
+                    specs = select_one(self.conn, 'Specs', self.role_names, ['player_id'], [row[1]])
                     player_string = row[i] + " "
                     for name in self.emojis_dict:
                         i = i + 1
                         if row[i]:
-                            player_string = player_string + self.emojis_dict[name]
+                            spec_str = ""
+                            spec = specs[i-3]
+                            if spec:
+                                for emoji in ["\U0001F534", "\U0001F535", "\U0001F7E1"]:
+                                    if (spec % 2):
+                                        spec_str += emoji
+                                    spec = spec >> 1
+                            player_string += self.emojis_dict[name] + spec_str
                 else:
                     player_string = "\u274C " + row[i]
                 player_string = player_string + "\n"

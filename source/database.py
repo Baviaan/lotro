@@ -14,10 +14,10 @@ def read_config_key(config, key, required):
             value = os.environ[key]
         except KeyError:
             if required:
-                self.logger.critical(f"Please supply a config value for {key}.")
+                logger.critical(f"Please supply a config value for {key}.")
                 raise SystemExit
             else:
-                self.logger.warning(f"Please supply a config value for {key}.")
+                logger.warning(f"Please supply a config value for {key}.")
                 value = None
     return value
 
@@ -25,15 +25,16 @@ try:
     with open('config.json', 'r') as f:
         config = json.load(f)
 except (FileNotFoundError):
-    self.logger.critical(f"Please create the file 'config.json', see GitHub for an example.")
+    logger.critical(f"Please create the file 'config.json', see GitHub for an example.")
     raise SystemExit
 
 
 classes = read_config_key(config, 'CLASSES', True)
 creeps = read_config_key(config, 'CREEPS', False)
+
+specs_str = " integer, ".join(classes) + " integer"
 if creeps:
     classes += creeps
-
 classes_str = " boolean, ".join(classes) + " boolean, "
 
 
@@ -113,7 +114,12 @@ def table_sqls(table):
             'twitter':  "create table if not exists Twitter ("
                         "user_id integer primary key,"
                         "tweet_id integer"
-                        ");"
+                        ");",
+
+            'specs': "create table if not exists Specs ("
+                     "player_id integer primary key, "
+                     "{0}"
+                     ");".format(specs_str)
     }
     return sql_dict[table]
 
