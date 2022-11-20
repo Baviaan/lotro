@@ -41,6 +41,9 @@ class RaidCog(commands.Cog):
         raids = select(self.conn, 'Raids', ['raid_id'])
         self.raids = [raid[0] for raid in raids]
         logger.info("We have loaded {} raids in memory.".format(len(self.raids)))
+
+        self.update_call = {}
+
         # Emojis
         host_guild = bot.get_guild(bot.host_id)
         if not host_guild:
@@ -299,6 +302,16 @@ class RaidCog(commands.Cog):
         return False
 
     async def update_raid_post(self, raid_id, channel):
+        try:
+            self.update_call[raid_id] += 1
+        except KeyError:
+            self.update_call[raid_id] = 0
+        update_call = self.update_call[raid_id]
+        print(self.update_call)
+        await asyncio.sleep(1)
+        # If someone is spamming buttons only send the last update
+        if update_call < self.update_call[raid_id]:
+            return
         available = self.build_raid_players(raid_id)
         unavailable = self.build_raid_players(raid_id, available=False)
         embed = self.build_raid_message(raid_id, available, unavailable)
@@ -496,6 +509,10 @@ class RaidCog(commands.Cog):
             self.raids.remove(raid_id)
         except ValueError:
             logger.info("Raid already deleted from memory.")
+        try:
+            del self.update_call[raid_id]
+        except KeyError:
+            logger.info("Raid cache already deleted from memory.")
 
     @background_task.before_loop
     async def before_background_task(self):
