@@ -39,9 +39,9 @@ Any changes in your favour will take effect immediately and any other changes wi
 For your convenience, a notification of changes will be posted to the application's official support server on Discord.
 
 ## Privacy Policy
-Effective: 27 May 2022
+Effective: 20 December 2022
 
-Last Updated: 27 April 2022
+Last Updated: 20 November 2022
 
 This Privacy Policy explains how we collect, use, store, protect, and share your personal information through our services.
 
@@ -59,6 +59,11 @@ Optionally, you may submit your preferred time zone to the service, it will be s
 You can reset your time zone back to the default at any time using the same command.
 If for any reason the service becomes permanently unavailable to users, we will delete all time zone data for you.
 
+You can also store a specialization for your classes, this will be associated with your discord id.
+While you can reset your specialization for a class, this does not delete your discord id from the database as there is one database row for all classes, thus your discord id may be used for another class as well.
+There is currently no routine running to delete discord ids that have no specialization associated with them anymore for any class.
+Please reach out to us in our official support server to have this data deleted.
+
 **Data Protection**
 
 All data submitted to us is transmitted via discord and thus should be considered public as it is not end to end encrypted.
@@ -69,7 +74,7 @@ Our servers are based in the U.S. and your data will be stored there.
 
 **Exercising your rights**
 
-You can delete all data held about you yourself as described in the "Data collection" section.
+You can delete data held about you yourself as described in the "Data collection" section.
 If you encounter a problem, reach out to us in our official support server.
 
 **Changes to this Privacy Policy**
