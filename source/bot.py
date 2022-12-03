@@ -125,6 +125,8 @@ class Bot(commands.Bot):
                 await self.load_extension('twitter_cog')
             else:
                 self.logger.info("No twitter credentials found. Twitter cog will not be loaded.")
+            # Load treasure cog
+            await self.load_extension('treasure_cog')
             # Load custom cog
             await self.load_extension('custom_cog')
         except commands.ExtensionAlreadyLoaded:

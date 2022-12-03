@@ -55,15 +55,21 @@ def get_match(word: str, word_list: list, score_cutoff: int = 80):
         return None, None
     return result
 
-def get_partial_matches(word: str, word_list: list, score_cutoff: int = 75, limit: int = 25):
+def get_partial_matches(word: str, word_list: list, score_cutoff: int = 75, limit: int = 25, keys=False):
     """Uses thefuzz to see if word is close to entries in word_list
 
     Returns a list of best partial matches
+
+    Argument keys decides whether to return the keys instead of values of the matches
+    word_list must be a dictionary if keys=True
     """
 
     result = process.extractBests(
         word, word_list, scorer=fuzz.partial_ratio,
         score_cutoff=score_cutoff, limit=limit)
     if result:
-        return [match[0] for match in result]
+        if keys:
+            return [match[2] for match in result]
+        else:
+            return [match[0] for match in result]
     return result
