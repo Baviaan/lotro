@@ -91,6 +91,7 @@ Prerequisites:\
 python >= 3.8\
 Check the requirements.txt file for required libraries.\
 You can get all of them with: `python3 -m pip install -U -r requirements.txt`, assuming requirements.txt is in your current directory.
+Either disable loading the treasure cog or run `git submodule update --init` to fetch the latest data.
 
 See details further below how to specify your configuration file and then simply run with `python3 main.py`
 
