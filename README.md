@@ -145,14 +145,16 @@ You can paste the code directly in the discord app when clicking the join server
 | ------- | ------- | ----- |
 | **/calendar channel** | /calendar channel | Provides an overview of all scheduled runs for the upcoming week, with direct links to the raid posts. This command will only have to be run once as the calendar will automatically populate with new runs. |
 | **/calendar discord** | /calendar discord | Adds each run as guild scheduled event to discord's built-in calendar. |
-| **/\<raid_name\>** \<tier\> \<time\> | /rem t2 tomorrow 8pm, /ad t3 friday 8pm | Fastest way to schedule a raid. |
-| **/custom** \<name\> \<time\> \[tier\] | /custom my big event friday 8pm | Schedules a custom event. Tier argument is optional. |
+| **/\<raid_name\>** \<tier\> \<time\> \[aim\] | /rem t2 tomorrow 8pm, /ad t3 friday 8pm | Fastest way to schedule a raid. Optional aim argument to describe your aim for the event |
+| **/custom** \<name\> \<time\> \[tier\] \[aim\] | /custom my big event friday 8pm | Schedules a custom event. Tier and aim arguments are optional. |
+| **/creep** \<time\> \[aim\] | /creep Saturday 20:00 | Schedules a creep event. Aim argument is optional. |
 | **/list_players** | /list_players | Lists the signed up players for a raid in order of sign up time. |
 
 ### User specific commands
 | Command | Example | Notes |
 | ------- | ------- | ----- |
 | **/remove_roles** | /remove_roles | Removes the class roles you have. |
+| **/specs** \<class\> \<spec\> | /specs captain yellow | Sets your specialization for a class. |
 | **/time_zones personal** \<timezone\> | /time_zones personal europe/london | Set to server time by default. This timezone is used to interpret *your* raid commands. |
 
 ### Info commands
