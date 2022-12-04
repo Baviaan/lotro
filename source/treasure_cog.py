@@ -1,5 +1,6 @@
 import discord
 import logging
+import re
 import xml.etree.ElementTree as ET
 
 from discord import app_commands
@@ -11,6 +12,11 @@ from utils import get_partial_matches
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+data_version = ""
+with open('__init__.py') as f:
+    regex = r'^__lotro__\s*=\s*[\'"]([^\'"]*)[\'"]'
+    data_version = re.search(regex, f.read(), re.MULTILINE).group(1)
 
 #Parse XML file
 tree = ET.parse('../data/items/containers.xml')
@@ -220,7 +226,7 @@ def generateLootEmbed(loot, container, level, classes):
             else:
                 field_name = "\u200b"
             embed.add_field(name=field_name, value=msg, inline=False)
-    embed.set_footer(text=_("Powered by LotroCompanion"))
+    embed.set_footer(text=_("Powered by LotroCompanion. Data as of U{0}").format(data_version))
     return embed
 
 async def container_autocomplete(interaction: discord.Interaction, current: str):
