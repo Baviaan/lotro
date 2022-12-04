@@ -272,10 +272,16 @@ class TreasureCog(commands.Cog):
         loot = appendTreasureDrops(treasureListIDs, loot)
         embed = generateLootEmbed(loot, containers[chest], level, _class)
         if len(embed) > 6000:
+            # Check for send messages permission
+            perms = interaction.channel.permissions_for(interaction.guild.me)
+            if not (perms.send_messages and perms.embed_links):
+                content = _("Missing permissions to send multiple messages in this channel.")
+            else:
+                content = _("Large container, responding with two embeds...")
+            await interaction.response.send_message(content)
             # Largest container appears to be the first one, so 2 works well...
             embed1 = generateLootEmbed(loot[:2], containers[chest], level, _class)
             embed2 = generateLootEmbed(loot[2:], containers[chest], level, _class)
-            await interaction.response.send_message(_("Large container, responding with two embeds..."))
             await interaction.channel.send(embed=embed1)
             await interaction.channel.send(embed=embed2)
             return
