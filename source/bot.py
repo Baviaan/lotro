@@ -126,7 +126,8 @@ class Bot(commands.Bot):
             else:
                 self.logger.info("No twitter credentials found. Twitter cog will not be loaded.")
             # Load treasure cog
-            await self.load_extension('treasure_cog')
+            if os.path.exists('../data/items/containers.xml'):
+                await self.load_extension('treasure_cog')
             # Load custom cog
             await self.load_extension('custom_cog')
         except commands.ExtensionAlreadyLoaded:
