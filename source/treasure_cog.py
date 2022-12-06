@@ -11,7 +11,7 @@ from raid_cog import Classes
 from utils import get_partial_matches
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 data_version = ""
 with open('__init__.py') as f:
@@ -215,6 +215,11 @@ def generateLootEmbed(loot, container, level, classes):
     embed = discord.Embed(title=title, description=desc, colour=discord.Colour(0x3498db))
     blocksize = 20
     for pair in loot:
+        try:
+            len(pair[1])
+        except:
+            logger.debug("Empty loot for {0}:\n{1}".format(container, loot))
+            raise
         for i in range(0, len(pair[1]), blocksize):
             items = pair[1][i:i+blocksize]
             msg = "\n".join(items)
