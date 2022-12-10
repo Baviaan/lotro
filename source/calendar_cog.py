@@ -51,7 +51,7 @@ class CalendarCog(commands.Cog):
         res = upsert(self.conn, 'Settings', ['calendar'], [ids], ['guild_id'], [guild_id])
         self.conn.commit()
 
-    async def update_calendar(self, guild_id, new_run=True):
+    async def update_calendar(self, guild_id):
         conn = self.bot.conn
         res = select_one(conn, 'Settings', ['calendar'], ['guild_id'], [guild_id])
         if not res:
@@ -84,11 +84,6 @@ class CalendarCog(commands.Cog):
             logger.warning("Failed to update calendar for guild {0}.".format(guild_id))
             logger.warning(e)
             return
-        if new_run:
-            try:
-                await chn.send(_("A new run has been posted!"), delete_after=3600)
-            except discord.Forbidden:
-                logger.warning("No write access to calendar channel for guild {0}.".format(guild_id))
 
     def calendar_embed(self, guild_id):
         conn = self.bot.conn

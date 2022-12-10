@@ -546,7 +546,7 @@ class RaidCog(commands.Cog):
         delete(self.conn, 'Players', ['raid_id'], [raid_id])
         delete(self.conn, 'Assignment', ['raid_id'], [raid_id])
         logger.info("Deleted old raid from database.")
-        await self.calendar_cog.update_calendar(guild_id, new_run=False)
+        await self.calendar_cog.update_calendar(guild_id)
         try:
             self.raids.remove(raid_id)
         except ValueError:
@@ -914,7 +914,7 @@ class ConfigureModal(discord.ui.Modal):
         await interaction.response.send_message(resp_msg, ephemeral=True, delete_after=raid_post_delay)
         # Update corresponding discord posts and events
         await self.raid_cog.update_raid_post(self.raid_id, interaction.channel)
-        await self.calendar_cog.update_calendar(interaction.guild.id, new_run=False)
+        await self.calendar_cog.update_calendar(interaction.guild.id)
         try:
             self.calendar_cog.modify_guild_event(self.raid_id)
         except requests.HTTPError as e:
