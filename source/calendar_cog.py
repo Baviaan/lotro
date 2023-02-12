@@ -197,7 +197,7 @@ class CalendarCog(commands.Cog):
         upcoming_events = []
         for event in parsed_events:
             if event[2]:
-                if cutoff_past < event[2] < cutoff_future:
+                if cutoff_past < event[2] and event[1] < cutoff_future:
                     upcoming_events.append(event)
             else:
                 if cutoff_unlock < event[1] < cutoff_future:
