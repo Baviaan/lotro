@@ -111,7 +111,7 @@ class Bot(commands.Bot):
             await self.close()
             return
         for guild in self.guilds:
-            self.logger.info('Welcome to {0}.'.format(guild))
+            self.logger.info('Welcome to {0}, {1}.'.format(guild.name, guild.id))
         try:
             await self.load_extension('config_cog')
             await self.load_extension('dev_cog')

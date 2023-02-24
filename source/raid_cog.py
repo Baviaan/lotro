@@ -520,6 +520,8 @@ class RaidCog(commands.Cog):
                 await self.cleanup_old_raid(raid_id, "Raid post already deleted.")
             except discord.Forbidden:
                 await self.cleanup_old_raid(raid_id, "We are missing required permissions to see raid post.")
+            except discord.DiscordServerError:
+                logger.warning("Discord server error when fetching the raid message.")
             else:
                 if current_time > timestamp + expiry_time:
                     await self.cleanup_old_raid(raid_id, "Deleted expired raid post.")
