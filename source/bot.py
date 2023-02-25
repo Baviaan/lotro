@@ -16,7 +16,6 @@ class Bot(commands.Bot):
 
     def __init__(self):
         self.launch_time = datetime.utcnow()
-        self.api = "https://discord.com/api/v10/"
 
         version = ""
         with open('__init__.py') as f:

@@ -298,14 +298,9 @@ class RaidCog(commands.Cog):
         await self.calendar_cog.update_calendar(guild_id)
 
     async def create_guild_event(self, channel, raid_id):
-        try:
-            event_id = self.calendar_cog.create_guild_event(raid_id)
-        except requests.HTTPError as e:
-            logger.warning(e.response.text)
+        event_id = await self.calendar_cog.create_guild_event(channel.guild, raid_id)
+        if not event_id:
             err_msg = _("Failed to create the discord event. Please check the bot has the manage event permission.")
-            await channel.send(err_msg, delete_after=20)
-        except requests.exceptions.JSONDecodeError as e:
-            err_msg = _("Invalid response from Discord.")
             await channel.send(err_msg, delete_after=20)
         else:
             upsert(self.conn, 'Raids', ['event_id'], [event_id], ['raid_id'], [raid_id])
@@ -917,19 +912,13 @@ class ConfigureModal(discord.ui.Modal):
         # Update corresponding discord posts and events
         await self.raid_cog.update_raid_post(self.raid_id, interaction.channel)
         await self.calendar_cog.update_calendar(interaction.guild.id)
-        try:
-            self.calendar_cog.modify_guild_event(self.raid_id)
-        except requests.HTTPError as e:
-            logger.warning(e.response.text)
+        await self.calendar_cog.modify_guild_event(interaction.guild, self.raid_id)
         self.stop()
 
     async def delete_raid(self, interaction: discord.Interaction):
         await interaction.response.defer()
         # Delete the guild event
-        try:
-            self.calendar_cog.delete_guild_event(self.raid_id)
-        except requests.HTTPError as e:
-            logger.warning(e.response.text)
+        await self.calendar_cog.delete_guild_event(interaction.guild, self.raid_id)
         # remove from memory first
         await self.raid_cog.cleanup_old_raid(self.raid_id, "Raid deleted via button.")
         # so deletion doesn't trigger another clean up
