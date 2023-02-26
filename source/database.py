@@ -25,8 +25,7 @@ try:
     with open('config.json', 'r') as f:
         config = json.load(f)
 except (FileNotFoundError):
-    logger.critical(f"Please create the file 'config.json', see GitHub for an example.")
-    raise SystemExit
+    logger.warning(f"No config file found. Please create the file 'config.json', see GitHub for an example.")
 
 
 classes = read_config_key(config, 'CLASSES', True)

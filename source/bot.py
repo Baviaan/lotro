@@ -36,8 +36,7 @@ class Bot(commands.Bot):
             with open('config.json', 'r') as f:
                 config = json.load(f)
         except FileNotFoundError:
-            self.logger.critical(f"Please create the file 'config.json', see GitHub for an example.")
-            raise SystemExit
+            logger.warning(f"No config file found. Please create the file 'config.json', see GitHub for an example.")
 
         self.token = read_config_key(config, 'BOT_TOKEN', True)
         self.server_tz = read_config_key(config, 'SERVER_TZ', True)
