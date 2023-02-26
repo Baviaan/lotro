@@ -164,6 +164,7 @@ You can paste the code directly in the discord app when clicking the join server
 | **/server_time** | Returns the current server time. |
 | **/events** | Returns the upcoming official LotRO events. |
 | **/about** | Shows some basic information about the bot. |
+| **/loot** \<chest\> \[class\] \[level\] \[tracery\] | Displays the possible loot for any chest in LotRO. Defaults to loot for a cap level captain without expanding the tracery list, but can be overwritten by the optional arguments. |
 
 ### Miscellaneous commands
 | Command | Notes |
