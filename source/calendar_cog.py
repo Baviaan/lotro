@@ -133,14 +133,12 @@ class CalendarCog(commands.Cog):
         res = select_one(conn, 'Settings', ['guild_events'], ['guild_id'], [guild.id])
         if not res:
             return
-        channel_id, event_id, name, tier, description, timestamp = select_one(conn, 'Raids', ['channel_id', 'event_id', 'name', 'tier', 'boss', 'time'], ['raid_id'], [raid_id])
+        event_id, name, tier, description, timestamp = select_one(conn, 'Raids', ['event_id', 'name', 'tier', 'boss', 'time'], ['raid_id'], [raid_id])
         if not event_id:
             return
 
         # discord.py does not have partial event
         event = await guild.fetch_scheduled_event(event_id, with_counts=False)
-        # discord.py requires the location to be set
-        location = f"https://discord.com/channels/{guild.id}/{channel_id}/{raid_id}"
         start_time = datetime.fromtimestamp(timestamp, tz=timezone.utc)
         end_time = datetime.fromtimestamp(timestamp+7200, tz=timezone.utc)
         if tier:
@@ -148,7 +146,7 @@ class CalendarCog(commands.Cog):
         else:
             event_name = name
         try:
-            await event.edit(name=event_name, description=description, start_time=start_time, end_time=end_time, location=location)
+            await event.edit(name=event_name, description=description, start_time=start_time, end_time=end_time)
         except discord.Forbidden:
             logger.warning("Missing manage events permission for guild {0}".format(guild.id))
 
