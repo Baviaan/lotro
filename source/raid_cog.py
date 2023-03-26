@@ -298,6 +298,8 @@ class RaidCog(commands.Cog):
 
     async def create_guild_event(self, channel, raid_id):
         event_id = await self.calendar_cog.create_guild_event(channel.guild, raid_id)
+        if event_id == 0:
+            return
         if not event_id:
             err_msg = _("Failed to create the discord event. Please check the bot has the manage event permission.")
             await channel.send(err_msg, delete_after=20)

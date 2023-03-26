@@ -108,7 +108,7 @@ class CalendarCog(commands.Cog):
         conn = self.bot.conn
         res = select_one(conn, 'Settings', ['guild_events'], ['guild_id'], [guild.id])
         if not res:
-            return
+            return 0
         channel_id, name, tier, description, timestamp = select_one(conn, 'Raids', ['channel_id', 'name', 'tier', 'boss', 'time'], ['raid_id'], [raid_id])
 
         location = f"https://discord.com/channels/{guild.id}/{channel_id}/{raid_id}"
