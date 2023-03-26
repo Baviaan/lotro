@@ -436,7 +436,7 @@ class RaidCog(commands.Cog):
                         i = i + 1
                         if row[i]:
                             spec_str = ""
-                            if specs:
+                            if specs and i < len(self.role_names) + 3:
                                 spec = specs[i-3]
                                 if spec:
                                     for emoji in ["\U0001F534", "\U0001F535", "\U0001F7E1"]:
