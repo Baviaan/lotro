@@ -1,7 +1,7 @@
 {
   "BOT_TOKEN": "Token goes here",
   "CLASSES": ["Beornide","Bagarreur","Cambrioleur","Capitaine","Champion","Gardien","Chasseur","Maitredusavoir","Menestrel","Gardiendesrunes","Sentinelle"],
-  "DUOSPEC": ["Bagarreur","Menestrel"],
+  "DUOSPEC": ["Bagarreur","Menestrel","Sentinelle"],
   "CREEPS": ["Chef de Geurre", "Faucheur", "Ourouk à flèches noires", "Profanateur", "Tisseuse", "Traqueur"],
   "LANGUAGE": "fr",
   "LINEUP": ["10000000110","10000000110","00000001000","00100000000","00010100000","10011100001","00010000000","00101010011","00101010011","00101010011","00101010011","11111111111"],
