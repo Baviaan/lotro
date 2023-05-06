@@ -30,7 +30,8 @@ role_names = read_config_key(config, 'CLASSES', True)
 duo_spec = read_config_key(config, 'DUOSPEC', False)
 Classes = Enum("Classes", role_names)
 
-raid_post_delay = 10
+sign_up_delay = 3
+assign_delay = 10
 
 class RaidCog(commands.Cog):
 
@@ -336,13 +337,13 @@ class RaidCog(commands.Cog):
             await channel.send(perm_msg, delete_after=15)
         return False
 
-    async def update_raid_post(self, raid_id, channel):
+    async def update_raid_post(self, raid_id, channel, delay=assign_delay):
         try:
             self.update_call[raid_id] += 1
         except KeyError:
             self.update_call[raid_id] = 0
         update_call = self.update_call[raid_id]
-        await asyncio.sleep(raid_post_delay)
+        await asyncio.sleep(delay)
         # If someone is spamming buttons only send the last update
         if update_call < self.update_call[raid_id]:
             return
@@ -427,7 +428,7 @@ class RaidCog(commands.Cog):
         columns = ['raid_id', 'player_id', 'byname']
         if available:
             columns.extend(self.emojis_dict.keys())
-        unavailable = (int(available) + 1) % 2
+        unavailable = not available
         result = select(self.conn, 'Players', columns, ['raid_id', 'unavailable'], [raid_id, unavailable])
         player_strings = []
         if result:
@@ -630,16 +631,24 @@ class RaidView(discord.ui.View):
         raid_id = i.message.id
         timestamp = int(time.time())
         byname = self.raid_cog.process_name(i.guild.id, i.user)
+        sign_up = not select_one(self.conn, 'Players', [class_name], eq_columns=['player_id', 'raid_id'], eq_values=[i.user.id, raid_id])
+        if not sign_up:
+            sign_ups = select_one(self.conn, 'Players', self.raid_cog.role_names, eq_columns=['player_id', 'raid_id'], eq_values=[i.user.id, raid_id])
+            signed_up_classes = sum(filter(None, sign_ups))
+            if signed_up_classes == 1:
+                await self.sign_up_cancel(i)
+                return
         upsert(self.conn, 'Players', ['byname', 'timestamp', 'unavailable', class_name],
-               [byname, timestamp, False, True], ['player_id', 'raid_id'], [i.user.id, raid_id])
+               [byname, timestamp, False, sign_up], ['player_id', 'raid_id'], [i.user.id, raid_id])
         self.conn.commit()
-        await i.response.send_message(msg, ephemeral=True, delete_after=raid_post_delay)
-        await self.raid_cog.update_raid_post(raid_id, i.channel)
+        await i.response.send_message(msg, ephemeral=True, delete_after=sign_up_delay)
+        await self.raid_cog.update_raid_post(raid_id, i.channel, delay=sign_up_delay)
 
     async def sign_up_all(self, i):
         raid_id = i.message.id
         role_names = [role.name for role in i.user.roles if role.name in self.raid_cog.role_names]
         if role_names:
+            await interaction.response.defer()
             timestamp = int(time.time())
             columns = ['byname', 'timestamp', 'unavailable']
             columns.extend(role_names)
@@ -648,14 +657,13 @@ class RaidView(discord.ui.View):
             values.extend([True] * len(role_names))
             upsert(self.conn, 'Players', columns, values, ['player_id', 'raid_id'], [i.user.id, raid_id])
             self.conn.commit()
-            msg = _("Your sign up has been received and the raid post will be updated momentarily.")
-            await i.response.send_message(msg, ephemeral=True, delete_after=raid_post_delay)
-            await self.raid_cog.update_raid_post(raid_id, i.channel)
+            await self.raid_cog.update_raid_post(raid_id, i.channel, delay=0)
         else:
             err_msg = _("You have not assigned yourself any class roles yet, please sign up with a class first.")
             await i.response.send_message(err_msg, ephemeral=True)
 
     async def sign_up_cancel(self, i):
+        await interaction.response.defer()
         raid_id = i.message.id
         timestamp = int(time.time())
         assigned_slot = select_one(self.conn, 'Assignment', ['slot_id'], ['player_id', 'raid_id'],
@@ -679,9 +687,7 @@ class RaidView(discord.ui.View):
             upsert(self.conn, 'Players', ['byname', 'timestamp', 'unavailable'], [byname, timestamp, True],
                    ['player_id', 'raid_id'], [i.user.id, raid_id])
         self.conn.commit()
-        msg = _("Your sign up has been received and the raid post will be updated momentarily.")
-        await i.response.send_message(msg, ephemeral=True, delete_after=raid_post_delay)
-        await self.raid_cog.update_raid_post(raid_id, i.channel)
+        await self.raid_cog.update_raid_post(raid_id, i.channel, delay=0)
 
 
 class CreepView(discord.ui.View):
@@ -704,10 +710,11 @@ class CreepView(discord.ui.View):
                [byname, timestamp, False, True], ['player_id', 'raid_id'], [i.user.id, raid_id])
         self.conn.commit()
         msg = _("Your sign up has been received and the raid post will be updated momentarily.")
-        await i.response.send_message(msg, ephemeral=True, delete_after=raid_post_delay)
-        await self.raid_cog.update_raid_post(raid_id, i.channel)
+        await i.response.send_message(msg, ephemeral=True, delete_after=sign_up_delay)
+        await self.raid_cog.update_raid_post(raid_id, i.channel, delay=sign_up_delay)
 
     async def sign_up_cancel(self, i):
+        await interaction.response.defer()
         raid_id = i.message.id
         timestamp = int(time.time())
         r = select_one(self.conn, 'Players', ['byname'], ['player_id', 'raid_id'], [i.user.id, raid_id])
@@ -718,9 +725,7 @@ class CreepView(discord.ui.View):
             upsert(self.conn, 'Players', ['byname', 'timestamp', 'unavailable'], [byname, timestamp, True],
                    ['player_id', 'raid_id'], [i.user.id, raid_id])
         self.conn.commit()
-        msg = _("Your sign up has been received and the raid post will be updated momentarily.")
-        await i.response.send_message(msg, ephemeral=True, delete_after=raid_post_delay)
-        await self.raid_cog.update_raid_post(raid_id, i.channel)
+        await self.raid_cog.update_raid_post(raid_id, i.channel, delay=0)
 
     @discord.ui.button(emoji="\U0001F6E0\uFE0F", style=discord.ButtonStyle.blurple, custom_id='creep_view:settings')
     async def settings(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -812,7 +817,7 @@ class ClassSelect(discord.ui.Select):
                             [self.view.player, raid_id])
             self.clear_assignment()
             msg = _("Removed {0} from the selected line up.").format(byname)
-            await interaction.response.send_message(msg, ephemeral=True, delete_after=raid_post_delay)
+            await interaction.response.send_message(msg, ephemeral=True, delete_after=assign_delay)
             await self.view.raid_cog.update_raid_post(raid_id, interaction.channel)
             return
 
@@ -841,7 +846,7 @@ class ClassSelect(discord.ui.Select):
         upsert(self.view.conn, 'Assignment', assignment_columns, assignment_values, ['raid_id', 'slot_id'],
                [raid_id, slot_id])
         msg = _("Assigned {0} to {1}.").format(signup[1], self.values[0])
-        await interaction.response.send_message(msg, ephemeral=True, delete_after=raid_post_delay)
+        await interaction.response.send_message(msg, ephemeral=True, delete_after=assign_delay)
         await self.view.raid_cog.update_raid_post(raid_id, interaction.channel)
 
     def clear_assignment(self):
@@ -914,7 +919,7 @@ class ConfigureModal(discord.ui.Modal):
         upsert(self.conn, 'Raids', raid_columns, raid_values, ['raid_id'], [self.raid_id])
         self.conn.commit()
         # respond
-        await interaction.response.send_message(resp_msg, ephemeral=True, delete_after=raid_post_delay)
+        await interaction.response.send_message(resp_msg, ephemeral=True, delete_after=assign_delay)
         # Update corresponding discord posts and events
         await self.raid_cog.update_raid_post(self.raid_id, interaction.channel)
         await self.calendar_cog.update_calendar(interaction.guild.id)
