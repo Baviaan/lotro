@@ -648,7 +648,7 @@ class RaidView(discord.ui.View):
         raid_id = i.message.id
         role_names = [role.name for role in i.user.roles if role.name in self.raid_cog.role_names]
         if role_names:
-            await interaction.response.defer()
+            await i.response.defer()
             timestamp = int(time.time())
             columns = ['byname', 'timestamp', 'unavailable']
             columns.extend(role_names)
@@ -663,7 +663,7 @@ class RaidView(discord.ui.View):
             await i.response.send_message(err_msg, ephemeral=True)
 
     async def sign_up_cancel(self, i):
-        await interaction.response.defer()
+        await i.response.defer()
         raid_id = i.message.id
         timestamp = int(time.time())
         assigned_slot = select_one(self.conn, 'Assignment', ['slot_id'], ['player_id', 'raid_id'],
@@ -714,7 +714,7 @@ class CreepView(discord.ui.View):
         await self.raid_cog.update_raid_post(raid_id, i.channel, delay=sign_up_delay)
 
     async def sign_up_cancel(self, i):
-        await interaction.response.defer()
+        await i.response.defer()
         raid_id = i.message.id
         timestamp = int(time.time())
         r = select_one(self.conn, 'Players', ['byname'], ['player_id', 'raid_id'], [i.user.id, raid_id])
