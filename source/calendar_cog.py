@@ -10,7 +10,6 @@ from discord import app_commands
 from discord.ext import commands
 
 from database import select_one, select_order, upsert
-from TLSAdapter import ECDHEAdapter
 from utils import chunks
 
 logger = logging.getLogger(__name__)
@@ -168,20 +167,20 @@ class CalendarCog(commands.Cog):
         if self.cached_events_at and self.cached_events_at + 86400 > current_time:
             return self.upcoming_events
 
-        s = requests.Session()
-        s.mount("https://forums-old.lotro.com", ECDHEAdapter())
-        r = s.get("https://forums-old.lotro.com/forums/showthread.php?646193-LOTRO-Events-Schedule&s=37ca62f1171274310d6709145d372d3f&p=7646830#post7646830")
+        r = requests.get("https://www.lotro.com/news/lotro-public-event-schedule-en")
         if not r.ok:
             logger.warning("Could not connect to lotro.com")
             return self.upcoming_events
 
         stripped = re.sub('<[^<]+?>', '', r.text)
+        stripped = stripped.replace('\xa0', '')
         # Let us hope this questionable pattern is stable enough
-        pattern = 'Here is the current events schedule(.*)Ends: \(All Times Eastern\)(.*)Last edited by'
+        pattern = 'Here is the current events schedule(.*)Ends: \(All Times Eastern\)(.*)Share On:'
+
         prog = re.compile(pattern, flags=re.DOTALL)
         result = prog.search(stripped)
         events_data = result.group(2).strip().splitlines()
-        events = [chunk for chunk in chunks(events_data, 4)]
+        events = [chunk for chunk in chunks(events_data, 5)]
         parsed_events = [(event[0], self.parse_event_time(event[1]), self.parse_event_time(event[2])) for event in events]
 
         cutoff_unlock = current_time - 30 * 86400
@@ -190,13 +189,16 @@ class CalendarCog(commands.Cog):
 
         upcoming_events = []
         for event in parsed_events:
+            start_time = current_time
+            if event[1]:
+                start_time = event[1]
             if event[2]:
-                if cutoff_past < event[2] and event[1] < cutoff_future:
+                if cutoff_past < event[2] and start_time < cutoff_future:
                     upcoming_events.append(event)
             else:
-                if cutoff_unlock < event[1] < cutoff_future:
+                if cutoff_unlock < start_time < cutoff_future:
                     upcoming_events.append(event)
-            if event[1] > cutoff_future:
+            if start_time > cutoff_future:
                 break
 
         self.cached_events_at = current_time
@@ -209,10 +211,14 @@ class CalendarCog(commands.Cog):
         title = _("Upcoming events:")
         embed = discord.Embed(title=title, colour=discord.Colour(0x3498db))
         for e in events:
-            if e[2]:
+            time_str = ""
+            if e[1] and e[2]:
                 time_str = f"<t:{e[1]}> -- <t:{e[2]}>"
             else:
-                time_str = f"From <t:{e[1]}>"
+                if e[1]:
+                    time_str = f"From <t:{e[1]}>"
+                if e[2]:
+                    time_str = f"At <t:{e[2]}>"
             embed.add_field(name=e[0], value=time_str, inline=False)
         embed.set_footer(text=_("Last updated"))
         embed.timestamp = datetime.fromtimestamp(self.cached_events_at)
