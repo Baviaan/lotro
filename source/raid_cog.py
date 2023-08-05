@@ -208,7 +208,7 @@ class RaidCog(commands.Cog):
             await interaction.response.send_message(_("Invalid specialization."))
             return
         upsert(self.conn, 'Specs', [classes.name], [spec.value], ['player_id'], [interaction.user.id])
-        await interaction.response.send_message(_("Updated your {0} specialization.").format(classes.name))
+        await interaction.response.send_message(_("Updated your {0} specialization.").format(classes.name), ephemeral=True)
 
     @app_commands.command(name=_("list_players"), description=_("List the signed up players for a raid in order of sign up time."))
     @app_commands.describe(raid_number=_("Specify the raid to list, e.g. 2 for the second upcoming raid. This defaults to 1 if omitted."), cut_off=_("Specify cut-off time in hours before raid time. This defaults to 24 hours if omitted."))
