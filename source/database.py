@@ -106,6 +106,7 @@ def table_sqls(table):
                         "calendar text, "
                         "guild_events integer, "
                         "twitter integer, "
+                        "rss integer, "
                         "last_command integer, "
                         "slash_count integer"
                         ");",
@@ -113,6 +114,11 @@ def table_sqls(table):
             'twitter':  "create table if not exists Twitter ("
                         "user_id integer primary key,"
                         "tweet_id integer"
+                        ");",
+
+            'rss':  "create table if not exists RSS ("
+                        "thread_id integer primary key,"
+                        "post_id integer"
                         ");",
 
             'specs': "create table if not exists Specs ("
