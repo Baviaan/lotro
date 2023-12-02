@@ -144,3 +144,11 @@ class Bot(commands.Bot):
                 await ctx.send(error, delete_after=10)
             except discord.Forbidden:
                 self.logger.warning("Missing Send messages permission for channel {0}".format(ctx.channel.id))
+
+    async def on_app_command_completion(self, interaction, command):
+        timestamp = int(datetime.now().timestamp())
+        guild_id = interaction.guild_id
+        increment(self.conn, 'Settings', 'slash_count', ['guild_id'], [guild_id])
+        res = upsert(self.conn, 'Settings', ['last_command'], [timestamp], ['guild_id'], [guild_id])
+        if res:
+            self.conn.commit()
