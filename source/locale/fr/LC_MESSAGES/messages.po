@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2023-05-07 00:29+BST\n"
+"POT-Creation-Date: 2023-12-02 11:11+GMT\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: FRENCH <LL@li.org>\n"
@@ -15,84 +15,84 @@ msgstr ""
 "Content-Transfer-Encoding: utf-8\n"
 "Generated-By: pygettext.py 1.5\n"
 
-#: bot.py:136
+#: bot.py:138
 msgid "You are not the bot owner."
 msgstr ""
 
-#: calendar_cog.py:23
+#: calendar_cog.py:22
 msgid "Manage the calendar settings."
 msgstr ""
 
-#: calendar_cog.py:23
+#: calendar_cog.py:22
 msgid "calendar"
 msgstr ""
 
-#: calendar_cog.py:90
+#: calendar_cog.py:89
 msgid "Scheduled runs:"
 msgstr ""
 
-#: calendar_cog.py:91
+#: calendar_cog.py:90
 msgid "Click the link to sign up!"
 msgstr ""
 
-#: calendar_cog.py:103 calendar_cog.py:217
+#: calendar_cog.py:102 calendar_cog.py:223
 msgid "Last updated"
 msgstr ""
 
-#: calendar_cog.py:209
+#: calendar_cog.py:211
 msgid "Upcoming events:"
 msgstr ""
 
-#: calendar_cog.py:228
+#: calendar_cog.py:234
 msgid "Shows upcoming official LotRO events in your local time."
 msgstr ""
 
-#: calendar_cog.py:228
+#: calendar_cog.py:234
 msgid "events"
 msgstr ""
 
-#: calendar_cog.py:231
+#: calendar_cog.py:237
 msgid "Waiting for lotro.com to respond..."
 msgstr ""
 
-#: calendar_cog.py:237 twitter_cog.py:96
+#: calendar_cog.py:243 twitter_cog.py:96
 msgid "off"
 msgstr ""
 
-#: calendar_cog.py:240 calendar_cog.py:250 calendar_cog.py:267
-#: calendar_cog.py:277
+#: calendar_cog.py:246 calendar_cog.py:256 calendar_cog.py:273
+#: calendar_cog.py:283
 msgid "You must be a raid leader to change the calendar settings."
 msgstr "Vous n'avez pas la permission de changer les paramètres du calendrier."
 
-#: calendar_cog.py:243
+#: calendar_cog.py:249
 msgid "Events will not be posted to a calendar."
 msgstr ""
 
-#: calendar_cog.py:247
+#: calendar_cog.py:253
 msgid "channel"
 msgstr ""
 
-#: calendar_cog.py:256 calendar_cog.py:283 raid_cog.py:107 twitter_cog.py:90
+#: calendar_cog.py:262 calendar_cog.py:289 raid_cog.py:107 twitter_cog.py:90
 msgid "Missing permissions to access this channel."
 msgstr ""
 
-#: calendar_cog.py:259
+#: calendar_cog.py:265
 msgid "Events will be posted to this channel."
 msgstr ""
 
-#: calendar_cog.py:264
+#: calendar_cog.py:270
 msgid "discord"
 msgstr ""
 
-#: calendar_cog.py:270
+#: calendar_cog.py:276
 msgid "Events will be posted as discord guild events."
 msgstr ""
 
-#: calendar_cog.py:274
+#: calendar_cog.py:280
 msgid "both"
 msgstr ""
 
-#: calendar_cog.py:286
+#: calendar_cog.py:292
 msgid "Events will be posted to this channel and as discord guild events."
 msgstr ""
 
