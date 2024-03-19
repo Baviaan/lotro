@@ -19,10 +19,10 @@ with open('__init__.py') as f:
     data_version = re.search(regex, f.read(), re.MULTILINE).group(1)
 
 #Parse XML file
-tree = ET.parse('../data/items/containers.xml')
+tree = ET.parse('../data/lore/containers.xml')
 containerRoot = tree.getroot()
 containers = {child.attrib['id']: child.attrib['name'] for child in containerRoot}
-tree = ET.parse('../data/loots/loots.xml')
+tree = ET.parse('../data/lore/loots.xml')
 root = tree.getroot()
 itemsTables = root.findall("itemsTable")
 filteredTrophyTables = root.findall("filteredTrophyTable")
