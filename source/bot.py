@@ -126,7 +126,7 @@ class Bot(commands.Bot):
             # Load rss cog
             await self.load_extension('rss_cog')
             # Load treasure cog
-            if os.path.exists('../data/items/containers.xml'):
+            if os.path.exists('../data/lore/containers.xml'):
                 await self.load_extension('treasure_cog')
             # Load custom cog
             await self.load_extension('custom_cog')
