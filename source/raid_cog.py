@@ -541,11 +541,12 @@ class RaidCog(commands.Cog):
                     await post.delete()
                 elif current_time < timestamp:
                     raid_start_msg = random.choice(raid_start_msgs)
-                    if roster:
-                        players = select(self.conn, 'Assignment', ['player_id'], ['raid_id'], [raid_id])
-                    else:
-                        players = select(self.conn, 'Raids', ['organizer_id'], ['raid_id'], [raid_id])
-                    player_msg = " ".join(["<@{0}>".format(player[0]) for player in players if player[0]])
+                    players = select(self.conn, 'Assignment', ['player_id'], ['raid_id'], [raid_id])
+                    player_ids = ["<@{}>".format(player[0]) for player in players if player[0]]
+                    if not player_ids:
+                        player_id = select_one(self.conn, 'Raids', ['organizer_id'], ['raid_id'], [raid_id])
+                        player_ids = ["<@{}>".format(player_id)]
+                    player_msg = " ".join(player_ids)
                     raid_start_msg = raid_start_msg.format(player_msg)
                     raid_start_msg = raid_start_msg + _(" We are forming for the raid now.")
                     try:
