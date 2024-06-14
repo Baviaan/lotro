@@ -45,6 +45,7 @@ class RaidCog(commands.Cog):
         self.bot = bot
         self.conn = bot.conn
         self.role_names = bot.role_names
+        self.creep_names = bot.creep_names
         self.slots_class_names = bot.slots_class_names
         self.time_cog = bot.get_cog('TimeCog')
         self.calendar_cog = bot.get_cog('CalendarCog')
@@ -67,7 +68,7 @@ class RaidCog(commands.Cog):
             host_guild = bot.guilds[0]
         logger.info("Using emoji from {0}.".format(host_guild))
         self.class_emojis = [emoji for emoji in host_guild.emojis if emoji.name in self.role_names]
-        self.creep_emojis = [emoji for emoji in host_guild.emojis if emoji.name in bot.creep_names]
+        self.creep_emojis = [emoji for emoji in host_guild.emojis if emoji.name in self.creep_names]
         self.emojis_dict = {emoji.name: str(emoji) for emoji in self.class_emojis + self.creep_emojis}
 
         # Add raid views
@@ -428,7 +429,8 @@ class RaidCog(commands.Cog):
     def build_raid_players(self, raid_id, available=True, block_size=6):
         columns = ['raid_id', 'player_id', 'byname']
         if available:
-            columns.extend(self.emojis_dict.keys())
+            columns.extend(self.role_names)
+            columns.extend(self.creep_names)
         unavailable = not available
         result = select(self.conn, 'Players', columns, ['raid_id', 'unavailable'], [raid_id, unavailable])
         player_strings = []
