@@ -443,7 +443,7 @@ class RaidCog(commands.Cog):
                 if available:
                     specs = select_one(self.conn, 'Specs', self.role_names, ['player_id'], [row[1]])
                     player_string = row[i] + " "
-                    for name in self.emojis_dict:
+                    for name in [*self.role_names, *self.creep_names]:
                         i = i + 1
                         if row[i]:
                             spec_str = ""
