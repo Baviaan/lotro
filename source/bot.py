@@ -86,6 +86,7 @@ class Bot(commands.Bot):
 
         intents = discord.Intents.none()
         intents.guilds = True
+        intents.emojis = True
         intents.dm_messages = True
 
         super().__init__(command_prefix=self.prefix_manager, case_insensitive=True, intents=intents,
