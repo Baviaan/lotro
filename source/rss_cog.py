@@ -30,7 +30,7 @@ class RSSCog(commands.GroupCog, name=_("rss"), description=_("Manage RSS setting
     async def cog_unload(self):
         self.rss_task.cancel()
 
-    def get_rss_feed(self, url):
+    async def get_rss_feed(self, url):
         response = requests.get(url, verify="../lotro-com-chain.pem")
         if response.status_code != 200:
             logger.error("LotRO forums endpoint status: {0}.".format(response.status_code))
@@ -42,7 +42,7 @@ class RSSCog(commands.GroupCog, name=_("rss"), description=_("Manage RSS setting
     async def get_new_posts(self, urls):
         for thread_id, url in urls.items():
             last_post_id = select_one(self.conn, 'RSS', ['post_id'], ['thread_id'], [thread_id])
-            feed = self.get_rss_feed(url)
+            feed = await self.get_rss_feed(url)
             if not feed:
                 continue
             if not last_post_id:
