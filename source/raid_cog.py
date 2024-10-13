@@ -194,7 +194,6 @@ class RaidCog(commands.Cog):
         await interaction.edit_original_response(content=content)
 
     @app_commands.command(name=_("specs"), description=_("Set a specialization for your class."))
-    @app_commands.guild_only()
     @app_commands.describe(classes=_("The class to set your specialization for."), spec=_("Your chosen specialization."))
     @app_commands.choices(spec=[
         app_commands.Choice(name='Red \U0001F534', value=0b001),
@@ -261,6 +260,24 @@ class RaidCog(commands.Cog):
         embed.add_field(name=_("Sign up time:"), value=times_off)
         embed.add_field(name="\u200b", value="\u200b")
         await interaction.response.send_message(embed=embed)
+
+    @app_commands.command(name=_("list_raids"), description=_("Lists the events you have signed up for."))
+    async def list_raids_respond(self, interaction: discord.Interaction):
+        raids = select(self.conn, 'Players', ['raid_id'], ['player_id', 'unavailable'], [interaction.user.id, False])
+        for i, raid in enumerate(raids):
+            raid_data = select_one(self.conn, 'Raids', ['channel_id', 'guild_id', 'name', 'time'], ['raid_id'], [raid[0]])
+            raids[i] = raid + raid_data
+        # sort by raid time instead of creation time
+        raids.sort(key=lambda x: int(x[4]))
+        # build the embed
+        embed_title = _("**You are signed up for the following events:**")
+        embed = discord.Embed(title=embed_title, colour=discord.Colour(0x3498db))
+        for raid in raids[:25]:
+            raid_id, channel_id, guild_id, name, time = raid
+            field_name = f"{name} at <t:{time}>"
+            field_text = f"https://discord.com/channels/{guild_id}/{channel_id}/{raid_id}"
+            embed.add_field(name=field_name, value=field_text, inline=False)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
 
     def get_raid_name(self, name):
         try:
