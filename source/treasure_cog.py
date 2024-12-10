@@ -276,8 +276,9 @@ class TreasureCog(commands.Cog):
             for _traceryID in traceryID:
                 filteredTrophyTableIDs.remove(_traceryID)
 
-        _class = override_player_class(classes.name)
-        trophyListIDs = getTrophyListIDs(filteredTrophyTableIDs, trophyListIDs, _class, level)
+        _class = classes.name
+        queryClass = override_player_class(_class)
+        trophyListIDs = getTrophyListIDs(filteredTrophyTableIDs, trophyListIDs, queryClass, level)
         loot = getItemDrops(trophyListIDs)
         if not tracery and traceryID and level>=50:
             if len(traceryID)==1:
