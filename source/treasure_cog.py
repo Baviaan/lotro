@@ -34,7 +34,7 @@ traceryIDs = ['1879428517', '1879428521', '1879428563', '1879428567']
 
 
 #heavy = "Beorning;Captain;Champion;Guardian;Brawler"
-#medium = "Burglar;Hunter;Warden"
+#medium = "Burglar;Hunter;Corsair;Warden"
 #light = "Lore-master;Minstrel;Rune-keeper"
 
 def getContainerContents(containerID):
@@ -243,6 +243,16 @@ async def container_autocomplete(interaction: discord.Interaction, current: str)
         for containerID in suggestions
     ]
 
+def override_player_class(_class):
+    match _class:
+        case "Loremaster":
+            return "Lore-master"
+        case "Mariner":
+            return "Corsair"
+        case "Runekeeper":
+            return "Rune-keeper"
+        case _:
+            return _class
 
 class TreasureCog(commands.Cog):
     def __init__(self, bot):
@@ -266,7 +276,7 @@ class TreasureCog(commands.Cog):
             for _traceryID in traceryID:
                 filteredTrophyTableIDs.remove(_traceryID)
 
-        _class = classes.name
+        _class = override_player_class(classes.name)
         trophyListIDs = getTrophyListIDs(filteredTrophyTableIDs, trophyListIDs, _class, level)
         loot = getItemDrops(trophyListIDs)
         if not tracery and traceryID and level>=50:
