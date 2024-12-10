@@ -88,7 +88,7 @@ If changes are significant we will provide a more prominent notice such as an an
 ## Self-hosting
 
 Prerequisites:\
-python >= 3.8\
+python >= 3.10\
 Check the requirements.txt file for required libraries.\
 You can get all of them with: `python3 -m pip install -U -r requirements.txt`, assuming requirements.txt is in your current directory.
 
