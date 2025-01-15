@@ -174,8 +174,9 @@ class CalendarCog(commands.Cog):
 
         stripped = re.sub('<[^<]+?>', '', r.text)
         stripped = stripped.replace('\xa0', '')
+        stripped = stripped.replace('&gt;', '>')
         # Let us hope this questionable pattern is stable enough
-        pattern = r'End Time/Date \(Eastern\)(.*)End Time/Date \(Eastern\)(.*)Share On:'
+        pattern = r'ALL TIMES EASTERN/SERVER TIME(.*)Ends \(Eastern Time\)(.*)Share On:'
 
         prog = re.compile(pattern, flags=re.DOTALL)
         result = prog.search(stripped)
