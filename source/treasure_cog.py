@@ -157,6 +157,12 @@ def getItemsFromTreasureGroup(treasureGroupProfileID, container_frequency):
             drops = sorted(drops, key=lambda d: -d['weight'])
             result = ["{0}% -- {1}{2}".format(drop['percentage'], drop['quantity'], drop['name']) for drop in drops]
             return result
+    #For old chests treasureGroup can point to treasureList instead of itemList directly
+    for element in treasureLists:
+        if element.attrib['id'] == treasureGroupProfileID:
+            for entry in element:
+                result = getItemsFromTreasureGroup( entry.attrib['treasureGroupProfileId'], container_frequency)
+                return(result)
 
 def getItemDrops(trophyListIDs):
     loot = []
@@ -293,15 +299,23 @@ class TreasureCog(commands.Cog):
             if not (perms.send_messages and perms.embed_links):
                 content = _("Missing permissions to send multiple messages in this channel.")
             else:
-                content = _("Large container, responding with two embeds...")
+                content = _("Large container, responding with multiple embeds...")
             await interaction.response.send_message(content)
-            # Largest container appears to be the first one, so 2 works well...
-            embed1 = generateLootEmbed(loot[:2], containers[chest], level, _class)
-            embed2 = generateLootEmbed(loot[2:], containers[chest], level, _class)
-            await interaction.channel.send(embed=embed1)
-            await interaction.channel.send(embed=embed2)
-            return
-        await interaction.response.send_message(embed=embed)
+            drops = 0
+            subloot = []
+            for chunk in loot:
+                # Roughly 200 drops fit in one embed, send and reset
+                if drops + len(chunk[1]) > 200:
+                    embed = generateLootEmbed(subloot, containers[chest], level, _class)
+                    await interaction.channel.send(embed=embed)
+                    drops = 0
+                    subloot = []
+                subloot.append(chunk)
+                drops += len(chunk[1])
+            embed = generateLootEmbed(subloot, containers[chest], level, _class)
+            await interaction.channel.send(embed=embed)
+        else:
+            await interaction.response.send_message(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(TreasureCog(bot))
