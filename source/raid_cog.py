@@ -36,10 +36,14 @@ assign_delay = 10
 
 class RaidCog(commands.Cog):
 
-    # Load raid (nick)names
+    # Load raid (nick)names and size
+    raid_lookup = dict()
+    raid_size = dict()
     with open('list-of-raids.csv', 'r') as f:
         reader = csv.reader(f)
-        raid_lookup = dict(reader)
+        for row in reader:
+            raid_lookup[row[0]] = row[1]
+            raid_size[row[1]] = int(row[2])
 
     def __init__(self, bot):
         self.bot = bot
@@ -289,8 +293,16 @@ class RaidCog(commands.Cog):
                 name = match[0]
         return name
 
+    def get_raid_size(self, full_name):
+        try:
+            size = self.raid_size[full_name]
+        except KeyError:
+            size = 12
+        return size
+
     async def post_raid(self, name, tier, boss, timestamp, roster, guild_id, channel, author_id, creep=False):
         full_name = self.get_raid_name(name)
+        raid_size = self.get_raid_size(full_name)
         raid_time = datetime.datetime.utcfromtimestamp(timestamp)
         # Check if time is in near future. Otherwise parsed date was likely unintended.
         current_time = int(time.time())
@@ -309,7 +321,7 @@ class RaidCog(commands.Cog):
         raid_values = [channel.id, guild_id, author_id, full_name, tier, boss, timestamp, roster]
         upsert(self.conn, 'Raids', raid_columns, raid_values, ['raid_id'], [raid_id])
         if not creep:
-            self.roster_init(raid_id)
+            self.roster_init(raid_id, raid_size)
             embed = self.build_raid_message(raid_id, "\u200B", None)
             await post.edit(embed=embed, view=RaidView(self))
         else:
@@ -331,10 +343,11 @@ class RaidCog(commands.Cog):
         else:
             upsert(self.conn, 'Raids', ['event_id'], [event_id], ['raid_id'], [raid_id])
 
-    def roster_init(self, raid_id):
+    def roster_init(self, raid_id, raid_size):
         available = _("<Open>")
         assignment_columns = ['player_id', 'byname', 'class_name']
-        for i in range(len(self.slots_class_names)):
+        number_of_slots = min(len(self.slots_class_names), raid_size)
+        for i in range(number_of_slots):
             assignment_values = [None, available, ','.join(self.slots_class_names[i])]
             upsert(self.conn, 'Assignment', assignment_columns, assignment_values, ['raid_id', 'slot_id'], [raid_id, i])
 
@@ -407,7 +420,11 @@ class RaidCog(commands.Cog):
             # Add first half
             embed_name = _("Selected line up:")
             embed_text = ""
-            for row in result[:number_of_slots // 2]:
+            if number_of_slots > 12:
+                left_size = number_of_slots // 2
+            else:
+                left_size = min(number_of_slots, 6)
+            for row in result[:left_size]:
                 class_names = row[1].split(',')
                 for class_name in class_names:
                     embed_text = embed_text + self.emojis_dict[class_name]
@@ -416,7 +433,7 @@ class RaidCog(commands.Cog):
             # Add second half
             embed_name = "\u200B"
             embed_text = ""
-            for row in result[number_of_slots // 2:]:
+            for row in result[left_size:]:
                 class_names = row[1].split(',')
                 for class_name in class_names:
                     embed_text = embed_text + self.emojis_dict[class_name]
