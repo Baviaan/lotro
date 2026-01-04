@@ -69,7 +69,8 @@ def table_sqls(table):
                     "tier text, "
                     "boss text, "
                     "time integer not null, "
-                    "roster boolean not null"
+                    "roster boolean not null, "
+                    "tag text"
                     ");",
 
             'player': "create table if not exists Players ("

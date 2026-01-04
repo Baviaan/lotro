@@ -304,6 +304,7 @@ class RaidCog(commands.Cog):
         full_name = self.get_raid_name(name)
         raid_size = self.get_raid_size(full_name)
         raid_time = datetime.datetime.utcfromtimestamp(timestamp)
+        tag = f'{name}{raid_time.day}{raid_time.hour}'
         # Check if time is in near future. Otherwise parsed date was likely unintended.
         current_time = int(time.time())
         if current_time + 31536000 < timestamp:
@@ -317,9 +318,10 @@ class RaidCog(commands.Cog):
             await channel.send(error_message, delete_after=30)
         post = await channel.send('\u200B')
         raid_id = post.id
-        raid_columns = ['channel_id', 'guild_id', 'organizer_id', 'name', 'tier', 'boss', 'time', 'roster']
-        raid_values = [channel.id, guild_id, author_id, full_name, tier, boss, timestamp, roster]
+        raid_columns = ['channel_id', 'guild_id', 'organizer_id', 'name', 'tier', 'boss', 'time', 'roster', 'tag']
+        raid_values = [channel.id, guild_id, author_id, full_name, tier, boss, timestamp, roster, tag]
         upsert(self.conn, 'Raids', raid_columns, raid_values, ['raid_id'], [raid_id])
+        await channel.guild.create_role(mentionable=True, name=tag)
         if not creep:
             self.roster_init(raid_id, raid_size)
             embed = self.build_raid_message(raid_id, "\u200B", None)
@@ -396,7 +398,7 @@ class RaidCog(commands.Cog):
 
     def build_raid_message(self, raid_id, embed_texts_av, embed_texts_unav):
         try:
-            name, tier, time, boss, roster = select_one(self.conn, 'Raids', ['name', 'tier', 'time', 'boss', 'roster'],
+            name, tier, time, boss, roster, tag = select_one(self.conn, 'Raids', ['name', 'tier', 'time', 'boss', 'roster', 'tag'],
                                                     ['raid_id'], [raid_id])
         except TypeError:
             logger.info("The raid has been deleted during editing.")
@@ -408,10 +410,12 @@ class RaidCog(commands.Cog):
             embed_title = f"{name} {tier}\n<t:{timestamp}:F>"
         else:
             embed_title = f"{name}\n<t:{timestamp}:F>"
-        if boss:
-            embed_description = _("Aim: {0}").format(boss)
+        if tag:
+            embed_description = f"Tag: {tag}\n\n"
         else:
             embed_description = ""
+        if boss:
+            embed_description += _("Aim: {0}").format(boss)
 
         embed = discord.Embed(title=embed_title, colour=discord.Colour(0x3498db), description=embed_description)
         if roster:
@@ -725,6 +729,12 @@ class RaidView(discord.ui.View):
             error_msg = _("Dearest raid leader, {0} has cancelled their availability. "
                           "Please note they were assigned to {1} in the raid.").format(i.user.mention, class_name)
             await i.channel.send(error_msg)
+
+            tag = select_one(self.conn, 'Raids', ['tag'], ['raid_id'], [raid_id])
+            role = discord.utils.get(i.guild.roles, name=tag)
+            if role:
+                await i.user.remove_roles(role)
+
             class_names = ','.join(self.raid_cog.slots_class_names[assigned_slot])
             assign_columns = ['player_id', 'byname', 'class_name']
             assign_values = [None, _("<Open>"), class_names]
@@ -863,10 +873,17 @@ class ClassSelect(discord.ui.Select):
             await interaction.response.send_message(msg, ephemeral=True)
             return
 
+        #no members intent so fetch
+        member = await interaction.guild.fetch_member(self.view.player)
+        tag = select_one(self.view.conn, 'Raids', ['tag'], ['raid_id'], [self.view.raid_id])
+        role = discord.utils.get(interaction.guild.roles, name=tag)
+
         if self.values[0] == 'remove':
             byname = select_one(self.view.conn, 'Players', ['byname'], ['player_id', 'raid_id'],
                             [self.view.player, raid_id])
             self.clear_assignment()
+            if role:
+                await member.remove_roles(role)
             msg = _("Removed {0} from the selected line up.").format(byname)
             await interaction.response.send_message(msg, ephemeral=True, delete_after=assign_delay)
             await self.view.raid_cog.update_raid_post(raid_id, interaction.channel)
@@ -891,13 +908,29 @@ class ClassSelect(discord.ui.Select):
             await interaction.response.send_message(msg, ephemeral=True)
             return
 
+        player_id = select_one(self.view.conn, 'Assignment', ['player_id'], ['slot_id', 'raid_id'], [slot_id, raid_id])
+        if player_id:
+            old_member = await interaction.guild.fetch_member(player_id)
+            if role:
+                await old_member.remove_roles(role)
+
         self.clear_assignment()
         assignment_columns = ['player_id', 'byname', 'class_name']
         assignment_values = [self.view.player, signup[1], self.values[0]]
         upsert(self.view.conn, 'Assignment', assignment_columns, assignment_values, ['raid_id', 'slot_id'],
                [raid_id, slot_id])
+
         msg = _("Assigned {0} to {1}.").format(signup[1], self.values[0])
         await interaction.response.send_message(msg, ephemeral=True, delete_after=assign_delay)
+
+        if role:
+            try:
+                await member.add_roles(role)
+            except discord.Forbidden:
+                logger.warning("Error: Missing 'Manage roles' permissions for {interaction.guild}.")
+        else:
+            logger.warning('No role exists for raid {raid_id}.')
+
         await self.view.raid_cog.update_raid_post(raid_id, interaction.channel)
 
     def clear_assignment(self):
@@ -981,6 +1014,10 @@ class ConfigureModal(discord.ui.Modal):
         await interaction.response.defer()
         # Delete the guild event
         await self.calendar_cog.delete_guild_event(interaction.guild, self.raid_id)
+        # Delete tag role
+        tag = select_one(self.conn, 'Raids', ['tag'], ['raid_id'], [self.raid_id])
+        role = discord.utils.get(interaction.guild.roles, name=tag)
+        await role.delete()
         # remove from memory first
         await self.raid_cog.cleanup_old_raid(self.raid_id, "Raid deleted via button.")
         # so deletion doesn't trigger another clean up
