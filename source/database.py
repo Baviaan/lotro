@@ -70,7 +70,8 @@ def table_sqls(table):
                     "boss text, "
                     "time integer not null, "
                     "roster boolean not null, "
-                    "tag text"
+                    "tag text, "
+                    "size integer"
                     ");",
 
             'player': "create table if not exists Players ("

@@ -318,8 +318,8 @@ class RaidCog(commands.Cog):
             await channel.send(error_message, delete_after=30)
         post = await channel.send('\u200B')
         raid_id = post.id
-        raid_columns = ['channel_id', 'guild_id', 'organizer_id', 'name', 'tier', 'boss', 'time', 'roster', 'tag']
-        raid_values = [channel.id, guild_id, author_id, full_name, tier, boss, timestamp, roster, tag]
+        raid_columns = ['channel_id', 'guild_id', 'organizer_id', 'name', 'tier', 'boss', 'time', 'roster', 'tag', 'size']
+        raid_values = [channel.id, guild_id, author_id, full_name, tier, boss, timestamp, roster, tag, raid_size]
         upsert(self.conn, 'Raids', raid_columns, raid_values, ['raid_id'], [raid_id])
         await channel.guild.create_role(mentionable=True, name=tag)
         if not creep:
@@ -820,8 +820,9 @@ class SelectView(discord.ui.View):
 
         self.slot = -1
         self.player = None
+        raid_size = select_one(self.conn, 'Raids', ['size'], ['raid_id'], [self.raid_id])
 
-        self.add_item(SlotSelect(len(raid_cog.slots_class_names)))
+        self.add_item(SlotSelect(raid_size))
         self.add_item(PlayerSelect(raid_cog.conn, raid_id))
         self.add_item(ClassSelect(raid_cog.class_emojis))
 
@@ -900,11 +901,13 @@ class ClassSelect(discord.ui.Select):
             search = '%' + self.values[0] + '%'
             slot_id = select_one(self.view.conn, 'Assignment', ['slot_id'], ['raid_id'], [raid_id], ['player_id'],
                                  ['class_name'], [search])
+            if slot_id is None:
+                slot_id = select_one(self.view.conn, 'Assignment', ['slot_id'], ['raid_id'], [raid_id], ['player_id'])
         else:
             slot_id = self.view.slot
         if slot_id is None:
-            msg = _("There are no slots available for the selected class. "
-                    "Please select the slot manually or pick a different class.")
+            msg = _("There are no slots available. "
+                    "Please select a slot manually to overwrite.")
             await interaction.response.send_message(msg, ephemeral=True)
             return
 
