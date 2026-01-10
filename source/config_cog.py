@@ -54,7 +54,7 @@ class ConfigCog(commands.Cog):
 
         invite_link = "https://discord.com/api/oauth2/authorize?client_id={0}&permissions=268462080&scope=bot" \
                       "%20applications.commands".format(self.bot.user.id)
-        donate_link = "https://www.paypal.com/donate?hosted_button_id=WWPCUJVJPMT7W"
+        #donate_link = "https://www.paypal.com/donate?hosted_button_id=WWPCUJVJPMT7W"
         releases = repo + "/releases/latest"
         r = requests.get(releases, allow_redirects=False)
         if r.ok:
@@ -74,7 +74,7 @@ class ConfigCog(commands.Cog):
             _("**[Source code]({0})**").format(repo),
             _("**[Support server]({0})**").format(server),
             _("**[Invite me!]({0})**").format(invite_link),
-            _("**[Donate]({0})**").format(donate_link),
+            #_("**[Donate]({0})**").format(donate_link),
             "",
             _("**Hosted by:** {0}").format(host),
             _("**Uptime:** {0}.").format(uptime),
