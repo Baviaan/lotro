@@ -389,6 +389,8 @@ class RaidCog(commands.Cog):
         post = channel.get_partial_message(raid_id)
         try:
             await post.edit(embed=embed)
+        except discord.Forbidden:
+            await channel.send(_("Missing permissions to edit the raid post."))
         except discord.HTTPException as e:
             logger.warning(e)
             msg = "The above error occurred sending the following messages as embed:"
@@ -932,7 +934,7 @@ class ClassSelect(discord.ui.Select):
             except discord.Forbidden:
                 logger.warning("Error: Missing 'Manage roles' permissions for {interaction.guild}.")
         else:
-            logger.warning('No role exists for raid {raid_id}.')
+            logger.warning(f'No role exists for raid {raid_id}.')
 
         await self.view.raid_cog.update_raid_post(raid_id, interaction.channel)
 
