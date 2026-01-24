@@ -601,7 +601,10 @@ class RaidCog(commands.Cog):
 
     async def cleanup_old_raid(self, raid_id, message):
         logger.info(message)
-        guild_id = select_one(self.conn, 'Raids', ['guild_id'], ['raid_id'], [raid_id])
+        tag, guild_id = select_one(self.conn, 'Raids', ['tag', 'guild_id'], ['raid_id'], [raid_id])
+        guild = self.bot.get_guild(guild_id)
+        role = discord.utils.get(guild.roles, name=tag)
+        await role.delete()
         delete(self.conn, 'Raids', ['raid_id'], [raid_id])
         delete(self.conn, 'Players', ['raid_id'], [raid_id])
         delete(self.conn, 'Assignment', ['raid_id'], [raid_id])
@@ -1019,10 +1022,6 @@ class ConfigureModal(discord.ui.Modal):
         await interaction.response.defer()
         # Delete the guild event
         await self.calendar_cog.delete_guild_event(interaction.guild, self.raid_id)
-        # Delete tag role
-        tag = select_one(self.conn, 'Raids', ['tag'], ['raid_id'], [self.raid_id])
-        role = discord.utils.get(interaction.guild.roles, name=tag)
-        await role.delete()
         # remove from memory first
         await self.raid_cog.cleanup_old_raid(self.raid_id, "Raid deleted via button.")
         # so deletion doesn't trigger another clean up
