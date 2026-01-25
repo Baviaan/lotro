@@ -604,7 +604,8 @@ class RaidCog(commands.Cog):
         tag, guild_id = select_one(self.conn, 'Raids', ['tag', 'guild_id'], ['raid_id'], [raid_id])
         guild = self.bot.get_guild(guild_id)
         role = discord.utils.get(guild.roles, name=tag)
-        await role.delete()
+        if role:
+            await role.delete()
         delete(self.conn, 'Raids', ['raid_id'], [raid_id])
         delete(self.conn, 'Players', ['raid_id'], [raid_id])
         delete(self.conn, 'Assignment', ['raid_id'], [raid_id])
