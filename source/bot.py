@@ -158,3 +158,7 @@ class Bot(commands.Bot):
         res = upsert(self.conn, 'Settings', ['last_command'], [timestamp], ['guild_id'], [guild_id])
         if res:
             self.conn.commit()
+
+    async def close(self):
+        await self.http_session.close()
+        await super().close()

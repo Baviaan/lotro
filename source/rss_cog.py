@@ -32,12 +32,12 @@ class RSSCog(commands.GroupCog, name=_("rss"), description=_("Manage RSS setting
 
     async def get_rss_feed(self, url):
         ssl_context = ssl.create_default_context(cafile="../lotro-com-chain.pem")
-        resp = await self.bot.http_session.get(url, ssl=ssl_context)
-        text = await resp.text()
-        if not resp.ok:
-            logger.error("LotRO forums endpoint status: {0}.".format(resp.status_code))
-            logger.error(text)
-            return None
+        async with self.bot.http_session.get(url, ssl=ssl_context) as resp:
+            text = await resp.text()
+            if not resp.ok:
+                logger.error("LotRO forums endpoint status: {0}.".format(resp.status_code))
+                logger.error(text)
+                return None
         feed = feedparser.parse(text)
         return feed
 

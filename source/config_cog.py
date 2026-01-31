@@ -55,16 +55,16 @@ class ConfigCog(commands.Cog):
                       "%20applications.commands".format(self.bot.user.id)
         #donate_link = "https://www.paypal.com/donate?hosted_button_id=WWPCUJVJPMT7W"
         releases = repo + "/releases/latest"
-        r = await self.bot.http_session.get(releases, allow_redirects=False)
-        if r.ok:
-            try:
-                location = r.headers['location']
-            except KeyError:
-                latest_version = "N/A"
+        async with  self.bot.http_session.get(releases, allow_redirects=False) as r:
+            if r.ok:
+                try:
+                    location = r.headers['location']
+                except KeyError:
+                    latest_version = "N/A"
+                else:
+                    (x, y, latest_version) = location.rpartition('/')
             else:
-                (x, y, latest_version) = location.rpartition('/')
-        else:
-            latest_version = "N/A"
+                latest_version = "N/A"
 
         title = "{0}".format(self.bot.user)
         about = [

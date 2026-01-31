@@ -167,12 +167,12 @@ class CalendarCog(commands.Cog):
             return self.upcoming_events
 
         event_url = "https://www.lotro.com/news/lotro-public-event-schedule-en"
-        r = await self.bot.http_session.get(event_url)
-        if not r.ok:
-            logger.warning("Could not connect to lotro.com")
-            return self.upcoming_events
+        async with self.bot.http_session.get(event_url) as resp:
+            if not resp.ok:
+                logger.warning("Could not connect to lotro.com")
+                return self.upcoming_events
+            text = await resp.text()
 
-        text = await r.text()
         stripped = re.sub('<[^<]+?>', '', text)
         stripped = stripped.replace('\xa0', '')
         stripped = stripped.replace('&gt;', '>')
