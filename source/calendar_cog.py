@@ -3,7 +3,6 @@ import discord
 import logging
 import pytz
 import re
-import requests
 
 from datetime import datetime, timedelta, timezone
 from discord import app_commands
@@ -162,17 +161,19 @@ class CalendarCog(commands.Cog):
         except discord.Forbidden:
             logger.warning("Missing manage events permission for guild {0}".format(guild.id))
 
-    def get_events(self):
+    async def get_events(self):
         current_time = datetime.now().timestamp()
         if self.cached_events_at and self.cached_events_at + 86400 > current_time:
             return self.upcoming_events
 
-        r = requests.get("https://www.lotro.com/news/lotro-public-event-schedule-en")
+        event_url = "https://www.lotro.com/news/lotro-public-event-schedule-en"
+        r = await self.bot.http_session.get(event_url)
         if not r.ok:
             logger.warning("Could not connect to lotro.com")
             return self.upcoming_events
 
-        stripped = re.sub('<[^<]+?>', '', r.text)
+        text = await r.text()
+        stripped = re.sub('<[^<]+?>', '', text)
         stripped = stripped.replace('\xa0', '')
         stripped = stripped.replace('&gt;', '>')
         # Let us hope this questionable pattern is stable enough
@@ -206,8 +207,8 @@ class CalendarCog(commands.Cog):
         self.upcoming_events = upcoming_events
         return upcoming_events
 
-    def events_embed(self, guild_id):
-        events = self.get_events()
+    async def events_embed(self, guild_id):
+        events = await self.get_events()
 
         title = _("Upcoming events:")
         embed = discord.Embed(title=title, colour=discord.Colour(0x3498db))
@@ -243,7 +244,7 @@ class CalendarCog(commands.Cog):
     @app_commands.guild_only()
     async def events_respond(self, interaction: discord.Interaction):
         await interaction.response.send_message(_("Waiting for lotro.com to respond..."))
-        events = self.events_embed(interaction.guild_id)
+        events = await self.events_embed(interaction.guild_id)
         await interaction.edit_original_response(content='', embed=events)
 
     group = CalendarGroup()

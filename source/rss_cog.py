@@ -2,7 +2,7 @@ import discord
 import feedparser
 import json
 import logging
-import requests
+import ssl
 
 from bs4 import BeautifulSoup
 from discord import app_commands
@@ -31,12 +31,14 @@ class RSSCog(commands.GroupCog, name=_("rss"), description=_("Manage RSS setting
         self.rss_task.cancel()
 
     async def get_rss_feed(self, url):
-        response = requests.get(url, verify="../lotro-com-chain.pem")
-        if response.status_code != 200:
-            logger.error("LotRO forums endpoint status: {0}.".format(response.status_code))
-            logger.error(response.text)
+        ssl_context = ssl.create_default_context(cafile="../lotro-com-chain.pem")
+        resp = await self.bot.http_session.get(url, ssl=ssl_context)
+        text = await resp.text()
+        if not resp.ok:
+            logger.error("LotRO forums endpoint status: {0}.".format(resp.status_code))
+            logger.error(text)
             return None
-        feed = feedparser.parse(response.text)
+        feed = feedparser.parse(text)
         return feed
 
     async def get_new_posts(self, urls):

@@ -1,7 +1,6 @@
 import datetime
 import discord
 import logging
-import requests
 
 from discord import app_commands
 from discord.ext import commands
@@ -56,7 +55,7 @@ class ConfigCog(commands.Cog):
                       "%20applications.commands".format(self.bot.user.id)
         #donate_link = "https://www.paypal.com/donate?hosted_button_id=WWPCUJVJPMT7W"
         releases = repo + "/releases/latest"
-        r = requests.get(releases, allow_redirects=False)
+        r = await self.bot.http_session.get(releases, allow_redirects=False)
         if r.ok:
             try:
                 location = r.headers['location']

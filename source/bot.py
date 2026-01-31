@@ -1,3 +1,4 @@
+import aiohttp
 from datetime import datetime
 import discord
 from discord.ext import commands
@@ -111,6 +112,10 @@ class Bot(commands.Bot):
             return
         for guild in self.guilds:
             self.logger.info('Welcome to {0}, {1}.'.format(guild.name, guild.id))
+        self.logger.info('We are in {0} guilds.'.format(len(self.guilds)))
+
+        self.http_session = aiohttp.ClientSession()
+
         try:
             await self.load_extension('config_cog')
             await self.load_extension('dev_cog')

@@ -10,7 +10,6 @@ import json
 import logging
 import random
 import re
-import requests
 import time
 from typing import Optional
 
