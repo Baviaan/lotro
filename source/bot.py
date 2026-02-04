@@ -114,6 +114,11 @@ class Bot(commands.Bot):
             self.logger.info('Welcome to {0}, {1}.'.format(guild.name, guild.id))
         self.logger.info('We are in {0} guilds.'.format(len(self.guilds)))
 
+        # Close old session if it already exists
+        try:
+            await self.http_session.close()
+        except AttributeError:
+            pass
         self.http_session = aiohttp.ClientSession()
 
         try:
