@@ -311,7 +311,12 @@ class RaidCog(commands.Cog):
                 author_id, raid_time)
             await channel.send(error_message)
             return
-        if current_time + 604800 < timestamp or current_time > timestamp:
+        if current_time > timestamp:
+            error_message = _("Events must start in the future <@{0}>. Your event on {1} UTC will not be saved.").format(
+                author_id, raid_time)
+            await channel.send(error_message)
+            return
+        if current_time + 604800 < timestamp:
             error_message = _("Please check the date <@{0}>. You are posting a raid for: {1} UTC.").format(
                 author_id, raid_time)
             await channel.send(error_message, delete_after=30)
