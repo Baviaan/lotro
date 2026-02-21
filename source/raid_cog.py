@@ -394,7 +394,10 @@ class RaidCog(commands.Cog):
         try:
             await post.edit(embed=embed)
         except discord.Forbidden:
-            await channel.send(_("Missing permissions to edit the raid post."))
+            try:
+                await channel.send(_("Missing permissions to edit the raid post."))
+            except discord.Forbidden:
+                logger.warning(f"Missing access to {channel.id} in {channel.guild.id}.")
         except discord.HTTPException as e:
             logger.warning(e)
             msg = "The above error occurred sending the following messages as embed:"
