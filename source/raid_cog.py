@@ -407,7 +407,7 @@ class RaidCog(commands.Cog):
 
     def build_raid_message(self, raid_id, embed_texts_av, embed_texts_unav):
         try:
-            name, tier, time, boss, roster, tag = select_one(self.conn, 'Raids', ['name', 'tier', 'time', 'boss', 'roster', 'tag'],
+            name, tier, time, boss, roster, organizer_id, tag = select_one(self.conn, 'Raids', ['name', 'tier', 'time', 'boss', 'roster', 'organizer_id', 'tag'],
                                                     ['raid_id'], [raid_id])
         except TypeError:
             logger.info("The raid has been deleted during editing.")
@@ -419,10 +419,9 @@ class RaidCog(commands.Cog):
             embed_title = f"{name} {tier}\n<t:{timestamp}:F>"
         else:
             embed_title = f"{name}\n<t:{timestamp}:F>"
+        embed_description = f"Organiser: <@{organizer_id}>\n"
         if tag:
-            embed_description = f"Tag: {tag}\n\n"
-        else:
-            embed_description = ""
+            embed_description += f"Tag: {tag}\n\n"
         if boss:
             embed_description += _("Aim: {0}").format(boss)
 
