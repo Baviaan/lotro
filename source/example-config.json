@@ -2,7 +2,7 @@
   "BOT_TOKEN": "Token goes here",
   "CLASSES": ["Beorning","Brawler","Burglar","Captain","Champion","Guardian","Hunter","Loremaster","Mariner","Minstrel","Runekeeper","Warden"],
   "DUOSPEC": ["Brawler","Guardian","Minstrel","Warden"],
-  "CREEPS": ["Blackarrow", "Defiler", "Reaver", "Stalker", "Warleader", "Weaver"],
+  "CREEPS": ["Blackarrow", "Defiler", "Reaver", "Sorceress", "Stalker", "Warleader", "Weaver"],
   "LANGUAGE": "en",
   "LINEUP": ["000000000110","100100000110","000000010000","001000000000","010101000000","110101000001","000100011000","000000100110","100010000001","000010100111","111010001001","111011010111"],
   "SERVER_TZ": "America/New_York"
