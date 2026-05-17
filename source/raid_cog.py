@@ -769,12 +769,9 @@ class CreepView(discord.ui.View):
         super().__init__(timeout=None)
         self.raid_cog = raid_cog
         self.conn = raid_cog.conn
-        # For better visual appearance divide creep classes equally over two rows
-        split = len(raid_cog.creep_emojis)//2 - 1
-        for emoji in raid_cog.creep_emojis[:split]:
-            self.add_item(EmojiButton(emoji, 0))
-        for emoji in raid_cog.creep_emojis[split:]:
-            self.add_item(EmojiButton(emoji, 1))
+        # For better visual appearance divide creep classes equally over three rows
+        for index, emoji in enumerate(raid_cog.creep_emojis):
+            self.add_item(EmojiButton(emoji, (index+2)//3))
 
     async def sign_up_class(self, i, creep_name):
         raid_id = i.message.id
