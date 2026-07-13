@@ -642,8 +642,9 @@ class RaidView(discord.ui.View):
         super().__init__(timeout=None)
         self.raid_cog = raid_cog
         self.conn = raid_cog.conn
-        for emoji in raid_cog.class_emojis:
-            self.add_item(EmojiButton(emoji))
+        for index, emoji in enumerate(raid_cog.class_emojis):
+            row = 1 + index//4
+            self.add_item(EmojiButton(emoji, row))
 
     @discord.ui.button(emoji="\U0001F6E0\uFE0F", style=discord.ButtonStyle.blurple, custom_id='raid_view:settings')
     async def settings(self, interaction: discord.Interaction, button: discord.ui.Button):
