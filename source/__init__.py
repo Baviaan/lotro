@@ -6,5 +6,5 @@ Saruman - A Discord bot for scheduling raids in Standing Stone Games' Lord of th
 
 __author__ = "Baviaan"
 __license__ = "GNU General Public License v3.0"
-__version__ = "7.2.0"
+__version__ = "7.3.0"
 __lotro__ = "48.8.0"

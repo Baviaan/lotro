@@ -89,14 +89,16 @@ class ConfigCog(commands.Cog):
     @staticmethod
     def welcome_msg(guild_name):
         msg = _("Greetings {0}! I am confined to Orthanc and here to spend my days doing your raid admin.\n\n"
-                "You can quickly schedule a raid with the `/rem` and `/ad` commands. Examples:\n"
-                "`/rem t2 Friday 8pm`\n"
-                "`/ad t3 26 July 1pm`\n"
+                "You can quickly schedule a raid or instance with the slash commands. Examples:\n"
+                "`/temple t2 Friday 8pm`\n"
+                "`/folly t3 26 July 1pm`\n"
+                "`/garden t1 in two hours`\n"
                 "Use `/custom` to schedule a custom raid or meetup.\n\n"
                 "With `/calendar` you can get an (automatically updated) overview of all scheduled raids. "
                 "It is recommended you use a separate discord channel to display the calendar in.\n"
                 "Use `/time_zones` to change the default time settings and "
-                "you can designate a raid leader role with `/leader`, which allows non-admins to edit raids."
+                "you can designate a raid leader role with `/leader`, which allows non-admins to edit raids.\n\n"
+                "Full command overview: <https://github.com/Baviaan/lotro/#command-overview>"
                 ).format(guild_name)
         return msg
 
