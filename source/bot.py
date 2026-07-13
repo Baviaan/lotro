@@ -62,6 +62,11 @@ class Bot(commands.Bot):
             self.host_id = int(host_id)
         else:
             self.host_id = None
+        creep_id = read_config_key(config, 'HOST_CREEP', False)
+        if creep_id:
+            self.creep_id = int(creep_id)
+        else:
+            self.creep_id = None
 
         # Check for twitter auth
         self.twitter_token = read_config_key(config, 'TWITTER_TOKEN', False)

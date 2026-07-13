@@ -66,12 +66,17 @@ class RaidCog(commands.Cog):
 
         # Emojis
         host_guild = bot.get_guild(bot.host_id)
+        creep_guild = bot.get_guild(bot.creep_id)
         if not host_guild:
             # Use first guild as host
             host_guild = bot.guilds[0]
+        if not creep_guild:
+            # Use first guild as host
+            creep_guild = bot.guilds[0]
         logger.info("Using emoji from {0}.".format(host_guild))
+        logger.info("Using creep emoji from {0}.".format(creep_guild))
         self.class_emojis = [emoji for emoji in host_guild.emojis if emoji.name in self.role_names]
-        self.creep_emojis = [emoji for emoji in host_guild.emojis if emoji.name in self.creep_names]
+        self.creep_emojis = [emoji for emoji in creep_guild.emojis if emoji.name in self.creep_names]
         self.emojis_dict = {emoji.name: str(emoji) for emoji in self.class_emojis + self.creep_emojis}
 
         # Add raid views
