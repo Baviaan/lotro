@@ -6,6 +6,7 @@ from discord import app_commands
 from discord.ext import commands
 from discord.ext import tasks
 from enum import Enum
+import itertools
 import json
 import logging
 import random
@@ -77,7 +78,10 @@ class RaidCog(commands.Cog):
         logger.info("Using creep emoji from {0}.".format(creep_guild))
         self.class_emojis = [emoji for emoji in host_guild.emojis if emoji.name in self.role_names]
         self.creep_emojis = [emoji for emoji in creep_guild.emojis if emoji.name in self.creep_names]
-        self.emojis_dict = {emoji.name: str(emoji) for emoji in self.class_emojis + self.creep_emojis}
+        self.specs = ["Red", "Blue", "Yellow"]
+        spec_names = ["_".join(element) for element in itertools.product(self.role_names, self.specs)]
+        self.spec_emojis = [emoji for emoji in host_guild.emojis if emoji.name in spec_names]
+        self.emojis_dict = {emoji.name: str(emoji) for emoji in self.class_emojis + self.creep_emojis + self.spec_emojis}
 
         # Add raid views
         self.bot.add_view(RaidView(self))
@@ -202,7 +206,8 @@ class RaidCog(commands.Cog):
         await interaction.edit_original_response(content=content)
 
     @app_commands.command(name=_("specs"), description=_("Set a specialization for your class."))
-    @app_commands.describe(classes=_("The class to set your specialization for."), spec=_("Your chosen specialization."))
+    @app_commands.describe(classes=_("The class to set your specialization for."),
+                           spec=_("Your chosen specialization."), tier=_("Apply this spec only to a specific tier"))
     @app_commands.choices(spec=[
         app_commands.Choice(name='Red \U0001F534', value=0b001),
         app_commands.Choice(name='Blue \U0001F535', value=0b010),
@@ -210,13 +215,27 @@ class RaidCog(commands.Cog):
         app_commands.Choice(name='Red \U0001F534 and Blue \U0001F535', value=0b011),
         app_commands.Choice(name='Blue \U0001F535 and Yellow \U0001F7E1', value=0b110),
         app_commands.Choice(name='Red \U0001F534 and Yellow \U0001F7E1', value=0b101),
+        app_commands.Choice(name='Red \U0001F534, Blue \U0001F535 and Yellow \U0001F7E1', value=0b111),
+        app_commands.Choice(name='\U0001F534 \U0001F7E0 \U0001F7E2', value=0b1000),
         app_commands.Choice(name='Clear specialization', value=0b000),
     ])
-    async def specs_respond(self, interaction: discord.Interaction, classes: Classes, spec: app_commands.Choice[int]):
+    async def specs_respond(self, interaction: discord.Interaction, classes: Classes, spec: app_commands.Choice[int], tier: Optional[app_commands.Range[int, 0, 5]]=0):
+        if spec.value & 0b1000:
+            msg = _("<@{0}> loving you is easy when your colours are like my dreams \U0001F3B6").format(interaction.user.id)
+            await interaction.response.send_message(msg)
+            return
         if duo_spec and classes.name in duo_spec and (spec.value & 0b100):
             await interaction.response.send_message(_("Invalid specialization."))
             return
-        upsert(self.conn, 'Specs', [classes.name], [spec.value], ['player_id'], [interaction.user.id])
+        if tier==0:
+            value = spec.value + 8*spec.value + 64*spec.value + 512*spec.value + 4096*spec.value
+        else:
+            value = select_one(self.conn, 'Specs', [classes.name], ['player_id'], [interaction.user.id])
+            if not value:
+                value = 0
+            value &= ~(8**(tier-1) * 0b111)
+            value |= 8**(tier-1) * spec.value
+        upsert(self.conn, 'Specs', [classes.name], [value], ['player_id'], [interaction.user.id])
         await interaction.response.send_message(_("Updated your {0} specialization.").format(classes.name), ephemeral=True)
 
     @app_commands.command(name=_("list_players"), description=_("List the signed up players for a raid in order of sign up time."))
@@ -484,6 +503,10 @@ class RaidCog(commands.Cog):
             columns.extend(self.creep_names)
         unavailable = not available
         result = select(self.conn, 'Players', columns, ['raid_id', 'unavailable'], [raid_id, unavailable])
+        tier = select_one(self.conn, 'Raids', ['Tier'], ['raid_id'], [raid_id])
+        if tier is not None:
+            # Parse tier to integer (e.g. T2c)
+            tier = int(''.join(filter(str.isdigit, tier)))
         player_strings = []
         if result:
             number_of_players = len(result)
@@ -493,19 +516,26 @@ class RaidCog(commands.Cog):
                 i = 2
                 if available:
                     specs = select_one(self.conn, 'Specs', self.role_names, ['player_id'], [row[1]])
-                    player_string = row[i] + " "
-                    for name in [*self.role_names, *self.creep_names]:
-                        i = i + 1
-                        if row[i]:
-                            spec_str = ""
-                            if specs and i < len(self.role_names) + 3:
-                                spec = specs[i-3]
-                                if spec:
-                                    for emoji in ["\U0001F534", "\U0001F535", "\U0001F7E1"]:
-                                        if (spec % 2):
-                                            spec_str += emoji
-                                        spec = spec >> 1
-                            player_string += self.emojis_dict[name] + spec_str
+                    player_string = row[i]
+                    if tier:
+                        player_string += " "
+                        for name in [*self.role_names, *self.creep_names]:
+                            i = i + 1
+                            if row[i]:
+                                spec_str = ""
+                                # No specs for creeps
+                                if specs and i < len(self.role_names) + 3:
+                                    spec = specs[i-3]
+                                    # Get the relevant specialization for the tier
+                                    spec = (spec >> (tier-1)*3) & 0b111
+                                    if(spec==0b111):
+                                        player_string += self.emojis_dict[name]
+                                    else:
+                                        for role in self.specs:
+                                            if spec & 0b1:
+                                                emoji = name + "_" + role
+                                                player_string += self.emojis_dict[emoji]
+                                            spec = spec >> 1
                 else:
                     player_string = "\u274C " + row[i]
                 player_string = player_string + "\n"
@@ -705,6 +735,17 @@ class RaidView(discord.ui.View):
         raid_id = i.message.id
         timestamp = int(time.time())
         byname = self.raid_cog.process_name(i.guild.id, i.user)
+
+        spec = select_one(self.conn, 'Specs', [class_name], ['player_id'], [i.user.id])
+        tier = select_one(self.conn, 'Raids', ['Tier'], ['raid_id'], [raid_id])
+        if tier is not None:
+            # Parse tier to integer (e.g. T2c)
+            tier = int(''.join(filter(str.isdigit, tier)))
+            if spec is None or not ((spec >> (tier-1)*3) & 0b111):
+                err_msg = _("You have not yet set a {0} specialization for tier {1}. Please first use /specs.").format(class_name, tier)
+                await i.response.send_message(err_msg, ephemeral=True)
+                return
+
         sign_up = not select_one(self.conn, 'Players', [class_name], eq_columns=['player_id', 'raid_id'], eq_values=[i.user.id, raid_id])
         if not sign_up:
             sign_ups = select_one(self.conn, 'Players', self.raid_cog.role_names, eq_columns=['player_id', 'raid_id'], eq_values=[i.user.id, raid_id])
@@ -720,21 +761,32 @@ class RaidView(discord.ui.View):
 
     async def sign_up_all(self, i):
         raid_id = i.message.id
-        role_names = [role.name for role in i.user.roles if role.name in self.raid_cog.role_names]
-        if role_names:
-            await i.response.defer()
-            timestamp = int(time.time())
-            columns = ['byname', 'timestamp', 'unavailable']
-            columns.extend(role_names)
-            byname = self.raid_cog.process_name(i.guild.id, i.user)
-            values = [byname, timestamp, False]
-            values.extend([True] * len(role_names))
-            upsert(self.conn, 'Players', columns, values, ['player_id', 'raid_id'], [i.user.id, raid_id])
-            self.conn.commit()
-            await self.raid_cog.update_raid_post(raid_id, i.channel, delay=0)
-        else:
-            err_msg = _("You have not assigned yourself any class roles yet, please sign up with a class first.")
-            await i.response.send_message(err_msg, ephemeral=True)
+
+        specs = select_one(self.conn, 'Specs', self.raid_cog.role_names, ['player_id'], [i.user.id])
+        tier = select_one(self.conn, 'Raids', ['Tier'], ['raid_id'], [raid_id])
+
+        timestamp = int(time.time())
+        columns = ['byname', 'timestamp', 'unavailable']
+        byname = self.raid_cog.process_name(i.guild.id, i.user)
+        values = [byname, timestamp, False]
+
+        if tier is not None:
+            # Parse tier to integer (e.g. T2c)
+            tier = int(''.join(filter(str.isdigit, tier)))
+            for index, name in enumerate(self.raid_cog.role_names):
+                spec = specs[index]
+                if spec and ((spec >> (tier-1)*3) & 0b111):
+                    columns.append(name)
+                    values.append(True)
+            if(len(columns) == 3):
+                err_msg = _("You have not assigned yourself any class roles yet for this tier, please set a class specialization first with /specs.")
+                await i.response.send_message(err_msg, ephemeral=True)
+                return
+
+        await i.response.defer()
+        upsert(self.conn, 'Players', columns, values, ['player_id', 'raid_id'], [i.user.id, raid_id])
+        self.conn.commit()
+        await self.raid_cog.update_raid_post(raid_id, i.channel, delay=0)
 
     async def sign_up_cancel(self, i):
         await i.response.defer()
