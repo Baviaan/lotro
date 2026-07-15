@@ -523,19 +523,20 @@ class RaidCog(commands.Cog):
                         if row[i]:
                             # No specs for creeps
                             if tier and i < len(self.role_names) +3:
-                                spec = specs[i-3]
                                 #backwards compatibility before specs enforcement
-                                if spec:
-                                    # Get the relevant specialization for the tier
-                                    spec = (spec >> (tier-1)*3) & 0b111
-                                    if(spec==0b111):
-                                        player_string += self.emojis_dict[name]
-                                    else:
-                                        for role in self.specs:
-                                            if spec & 0b1:
-                                                emoji = name + "_" + role
-                                                player_string += self.emojis_dict[emoji]
-                                            spec = spec >> 1
+                                if specs:
+                                    spec = specs[i-3]
+                                    if spec:
+                                        # Get the relevant specialization for the tier
+                                        spec = (spec >> (tier-1)*3) & 0b111
+                                        if(spec==0b111):
+                                            player_string += self.emojis_dict[name]
+                                        else:
+                                            for role in self.specs:
+                                                if spec & 0b1:
+                                                    emoji = name + "_" + role
+                                                    player_string += self.emojis_dict[emoji]
+                                                spec = spec >> 1
                             else:
                                 player_string += self.emojis_dict[name]
                 else:
