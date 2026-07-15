@@ -776,11 +776,12 @@ class RaidView(discord.ui.View):
         if tier:
             # Parse tier to integer (e.g. T2c)
             tier = int(''.join(filter(str.isdigit, tier)))
-            for index, name in enumerate(self.raid_cog.role_names):
-                spec = specs[index]
-                if spec and ((spec >> (tier-1)*3) & 0b111):
-                    columns.append(name)
-                    values.append(True)
+            if specs:
+                for index, name in enumerate(self.raid_cog.role_names):
+                    spec = specs[index]
+                    if spec and ((spec >> (tier-1)*3) & 0b111):
+                        columns.append(name)
+                        values.append(True)
             if(len(columns) == 3):
                 err_msg = _("You have not assigned yourself any class roles yet for this tier, please set a class specialization first with /specs.")
                 await i.response.send_message(err_msg, ephemeral=True)
