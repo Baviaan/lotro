@@ -504,7 +504,7 @@ class RaidCog(commands.Cog):
         unavailable = not available
         result = select(self.conn, 'Players', columns, ['raid_id', 'unavailable'], [raid_id, unavailable])
         tier = select_one(self.conn, 'Raids', ['Tier'], ['raid_id'], [raid_id])
-        if tier is not None:
+        if tier:
             # Parse tier to integer (e.g. T2c)
             tier = int(''.join(filter(str.isdigit, tier)))
         player_strings = []
@@ -517,14 +517,14 @@ class RaidCog(commands.Cog):
                 if available:
                     specs = select_one(self.conn, 'Specs', self.role_names, ['player_id'], [row[1]])
                     player_string = row[i]
-                    if tier:
-                        player_string += " "
-                        for name in [*self.role_names, *self.creep_names]:
-                            i = i + 1
-                            if row[i]:
-                                spec_str = ""
-                                # No specs for creeps
-                                if specs and i < len(self.role_names) + 3:
+                    player_string += " "
+                    for name in [*self.role_names, *self.creep_names]:
+                        i = i + 1
+                        if row[i]:
+                            # No specs for creeps
+                            if tier and i < len(self.role_names) +3:
+                                #backwards compatibility before specs enforcement
+                                if specs:
                                     spec = specs[i-3]
                                     # Get the relevant specialization for the tier
                                     spec = (spec >> (tier-1)*3) & 0b111
@@ -536,6 +536,8 @@ class RaidCog(commands.Cog):
                                                 emoji = name + "_" + role
                                                 player_string += self.emojis_dict[emoji]
                                             spec = spec >> 1
+                            else:
+                                player_string += self.emojis_dict[name]
                 else:
                     player_string = "\u274C " + row[i]
                 player_string = player_string + "\n"
@@ -738,7 +740,7 @@ class RaidView(discord.ui.View):
 
         spec = select_one(self.conn, 'Specs', [class_name], ['player_id'], [i.user.id])
         tier = select_one(self.conn, 'Raids', ['Tier'], ['raid_id'], [raid_id])
-        if tier is not None:
+        if tier:
             # Parse tier to integer (e.g. T2c)
             tier = int(''.join(filter(str.isdigit, tier)))
             if spec is None or not ((spec >> (tier-1)*3) & 0b111):
@@ -770,7 +772,7 @@ class RaidView(discord.ui.View):
         byname = self.raid_cog.process_name(i.guild.id, i.user)
         values = [byname, timestamp, False]
 
-        if tier is not None:
+        if tier:
             # Parse tier to integer (e.g. T2c)
             tier = int(''.join(filter(str.isdigit, tier)))
             for index, name in enumerate(self.raid_cog.role_names):
