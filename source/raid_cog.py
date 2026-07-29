@@ -801,8 +801,9 @@ class RaidView(discord.ui.View):
         if assigned_slot is not None:
             class_name = select_one(self.conn, 'Assignment', ['class_name'], ['player_id', 'raid_id'],
                                     [i.user.id, raid_id])
-            error_msg = _("Dearest raid leader, {0} has cancelled their availability. "
-                          "Please note they were assigned to {1} in the raid.").format(i.user.mention, class_name)
+            organizer_id = select_one(self.conn, 'Raids', ['organizer_id'], ['raid_id'], [raid_id])
+            error_msg = _("<@{2}>, {0} has cancelled their availability. "
+                          "Please note they were assigned to {1} in the raid.").format(i.user.mention, class_name, organizer_id)
             await i.channel.send(error_msg)
 
             tag = select_one(self.conn, 'Raids', ['tag'], ['raid_id'], [raid_id])
