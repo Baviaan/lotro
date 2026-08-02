@@ -476,6 +476,7 @@ class RaidCog(commands.Cog):
             embed_text = ""
             for row in result[left_size:]:
                 class_names = row[1].split(',')
+                spec = row[2]
                 for class_name in class_names:
                     if spec:
                         assigned_class = class_name + "_" + self.specs[spec.bit_length()-1]
