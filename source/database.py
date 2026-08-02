@@ -91,6 +91,7 @@ def table_sqls(table):
                       "player_id integer, "
                       "byname text, "
                       "class_name text, "
+                      "spec integer, "
                       "primary key (raid_id, slot_id), "
                       "foreign key (raid_id) references Raids(raid_id)"
                       ");",

@@ -451,7 +451,7 @@ class RaidCog(commands.Cog):
 
         embed = discord.Embed(title=embed_title, colour=discord.Colour(0x3498db), description=embed_description)
         if roster:
-            result = select(self.conn, 'Assignment', ['byname, class_name'], ['raid_id'], [raid_id])
+            result = select(self.conn, 'Assignment', ['byname, class_name', 'spec'], ['raid_id'], [raid_id])
             number_of_slots = len(result)
             # Add first half
             embed_name = _("Selected line up:")
@@ -462,8 +462,13 @@ class RaidCog(commands.Cog):
                 left_size = min(number_of_slots, 6)
             for row in result[:left_size]:
                 class_names = row[1].split(',')
+                spec = row[2]
                 for class_name in class_names:
-                    embed_text = embed_text + self.emojis_dict[class_name]
+                    if spec:
+                        assigned_class = class_name + "_" + self.specs[spec.bit_length()-1]
+                    else:
+                        assigned_class = class_name
+                    embed_text = embed_text + self.emojis_dict[assigned_class]
                 embed_text = embed_text + ": " + row[0] + "\n"
             embed.add_field(name=embed_name, value=embed_text)
             # Add second half
@@ -472,7 +477,11 @@ class RaidCog(commands.Cog):
             for row in result[left_size:]:
                 class_names = row[1].split(',')
                 for class_name in class_names:
-                    embed_text = embed_text + self.emojis_dict[class_name]
+                    if spec:
+                        assigned_class = class_name + "_" + self.specs[spec.bit_length()-1]
+                    else:
+                        assigned_class = class_name
+                    embed_text = embed_text + self.emojis_dict[assigned_class]
                 embed_text = embed_text + ": " + row[0] + "\n"
             embed.add_field(name=embed_name, value=embed_text)
             embed.add_field(name="\u200B", value="\u200B")
@@ -812,8 +821,8 @@ class RaidView(discord.ui.View):
                 await i.user.remove_roles(role)
 
             class_names = ','.join(self.raid_cog.slots_class_names[assigned_slot])
-            assign_columns = ['player_id', 'byname', 'class_name']
-            assign_values = [None, _("<Open>"), class_names]
+            assign_columns = ['player_id', 'byname', 'class_name', 'spec']
+            assign_values = [None, _("<Open>"), class_names, 0]
             upsert(self.conn, 'Assignment', assign_columns, assign_values, ['raid_id', 'slot_id'],
                    [raid_id, assigned_slot])
         r = select_one(self.conn, 'Players', ['byname'], ['player_id', 'raid_id'], [i.user.id, raid_id])
@@ -893,10 +902,15 @@ class SelectView(discord.ui.View):
 
         self.slot = -1
         self.player = None
-        raid_size = select_one(self.conn, 'Raids', ['size'], ['raid_id'], [self.raid_id])
+
+        raid_size, tier = select_one(self.conn, 'Raids', ['size', 'tier'], ['raid_id'], [self.raid_id])
 
         self.add_item(SlotSelect(raid_size))
         self.add_item(PlayerSelect(raid_cog.conn, raid_id))
+
+        if tier:
+            self.add_item(SpecSelect())
+
         self.add_item(ClassSelect(raid_cog.class_emojis))
 
     async def on_timeout(self):
@@ -931,6 +945,19 @@ class PlayerSelect(discord.ui.Select):
         self.view.player = self.values[0]
         await interaction.response.defer()
 
+class SpecSelect(discord.ui.Select):
+    def __init__(self):
+        options = [
+            discord.SelectOption(value=0b000, label='Spec (unspecified)'),
+            discord.SelectOption(value=0b001, label='Red \U0001F534'),
+            discord.SelectOption(value=0b010, label='Blue \U0001F535'),
+            discord.SelectOption(value=0b100, label='Yellow \U0001F7E1'),
+        ]
+        super().__init__(placeholder=_('Spec (unspecified)'), options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        self.view.spec = int(self.values[0])
+        await interaction.response.defer()
 
 class ClassSelect(discord.ui.Select):
     def __init__(self, class_emojis):
@@ -949,7 +976,7 @@ class ClassSelect(discord.ui.Select):
 
         #no members intent so fetch
         member = await interaction.guild.fetch_member(self.view.player)
-        tag = select_one(self.view.conn, 'Raids', ['tag'], ['raid_id'], [self.view.raid_id])
+        tag, tier = select_one(self.view.conn, 'Raids', ['tag', 'tier'], ['raid_id'], [self.view.raid_id])
         role = discord.utils.get(interaction.guild.roles, name=tag)
 
         if self.values[0] == 'remove':
@@ -965,10 +992,27 @@ class ClassSelect(discord.ui.Select):
 
         signup = select_one(self.view.conn, 'Players', [self.values[0], 'byname'], ['player_id', 'raid_id'],
                             [self.view.player, raid_id])
+
         if not signup[0]:
             msg = _("{0} did not sign up with {1}.").format(signup[1], self.values[0])
             await interaction.response.send_message(msg, ephemeral=True)
             return
+
+        #Check spec for tiered events
+        chosen_spec = ""
+        try:
+            if self.view.spec:
+                # Parse tier to integer (e.g. T2c)
+                tier = int(''.join(filter(str.isdigit, tier)))
+                spec = select_one(self.view.conn, 'Specs', self.values, ['player_id'], [self.view.player])
+                chosen_spec = self.view.raid_cog.specs[self.view.spec.bit_length()-1]
+                if not (spec >> (tier-1)*3) & self.view.spec:
+                    msg = _("{0} does not specialize in {1}.").format(signup[1], chosen_spec)
+                    await interaction.response.send_message(msg, ephemeral=True)
+                    return
+        except AttributeError as e:
+            self.view.spec = 0
+
 
         if self.view.slot == -1:
             search = '%' + self.values[0] + '%'
@@ -991,12 +1035,14 @@ class ClassSelect(discord.ui.Select):
                 await old_member.remove_roles(role)
 
         self.clear_assignment()
-        assignment_columns = ['player_id', 'byname', 'class_name']
-        assignment_values = [self.view.player, signup[1], self.values[0]]
+        assignment_columns = ['player_id', 'byname', 'class_name', 'spec']
+        assignment_values = [self.view.player, signup[1], self.values[0], self.view.spec]
         upsert(self.view.conn, 'Assignment', assignment_columns, assignment_values, ['raid_id', 'slot_id'],
                [raid_id, slot_id])
 
-        msg = _("Assigned {0} to {1}.").format(signup[1], self.values[0])
+        if chosen_spec:
+            chosen_spec += " "
+        msg = _("Assigned {0} to {2}{1}.").format(signup[1], self.values[0], chosen_spec)
         await interaction.response.send_message(msg, ephemeral=True, delete_after=assign_delay)
 
         if role:
@@ -1013,9 +1059,9 @@ class ClassSelect(discord.ui.Select):
         slot = select_one(self.view.conn, 'Assignment', ['slot_id', 'byname'], ['player_id', 'raid_id'],
                           [self.view.player, self.view.raid_id])
         if slot is not None:
-            assignment_columns = ['player_id', 'byname', 'class_name']
+            assignment_columns = ['player_id', 'byname', 'class_name', 'spec']
             class_names = ','.join(self.view.raid_cog.slots_class_names[slot[0]])
-            assignment_values = [None, _("<Open>"), class_names]
+            assignment_values = [None, _("<Open>"), class_names, 0]
             upsert(self.view.conn, 'Assignment', assignment_columns, assignment_values, ['raid_id', 'slot_id'],
                    [self.view.raid_id, slot[0]])
 
