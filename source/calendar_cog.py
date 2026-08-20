@@ -209,6 +209,7 @@ class CalendarCog(commands.Cog):
 
     async def events_embed(self, guild_id):
         events = await self.get_events()
+        events = events[:25]
 
         title = _("Upcoming events:")
         embed = discord.Embed(title=title, colour=discord.Colour(0x3498db))
