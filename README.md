@@ -136,7 +136,7 @@ You can paste the code directly in the discord app when clicking the join server
 | ------- |:-----------:| ------- | ----- |
 | **/leader** \<role\>| Admin | /leader Officer | Specify "Raid Leader" role. Raid leaders can edit raids posted by others. |
 | **/time_zones server** \<timezone\> | Admin | /time_zones server europe/paris | Set to US Eastern by default. This timezone is the default timezone for interpretation of raid commands. |
-| **/kin** \<role\> \<icon\> | Admin | /kin Kin &#x1F46A | Specify "kin" role. If specified, kin members will be marked on the sign up sheet with the icon. |
+| **/kin** \<role\> \<icon\> | Admin | /kin Kin &#x1F46A; | Specify "kin" role. If specified, kin members will be marked on the sign up sheet with the icon. |
 | **/rss on/off** | Admin | /rss on | Post LotRO announcements to this channel. |
 
 ### Scheduling commands
