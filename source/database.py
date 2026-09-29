@@ -106,6 +106,7 @@ def table_sqls(table):
                         "server text, "
                         "raid_leader integer, "
                         "priority integer, "
+                        "icon text, "
                         "calendar text, "
                         "guild_events integer, "
                         "twitter integer, "

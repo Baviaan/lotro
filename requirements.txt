@@ -3,6 +3,7 @@ aiohttp>=3.13.3
 beautifulsoup4>=4.12.2
 dateparser==1.1.7
 discord.py>=2.3.0
+emoji>=2.16.0
 feedparser>=6.0.10
 lxml>=4.9.3
 psutil>=5.8.0
