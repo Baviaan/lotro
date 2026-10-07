@@ -76,12 +76,15 @@ class RaidCog(commands.Cog):
             # Use first guild as host
             creep_guild = bot.guilds[0]
         logger.info("Using emoji from {0}.".format(host_guild))
-        logger.info("Using creep emoji from {0}.".format(creep_guild))
+        logger.info("Using creep and multi spec emoji from {0}.".format(creep_guild))
         self.class_emojis = [emoji for emoji in host_guild.emojis if emoji.name in self.role_names]
         self.creep_emojis = [emoji for emoji in creep_guild.emojis if emoji.name in self.creep_names]
-        self.specs = ["Red", "Blue", "Yellow"]
-        spec_names = ["_".join(element) for element in itertools.product(self.role_names, self.specs)]
-        self.spec_emojis = [emoji for emoji in host_guild.emojis if emoji.name in spec_names]
+        specs = ["Red", "Blue", "Red_Blue", "Yellow", "Red_Yellow", "Blue_Yellow", "Triple"]
+        self.specs = [""] + specs
+        spec_names = ["_".join(element) for element in itertools.product(self.role_names, specs)]
+        single_spec_emojis = [emoji for emoji in host_guild.emojis if emoji.name in spec_names]
+        multi_spec_emojis = [emoji for emoji in creep_guild.emojis if emoji.name in spec_names]
+        self.spec_emojis = single_spec_emojis + multi_spec_emojis
         self.emojis_dict = {emoji.name: str(emoji) for emoji in self.class_emojis + self.creep_emojis + self.spec_emojis}
 
         # Add raid views
@@ -484,7 +487,7 @@ class RaidCog(commands.Cog):
                 spec = row[2]
                 for class_name in class_names:
                     if spec:
-                        assigned_class = class_name + "_" + self.specs[spec.bit_length()-1]
+                        assigned_class = class_name + "_" + self.specs[spec]
                     else:
                         assigned_class = class_name
                     embed_text = embed_text + self.emojis_dict[assigned_class]
@@ -498,7 +501,7 @@ class RaidCog(commands.Cog):
                 spec = row[2]
                 for class_name in class_names:
                     if spec:
-                        assigned_class = class_name + "_" + self.specs[spec.bit_length()-1]
+                        assigned_class = class_name + "_" + self.specs[spec]
                     else:
                         assigned_class = class_name
                     embed_text = embed_text + self.emojis_dict[assigned_class]
@@ -558,14 +561,8 @@ class RaidCog(commands.Cog):
                                     if spec:
                                         # Get the relevant specialization for the tier
                                         spec = (spec >> (tier-1)*3) & 0b111
-                                        if(spec==0b111):
-                                            player_string += self.emojis_dict[name]
-                                        else:
-                                            for role in self.specs:
-                                                if spec & 0b1:
-                                                    emoji = name + "_" + role
-                                                    player_string += self.emojis_dict[emoji]
-                                                spec = spec >> 1
+                                        emoji = name + "_" + self.specs[spec]
+                                        player_string += self.emojis_dict[emoji]
                             else:
                                 player_string += self.emojis_dict[name]
                 else:
