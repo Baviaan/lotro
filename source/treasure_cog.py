@@ -157,12 +157,19 @@ def getItemsFromTreasureGroup(treasureGroupProfileID, container_frequency):
             drops = sorted(drops, key=lambda d: -d['weight'])
             result = ["{0}% -- {1}{2}".format(drop['percentage'], drop['quantity'], drop['name']) for drop in drops]
             return result
+    results = []
     #For old chests treasureGroup can point to treasureList instead of itemList directly
     for element in treasureLists:
         if element.attrib['id'] == treasureGroupProfileID:
+            total=0
+            # treasure list will be very short, so double loop for simplicity
             for entry in element:
-                result = getItemsFromTreasureGroup( entry.attrib['treasureGroupProfileId'], container_frequency)
-                return(result)
+                weight = int(entry.attrib['weight'])
+                total += weight
+            for entry in element:
+                odds = int(entry.attrib['weight'])/total * container_frequency
+                results = results + getItemsFromTreasureGroup( entry.attrib['treasureGroupProfileId'], odds)
+            return(results)
 
 def getItemDrops(trophyListIDs):
     loot = []
