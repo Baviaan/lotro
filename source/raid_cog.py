@@ -1070,6 +1070,9 @@ class ClassSelect(discord.ui.Select):
                 await member.add_roles(role)
             except discord.Forbidden:
                 logger.warning("Error: Missing 'Manage roles' permissions for {interaction.guild}.")
+            except Exception as e:
+                logger.error(e, exc_info=True)
+                logger.error("Failed to assign tag role.")
         else:
             logger.warning(f'No role exists for raid {raid_id}.')
 
