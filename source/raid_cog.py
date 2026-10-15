@@ -1025,7 +1025,7 @@ class ClassSelect(discord.ui.Select):
                 # Parse tier to integer (e.g. T2c)
                 tier = int(''.join(filter(str.isdigit, tier)))
                 spec = select_one(self.view.conn, 'Specs', self.values, ['player_id'], [self.view.player])
-                chosen_spec = self.view.raid_cog.specs[self.view.spec.bit_length()-1]
+                chosen_spec = self.view.raid_cog.specs[self.view.spec]
                 if not (spec >> (tier-1)*3) & self.view.spec:
                     msg = _("{0} does not specialize in {1}.").format(signup[1], chosen_spec)
                     await interaction.response.send_message(msg, ephemeral=True)
