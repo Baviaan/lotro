@@ -349,7 +349,7 @@ class RaidCog(commands.Cog):
         full_name = self.get_raid_name(name)
         raid_size = self.get_raid_size(full_name)
         raid_time = datetime.datetime.utcfromtimestamp(timestamp)
-        tag_name = full_name[:96]
+        tag_name = name[:96]
         tag = f'{tag_name}{raid_time.day}{raid_time.hour}'
         # Check if time is in near future. Otherwise parsed date was likely unintended.
         current_time = int(time.time())
