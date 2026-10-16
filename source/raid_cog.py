@@ -336,7 +336,7 @@ class RaidCog(commands.Cog):
             match = get_match(name, names)
             if match[0]:
                 name = match[0]
-        return name
+        return name[:256]
 
     def get_raid_size(self, full_name):
         try:
@@ -349,7 +349,8 @@ class RaidCog(commands.Cog):
         full_name = self.get_raid_name(name)
         raid_size = self.get_raid_size(full_name)
         raid_time = datetime.datetime.utcfromtimestamp(timestamp)
-        tag = f'{name}{raid_time.day}{raid_time.hour}'
+        tag_name = full_name[:96]
+        tag = f'{tag_name}{raid_time.day}{raid_time.hour}'
         # Check if time is in near future. Otherwise parsed date was likely unintended.
         current_time = int(time.time())
         if current_time + 31536000 < timestamp:
