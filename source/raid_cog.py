@@ -737,7 +737,7 @@ class RaidView(discord.ui.View):
             await interaction.response.send_message(msg, ephemeral=True)
             return
         msg = _("Please first select the player. The roster is updated when a class is selected. "
-                "You can select a slot manually or leave it on automatic.\n") \
+                "You can select a slot manually or leave it on automatic.\n")
         view = SelectView(self.raid_cog, raid_id)
         await interaction.response.send_message(msg, view=view, ephemeral=True)
         roster = select_one(self.conn, 'Raids', ['roster'], ['raid_id'], [raid_id])
